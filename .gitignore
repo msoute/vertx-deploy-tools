@@ -1,4 +1,7 @@
 *.class
+*.iml
+.idea
+atlassian-ide-plugin.xml
 
 # Package Files #
 *.jar
