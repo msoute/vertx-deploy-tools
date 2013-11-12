@@ -40,11 +40,11 @@ fi
 
 start_module () {
 
-    if [ -z "$2" ]; then
-        log_daemon_msg "No module name provided"
-        log_end_msg 1
-        exit 4
-    fi;
+#    if [ -z "$2" ]; then
+#        log_daemon_msg "No module name provided"
+#        log_end_msg 1
+#        exit 4
+#    fi;
 
     if [ -f $PIDFILE ]; then
 		PID=$(cat $PIDFILE)
