@@ -1,7 +1,7 @@
 package nl.soutenet.vertx.mod.cluster.handler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.soutenet.vertx.mod.cluster.request.DeployRequest;
+import nl.soutenet.vertx.mod.cluster.request.DeploySiteRequest;
 import nl.soutenet.vertx.mod.cluster.service.DeployService;
 import nl.soutenet.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -11,13 +11,12 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-public class RestDeployHandler implements Handler<HttpServerRequest> {
-
-    private Logger LOG = LoggerFactory.getLogger(RestDeployHandler.class);
+public class RestDeploySiteHandler implements Handler<HttpServerRequest> {
 
     private final DeployService service;
+    private Logger LOG = LoggerFactory.getLogger(RestDeploySiteHandler.class);
 
-    public RestDeployHandler(final DeployService service) {
+    public RestDeploySiteHandler(final DeployService service) {
         this.service = service;
     }
 
@@ -29,15 +28,15 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 byte[] postData = event.getBytes();
 
                 if (postData == null || postData.length == 0) {
-                    LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
+                    LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_SITE_REQUEST);
                     request.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                     request.response().end();
                     return;
                 }
 
                 JsonObject jsonRequest = new JsonObject(new String(postData));
-                DeployRequest deployRequest = DeployRequest.fromJsonMessage(jsonRequest);
-                LOG.info("[{} - {}]: Received deploy request {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), jsonRequest.encode());
+                DeploySiteRequest deployRequest = DeploySiteRequest.fromJsonMessage(jsonRequest);
+                LOG.info("[{} - {}]: Received deploy site request {}", LogConstants.DEPLOY_SITE_REQUEST , deployRequest.getId().toString(), jsonRequest.encode());
                 service.deploy(deployRequest, request);
             }
         });

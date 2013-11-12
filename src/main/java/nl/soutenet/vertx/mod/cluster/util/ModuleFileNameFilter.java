@@ -1,16 +1,16 @@
 package nl.soutenet.vertx.mod.cluster.util;
 
-import nl.soutenet.vertx.mod.cluster.request.DeployRequest;
+import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
 
 import java.io.File;
 import java.io.FilenameFilter;
 
 public class ModuleFileNameFilter implements FilenameFilter {
 
-    private final DeployRequest deployRequest;
+    private final ModuleRequest deployRequest;
 
-    public ModuleFileNameFilter(final DeployRequest deployRequest) {
-        this.deployRequest = deployRequest;
+    public ModuleFileNameFilter(final ModuleRequest moduleRequest) {
+        this.deployRequest = moduleRequest;
     }
 
     @Override

@@ -2,8 +2,8 @@ package nl.soutenet.vertx.mod.cluster;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.soutenet.vertx.mod.cluster.handler.RestDeployHandler;
-import nl.soutenet.vertx.mod.cluster.handler.RestUnpackHandler;
-import nl.soutenet.vertx.mod.cluster.service.ClusterDeployService;
+import nl.soutenet.vertx.mod.cluster.handler.RestDeploySiteHandler;
+import nl.soutenet.vertx.mod.cluster.service.DeployModuleService;
 import nl.soutenet.vertx.mod.cluster.service.DeploySiteService;
 import nl.soutenet.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -16,20 +16,20 @@ import org.vertx.java.platform.Verticle;
 
 public class ClusterManagerModule extends Verticle {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModule.class);
-    private ClusterDeployService manager;
+    private DeployModuleService manager;
 
     @Override
     public void start() {
 
-        ClusterDeployService deployService = new ClusterDeployService(getVertx());
-        DeploySiteService unpackService = new DeploySiteService();
+        DeployModuleService deployService = new DeployModuleService(getVertx());
+        DeploySiteService deploySiteService = new DeploySiteService(getVertx(), container.config());
 
 
         HttpServer httpServer = getVertx().createHttpServer();
 
         RouteMatcher matcher = new RouteMatcher();
-        matcher.post("/deploy*", new RestDeployHandler(deployService));
-        matcher.post("/unpack*", new RestUnpackHandler(unpackService));
+        matcher.post("/deploy/module*", new RestDeployHandler(deployService));
+        matcher.post("/deploy/site*", new RestDeploySiteHandler(deploySiteService));
 
         matcher.noMatch(new Handler<HttpServerRequest>() {
             @Override

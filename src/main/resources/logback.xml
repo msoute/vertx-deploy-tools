@@ -9,6 +9,7 @@
 
     <logger name="io.netty" level="off"/>
     <logger name="org.hibernate" level="off"/>
+    <logger name="org.sonatype.aether" level="off" />
 
     <root level="TRACE">
         <appender-ref ref="STDOUT"/>

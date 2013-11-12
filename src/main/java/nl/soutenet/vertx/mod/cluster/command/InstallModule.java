@@ -1,7 +1,7 @@
 package nl.soutenet.vertx.mod.cluster.command;
 
 import nl.soutenet.vertx.mod.cluster.Constants;
-import nl.soutenet.vertx.mod.cluster.request.DeployRequest;
+import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
 import nl.soutenet.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public class InstallModule implements Command {
     }
 
     @Override
-    public JsonObject execute(final DeployRequest request) {
+    public JsonObject execute(final ModuleRequest request) {
 
         final AtomicInteger waitFor = new AtomicInteger(1);
         final JsonObject result = new JsonObject();

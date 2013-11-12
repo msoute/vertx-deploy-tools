@@ -5,7 +5,7 @@ import nl.soutenet.vertx.mod.cluster.Constants;
 import nl.soutenet.vertx.mod.cluster.command.InstallModule;
 import nl.soutenet.vertx.mod.cluster.command.RunModule;
 import nl.soutenet.vertx.mod.cluster.command.UndeployModule;
-import nl.soutenet.vertx.mod.cluster.request.DeployRequest;
+import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
 import nl.soutenet.vertx.mod.cluster.util.LogConstants;
 import nl.soutenet.vertx.mod.cluster.util.ModuleFileNameFilter;
 import nl.soutenet.vertx.mod.cluster.util.ModuleVersion;
@@ -19,15 +19,15 @@ import org.vertx.java.platform.PlatformManager;
 
 import java.io.File;
 
-public class ClusterDeployService {
-    private static final Logger LOG = LoggerFactory.getLogger(ClusterDeployService.class);
+public class DeployModuleService implements DeployService {
+    private static final Logger LOG = LoggerFactory.getLogger(DeployModuleService.class);
     private static final String MODS_DIR_PROP_NAME = "vertx.mods";
     private static final String LOCAL_MODS_DIR = "mods";
     private final Vertx vertx;
     private final PlatformManager platformManager;
     private final File modRoot;
 
-    public ClusterDeployService(final Vertx vertx) {
+    public DeployModuleService(final Vertx vertx) {
         this.vertx = vertx;
         platformManager = PlatformLocator.factory.createPlatformManager();
 
@@ -41,7 +41,7 @@ public class ClusterDeployService {
 
     }
 
-    public void deployModule(final DeployRequest deployRequest, HttpServerRequest request) {
+    public void deploy(final ModuleRequest deployRequest, final HttpServerRequest request) {
 
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
@@ -58,7 +58,7 @@ public class ClusterDeployService {
 
         // If an older version (or SNAPSHOT) is installed undeploy it first.
         if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
-            UndeployModule undeployCommand = new UndeployModule(vertx, modRoot, vertx.eventBus());
+            UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
             undeployCommand.execute(deployRequest);
         }
 
@@ -99,7 +99,7 @@ public class ClusterDeployService {
         request.response().end();
     }
 
-    private ModuleVersion moduleInstalled(DeployRequest deployRequest) {
+    private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {
 
         if (!modRoot.exists()) {
             return ModuleVersion.NOT_INSTALLED;

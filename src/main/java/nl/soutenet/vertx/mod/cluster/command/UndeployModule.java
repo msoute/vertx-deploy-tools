@@ -1,12 +1,11 @@
 package nl.soutenet.vertx.mod.cluster.command;
 
-import nl.soutenet.vertx.mod.cluster.request.DeployRequest;
+import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
 import nl.soutenet.vertx.mod.cluster.util.LogConstants;
 import nl.soutenet.vertx.mod.cluster.util.ModuleFileNameFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
@@ -19,29 +18,23 @@ public class UndeployModule implements Command {
     private final Vertx vertx;
     private final File modRoot;
 
-    public UndeployModule(Vertx vertx, File modRoot, EventBus eventBus) {
+    public UndeployModule(Vertx vertx, File modRoot) {
         this.vertx = vertx;
         this.modRoot = modRoot;
     }
 
     @Override
-    public JsonObject execute(DeployRequest request) {
+    public JsonObject execute(ModuleRequest request) {
         Process killProcess = null;
 
         for (String file : modRoot.list(new ModuleFileNameFilter(request))) {
 
-
-            File pidFile = new File(PID_DIR + file);
-
-            if (pidFile.exists()) {
-                String pid = vertx.fileSystem().readFileSync(PID_DIR + file).toString();
-                vertx.fileSystem().deleteSync(PID_DIR + file);
-                try {
-                    killProcess = Runtime.getRuntime().exec(new String[]{"kill", pid});
-                    killProcess.waitFor();
-                } catch (IOException | InterruptedException e) {
-                    LOG.error("[{} - {}]: Unable to stop old module : {} with PID", LogConstants.DEPLOY_REQUEST, request.getId(), file, pid);
-                }
+            try {
+                killProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "stop", request.getModuleId()});
+                killProcess.waitFor();
+            } catch (IOException | InterruptedException e) {
+                LOG.error("[{} - {}]: Failed to initialize module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
+                return null;
             }
 
             vertx.fileSystem().deleteSync(modRoot.getPath() + "/" + file, true);

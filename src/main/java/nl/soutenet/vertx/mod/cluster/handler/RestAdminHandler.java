@@ -1,13 +1,13 @@
 package nl.soutenet.vertx.mod.cluster.handler;
 
-import nl.soutenet.vertx.mod.cluster.service.ClusterDeployService;
+import nl.soutenet.vertx.mod.cluster.service.DeployModuleService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class RestAdminHandler implements Handler<HttpServerRequest> {
-    private final ClusterDeployService clusterDeployManager;
+    private final DeployModuleService clusterDeployManager;
 
-    public RestAdminHandler(final ClusterDeployService manager) {
+    public RestAdminHandler(final DeployModuleService manager) {
         this.clusterDeployManager = manager;
     }
 
