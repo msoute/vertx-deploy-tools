@@ -54,9 +54,7 @@ public class DownloadArtifact implements Command {
     public JsonObject execute(ModuleRequest request) {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
 
-        credsProvider.setCredentials(
-                new AuthScope("build.edubase.malmberg.nl", 443),
-                new UsernamePasswordCredentials("build", "CragDiv1"));
+
 
         CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
         boolean downloaded = false;
