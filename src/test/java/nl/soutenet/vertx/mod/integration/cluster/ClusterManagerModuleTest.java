@@ -105,7 +105,8 @@ public class ClusterManagerModuleTest {
         JsonObject object = new JsonObject()
                 .putString("group_id","nl.malmberg.edubase.stubs")
                 .putString("artifact_id","dtdl-service-stub")
-                .putString("version","1.0.1-SNAPSHOT");
+                .putString("version","1.0.1-SNAPSHOT")
+                .putString("context","bvj");
 
         return object;
     }

@@ -1,6 +1,8 @@
 package nl.soutenet.vertx.mod.cluster.service;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.soutenet.vertx.mod.cluster.command.DownloadArtifact;
+import nl.soutenet.vertx.mod.cluster.command.ExtractSite;
 import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -17,13 +19,27 @@ public class DeploySiteService implements DeployService {
         this.config = config;
     }
 
-
     @Override
     public void deploy(ModuleRequest deployRequest, HttpServerRequest httpRequest) {
         DownloadArtifact command = new DownloadArtifact(config);
-        command.execute(deployRequest);
+        JsonObject downloadResult = command.execute(deployRequest);
+
+        if (!downloadResult.getBoolean("success")) {
+            httpRequest.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+            httpRequest.response().end();
+            return;
+        }
+
+        // Move oldSite to temp storate
+
+        ExtractSite extractSite = new ExtractSite(config);
+        JsonObject extractResult = extractSite.execute(deployRequest);
+
+        httpRequest.response().end();
+
     }
-    public void resolveArtifact() {
+
+    public void extractSite() {
 
 
     }

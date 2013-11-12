@@ -1,6 +1,6 @@
 *.class
 *.iml
-.idea
+.idea/*
 atlassian-ide-plugin.xml
 
 # Package Files #

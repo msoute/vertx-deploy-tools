@@ -28,7 +28,7 @@ public class RestDeploySiteHandler implements Handler<HttpServerRequest> {
                 byte[] postData = event.getBytes();
 
                 if (postData == null || postData.length == 0) {
-                    LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_SITE_REQUEST);
+                    LOG.error("{} : No postdata in request.", LogConstants.DEPLOY_SITE_REQUEST);
                     request.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                     request.response().end();
                     return;
@@ -36,7 +36,7 @@ public class RestDeploySiteHandler implements Handler<HttpServerRequest> {
 
                 JsonObject jsonRequest = new JsonObject(new String(postData));
                 DeploySiteRequest deployRequest = DeploySiteRequest.fromJsonMessage(jsonRequest);
-                LOG.info("[{} - {}]: Received deploy site request {}", LogConstants.DEPLOY_SITE_REQUEST , deployRequest.getId().toString(), jsonRequest.encode());
+                LOG.info("[{} - {}] : Received deploy site request {}", LogConstants.DEPLOY_SITE_REQUEST , deployRequest.getId().toString(), jsonRequest.encode());
                 service.deploy(deployRequest, request);
             }
         });

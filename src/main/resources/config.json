@@ -1,3 +1,8 @@
 {
-    "vertx.home":"/opt/vert.x"
+    "vertx.home":"/opt/vert.x",
+    "artifact.repo": "target/",
+    "site.repo" : "/var/www",
+    "http.authUser": "build",
+    "http.authPass": ""
+
 }

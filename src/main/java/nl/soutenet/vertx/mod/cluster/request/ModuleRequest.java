@@ -50,6 +50,17 @@ public class ModuleRequest {
                 .append(getArtifactId()).append("-").append(getVersion()).append(".zip");
         return builder.toString();
     }
+    public String getRemoteLocation(String buildId) {
+        StringBuilder builder = new StringBuilder()
+                .append(getGroupId().replaceAll("\\.","/"))
+                .append("/")
+                .append(getArtifactId())
+                .append("/")
+                .append(getVersion())
+                .append("/")
+                .append(getArtifactId()).append("-").append(getVersion().replace("SNAPSHOT", buildId)).append(".zip");
+        return builder.toString();
+    }
     public boolean isAsync() {
         return false;
     }
@@ -58,4 +69,15 @@ public class ModuleRequest {
         return version.endsWith("-SNAPSHOT");
     }
 
+    public String getMetadataLocation() {
+        StringBuilder builder = new StringBuilder()
+                .append(getGroupId().replaceAll("\\.","/"))
+                .append("/")
+                .append(getArtifactId())
+                .append("/")
+                .append(getVersion())
+                .append("/")
+                .append("maven-metadata.xml");
+        return builder.toString();
+    }
 }

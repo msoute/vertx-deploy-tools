@@ -92,7 +92,7 @@
                 <configuration>
                     <modsDir>/opt/vert.x/mods</modsDir>
                     <configFile>src/main/resources/config.json</configFile>
-                    <pullInDeps>false</pullInDeps>
+                    <classpath>src/main/resources/repos.txt</classpath>
                 </configuration>
                 <dependencies>
                     <dependency>

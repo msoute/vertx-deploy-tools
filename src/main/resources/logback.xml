@@ -11,7 +11,7 @@
     <logger name="org.hibernate" level="off"/>
     <logger name="org.sonatype.aether" level="off" />
 
-    <root level="TRACE">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
