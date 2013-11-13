@@ -1,9 +1,9 @@
-package nl.soutenet.vertx.mod.cluster.service;
+package nl.jpoint.vertx.mod.cluster.service;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.soutenet.vertx.mod.cluster.command.DownloadArtifact;
-import nl.soutenet.vertx.mod.cluster.command.ExtractSite;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.command.DownloadArtifact;
+import nl.jpoint.vertx.mod.cluster.command.ExtractSite;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;

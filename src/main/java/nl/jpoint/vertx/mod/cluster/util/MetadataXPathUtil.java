@@ -1,10 +1,8 @@
-package nl.soutenet.vertx.mod.cluster.util;
+package nl.jpoint.vertx.mod.cluster.util;
 
 
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -36,9 +34,9 @@ public class MetadataXPathUtil {
 
             if (!timestamp.isEmpty() && !buildNumber.isEmpty()) {
 
-                return request.getRemoteLocation(timestamp+"-"+buildNumber);
+                return request.getRemoteLocation(timestamp + "-" + buildNumber);
             }
-        } catch (XPathExpressionException |ParserConfigurationException | SAXException | IOException e) {
+        } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
             return request.getRemoteLocation();
         }
         return request.getRemoteLocation();

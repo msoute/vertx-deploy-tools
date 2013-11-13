@@ -1,14 +1,14 @@
-package nl.soutenet.vertx.mod.cluster.service;
+package nl.jpoint.vertx.mod.cluster.service;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.soutenet.vertx.mod.cluster.Constants;
-import nl.soutenet.vertx.mod.cluster.command.InstallModule;
-import nl.soutenet.vertx.mod.cluster.command.RunModule;
-import nl.soutenet.vertx.mod.cluster.command.UndeployModule;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
-import nl.soutenet.vertx.mod.cluster.util.ModuleFileNameFilter;
-import nl.soutenet.vertx.mod.cluster.util.ModuleVersion;
+import nl.jpoint.vertx.mod.cluster.Constants;
+import nl.jpoint.vertx.mod.cluster.command.InstallModule;
+import nl.jpoint.vertx.mod.cluster.command.RunModule;
+import nl.jpoint.vertx.mod.cluster.command.UndeployModule;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
+import nl.jpoint.vertx.mod.cluster.util.ModuleVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;

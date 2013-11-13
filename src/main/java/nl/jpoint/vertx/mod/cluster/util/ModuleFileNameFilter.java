@@ -1,6 +1,6 @@
-package nl.soutenet.vertx.mod.cluster.util;
+package nl.jpoint.vertx.mod.cluster.util;
 
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -15,7 +15,7 @@ public class ModuleFileNameFilter implements FilenameFilter {
 
     @Override
     public boolean accept(File dir, String name) {
-        return name.startsWith(deployRequest.getGroupId()+"~"+deployRequest.getArtifactId());
+        return name.startsWith(deployRequest.getGroupId() + "~" + deployRequest.getArtifactId());
     }
 
 }

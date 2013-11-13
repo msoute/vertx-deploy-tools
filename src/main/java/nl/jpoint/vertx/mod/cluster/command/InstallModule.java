@@ -1,8 +1,8 @@
-package nl.soutenet.vertx.mod.cluster.command;
+package nl.jpoint.vertx.mod.cluster.command;
 
-import nl.soutenet.vertx.mod.cluster.Constants;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.Constants;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.AsyncResult;
@@ -29,15 +29,15 @@ public class InstallModule implements Command {
 
         final AtomicInteger waitFor = new AtomicInteger(1);
         final JsonObject result = new JsonObject();
-        LOG.info("[{} - {}]: Installing module {}", LogConstants.DEPLOY_REQUEST,request.getId().toString(), request.getModuleId());
+        LOG.info("[{} - {}]: Installing module {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
 
         platformManager.installModule(request.getModuleId(), new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> event) {
                 if (event.failed()) {
-                    LOG.error("[{} - {}]: Error installing module {} with cause {}", LogConstants.DEPLOY_REQUEST,request.getId().toString(), request.getModuleId(), event.cause().getMessage());
+                    LOG.error("[{} - {}]: Error installing module {} with cause {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId(), event.cause().getMessage());
                     result.putBoolean(Constants.STATUS_SUCCESS, false);
-                }  else {
+                } else {
                     result.putBoolean(Constants.STATUS_SUCCESS, true);
                     LOG.info("[{} - {}]: Installed module {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
                 }

@@ -1,11 +1,11 @@
-package nl.soutenet.vertx.mod.cluster;
+package nl.jpoint.vertx.mod.cluster;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.soutenet.vertx.mod.cluster.handler.RestDeployHandler;
-import nl.soutenet.vertx.mod.cluster.handler.RestDeploySiteHandler;
-import nl.soutenet.vertx.mod.cluster.service.DeployModuleService;
-import nl.soutenet.vertx.mod.cluster.service.DeploySiteService;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.handler.RestDeployHandler;
+import nl.jpoint.vertx.mod.cluster.handler.RestDeploySiteHandler;
+import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
+import nl.jpoint.vertx.mod.cluster.service.DeploySiteService;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;

@@ -1,9 +1,9 @@
-package nl.soutenet.vertx.mod.cluster.handler;
+package nl.jpoint.vertx.mod.cluster.handler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.soutenet.vertx.mod.cluster.request.DeploySiteRequest;
-import nl.soutenet.vertx.mod.cluster.service.DeployService;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.request.DeploySiteRequest;
+import nl.jpoint.vertx.mod.cluster.service.DeployService;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
@@ -36,7 +36,7 @@ public class RestDeploySiteHandler implements Handler<HttpServerRequest> {
 
                 JsonObject jsonRequest = new JsonObject(new String(postData));
                 DeploySiteRequest deployRequest = DeploySiteRequest.fromJsonMessage(jsonRequest);
-                LOG.info("[{} - {}] : Received deploy site request {}", LogConstants.DEPLOY_SITE_REQUEST , deployRequest.getId().toString(), jsonRequest.encode());
+                LOG.info("[{} - {}] : Received deploy site request {}", LogConstants.DEPLOY_SITE_REQUEST, deployRequest.getId().toString(), jsonRequest.encode());
                 service.deploy(deployRequest, request);
             }
         });

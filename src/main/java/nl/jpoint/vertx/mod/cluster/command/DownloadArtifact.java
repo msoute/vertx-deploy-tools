@@ -1,9 +1,9 @@
-package nl.soutenet.vertx.mod.cluster.command;
+package nl.jpoint.vertx.mod.cluster.command;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
-import nl.soutenet.vertx.mod.cluster.util.MetadataXPathUtil;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.util.MetadataXPathUtil;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -36,13 +36,13 @@ public class DownloadArtifact implements Command {
     }
 
     private void initializeRepoList() {
-        String reposFile = config.getString("vertx.home")+CONF_REPOS_TXT;
+        String reposFile = config.getString("vertx.home") + CONF_REPOS_TXT;
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(reposFile))));
 
             String line = null;
             remoteRepositories = new ArrayList<>();
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.startsWith("maven:")) {
                     remoteRepositories.add(line.substring(6));
                 }
@@ -60,7 +60,7 @@ public class DownloadArtifact implements Command {
                 new AuthScope("build.edubase.malmberg.nl", 443),
                 new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 
-        CloseableHttpClient httpclient = HttpClients.   custom().setDefaultCredentialsProvider(credsProvider).build();
+        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
         boolean downloaded = false;
 
         Iterator<String> it = remoteRepositories.iterator();
@@ -74,20 +74,20 @@ public class DownloadArtifact implements Command {
             } else {
                 remoteLocation = request.getRemoteLocation();
             }
-            HttpGet get = new HttpGet(uri+"/"+remoteLocation);
+            HttpGet get = new HttpGet(uri + "/" + remoteLocation);
 
-            try(CloseableHttpResponse response = httpclient.execute(get)) {
+            try (CloseableHttpResponse response = httpclient.execute(get)) {
 
                 if (response.getStatusLine().getStatusCode() == HttpResponseStatus.OK.code()) {
-                    OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(config.getString("artifact.repo")+request.getModuleId()+".zip")));
+                    OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(config.getString("artifact.repo") + request.getModuleId() + ".zip")));
                     response.getEntity().writeTo(fos);
                     response.close();
                     fos.close();
-                    LOG.info("[{} - {}] : Downloaded artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), config.getString("artifact.repo")+request.getModuleId()+".zip");
+                    LOG.info("[{} - {}] : Downloaded artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), config.getString("artifact.repo") + request.getModuleId() + ".zip");
                     downloaded = true;
                 } else {
                     LOG.error("[{} - {}] : Error downloading artifact {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId());
-                    LOG.error("[{} - {}] : HttpClient Error [{}] -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(),response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+                    LOG.error("[{} - {}] : HttpClient Error [{}] -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
                 }
             } catch (IOException e) {
                 LOG.error("[{} - {}] : Error downloading artifact {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getArtifactId());
@@ -98,7 +98,7 @@ public class DownloadArtifact implements Command {
     }
 
     private String retrieveAndParseMetadata(ModuleRequest request, CloseableHttpClient httpclient, String repoUri) {
-        HttpGet getMetadata = new HttpGet(repoUri+"/"+request.getMetadataLocation());
+        HttpGet getMetadata = new HttpGet(repoUri + "/" + request.getMetadataLocation());
         try (CloseableHttpResponse response = httpclient.execute(getMetadata)) {
             if (response.getStatusLine().getStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
                 LOG.error("[{} - {}] :Not metadata found for module {}. Returning default remote location", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId());

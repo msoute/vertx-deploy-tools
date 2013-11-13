@@ -1,3 +1,3 @@
 {
-    "main": "nl.soutenet.vertx.mod.cluster.ClusterManagerModule"
+    "main": "nl.jpoint.vertx.mod.cluster.ClusterManagerModule"
 }

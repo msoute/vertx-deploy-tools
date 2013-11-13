@@ -1,4 +1,4 @@
-package nl.soutenet.vertx.mod.cluster.util;
+package nl.jpoint.vertx.mod.cluster.util;
 
 public class LogConstants {
     public final static String CLUSTER_MANAGER = "ClusterManager";

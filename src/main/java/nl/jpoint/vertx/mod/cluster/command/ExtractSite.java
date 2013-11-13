@@ -1,9 +1,9 @@
-package nl.soutenet.vertx.mod.cluster.command;
+package nl.jpoint.vertx.mod.cluster.command;
 
 
-import nl.soutenet.vertx.mod.cluster.request.DeploySiteRequest;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.request.DeploySiteRequest;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
@@ -71,7 +71,7 @@ public class ExtractSite implements Command {
         }
 
         if (hasOld) {
-            vertx.fileSystem().deleteSync(contextPath.toString()+"_old");
+            vertx.fileSystem().deleteSync(contextPath.toString() + "_old");
         }
         LOG.info("[{} - {}] : Extracted artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), contextPath);
         return new JsonObject().putBoolean("success", true);

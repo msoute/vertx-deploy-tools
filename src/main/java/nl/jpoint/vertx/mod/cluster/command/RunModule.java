@@ -1,8 +1,9 @@
-package nl.soutenet.vertx.mod.cluster.command;
+package nl.jpoint.vertx.mod.cluster.command;
 
-import nl.soutenet.vertx.mod.cluster.Constants;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
-import nl.soutenet.vertx.mod.cluster.util.LogConstants;
+import nl.jpoint.vertx.mod.cluster.Constants;
+import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.json.JsonObject;
@@ -13,7 +14,6 @@ import java.io.InputStreamReader;
 
 /**
  * TODO : Vertx homedir should be configurable.
- *
  */
 public class RunModule implements Command {
 
@@ -26,7 +26,7 @@ public class RunModule implements Command {
         boolean success = false;
 
         try {
-            final Process runProcess =  Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start", request.getModuleId()});
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start", request.getModuleId(), String.valueOf(((DeployRequest)request).getInstances())});
             runProcess.waitFor();
 
             int exitValue = runProcess.exitValue();
@@ -36,14 +36,14 @@ public class RunModule implements Command {
 
             BufferedReader output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
             String outputLine;
-            while((outputLine = output.readLine()) != null) {
+            while ((outputLine = output.readLine()) != null) {
                 LOG.info("[{} - {}] : {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
             }
 
             if (exitValue != 0) {
                 BufferedReader errorOut = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()));
                 String errorLine;
-                while((errorLine = errorOut.readLine()) != null) {
+                while ((errorLine = errorOut.readLine()) != null) {
                     LOG.error("[{} - {}] : {}", LogConstants.DEPLOY_REQUEST, request.getId(), errorLine);
                 }
             }

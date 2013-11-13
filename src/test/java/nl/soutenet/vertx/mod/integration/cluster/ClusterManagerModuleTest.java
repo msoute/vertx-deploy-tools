@@ -1,9 +1,9 @@
-package nl.soutenet.vertx.mod.integration.cluster;
+package nl.jpoint.vertx.mod.integration.cluster;
 
 
 import junit.framework.Assert;
-import nl.soutenet.vertx.mod.cluster.request.DeploySiteRequest;
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeploySiteRequest;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
@@ -94,9 +94,9 @@ public class ClusterManagerModuleTest {
 
     private JsonObject createDeployCommand() {
         JsonObject object = new JsonObject()
-                .putString("group_id","nl.malmberg.edubase.stubs")
-                .putString("artifact_id","dtdl-service-stub")
-                .putString("version","1.0.1-SNAPSHOT")
+                .putString("group_id","nl.jpoint.vertx")
+                .putString("artifact_id","vertx-deploy-mod")
+                .putString("version","1.0.0-SNAPSHOT")
                 .putNumber("instances",1);
         return object;
     }

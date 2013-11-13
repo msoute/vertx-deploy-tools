@@ -1,6 +1,6 @@
-package nl.soutenet.vertx.mod.cluster.service;
+package nl.jpoint.vertx.mod.cluster.service;
 
-import nl.soutenet.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public interface DeployService {

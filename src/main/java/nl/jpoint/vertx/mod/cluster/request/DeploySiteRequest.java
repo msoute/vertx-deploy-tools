@@ -1,4 +1,4 @@
-package nl.soutenet.vertx.mod.cluster.request;
+package nl.jpoint.vertx.mod.cluster.request;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -12,9 +12,8 @@ public class DeploySiteRequest extends ModuleRequest {
     }
 
 
-
     public static DeploySiteRequest fromJsonMessage(final JsonObject request) {
-        return new DeploySiteRequest(request.getString("group_id"),request.getString("artifact_id"),request.getString("version"), request.getString("context"));
+        return new DeploySiteRequest(request.getString("group_id"), request.getString("artifact_id"), request.getString("version"), request.getString("context"));
     }
 
     public String getContext() {

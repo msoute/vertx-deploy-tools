@@ -1,4 +1,4 @@
-package nl.soutenet.vertx.mod.cluster.request;
+package nl.jpoint.vertx.mod.cluster.request;
 
 import java.util.UUID;
 
@@ -33,15 +33,16 @@ public class ModuleRequest {
     }
 
     public String getModuleId() {
-        return this.groupId+"~"+this.artifactId+"~"+this.version;
+        return this.groupId + "~" + this.artifactId + "~" + this.version;
     }
+
     public String getMavenArtifactId() {
-        return this.groupId+":"+this.artifactId+":"+this.version;
+        return this.groupId + ":" + this.artifactId + ":" + this.version;
     }
 
     public String getRemoteLocation() {
         StringBuilder builder = new StringBuilder()
-                .append(getGroupId().replaceAll("\\.","/"))
+                .append(getGroupId().replaceAll("\\.", "/"))
                 .append("/")
                 .append(getArtifactId())
                 .append("/")
@@ -50,9 +51,10 @@ public class ModuleRequest {
                 .append(getArtifactId()).append("-").append(getVersion()).append(".zip");
         return builder.toString();
     }
+
     public String getRemoteLocation(String buildId) {
         StringBuilder builder = new StringBuilder()
-                .append(getGroupId().replaceAll("\\.","/"))
+                .append(getGroupId().replaceAll("\\.", "/"))
                 .append("/")
                 .append(getArtifactId())
                 .append("/")
@@ -61,6 +63,7 @@ public class ModuleRequest {
                 .append(getArtifactId()).append("-").append(getVersion().replace("SNAPSHOT", buildId)).append(".zip");
         return builder.toString();
     }
+
     public boolean isAsync() {
         return false;
     }
@@ -71,7 +74,7 @@ public class ModuleRequest {
 
     public String getMetadataLocation() {
         StringBuilder builder = new StringBuilder()
-                .append(getGroupId().replaceAll("\\.","/"))
+                .append(getGroupId().replaceAll("\\.", "/"))
                 .append("/")
                 .append(getArtifactId())
                 .append("/")
