@@ -30,9 +30,7 @@ public class DeploySiteService implements DeployService {
             return;
         }
 
-        // Move oldSite to temp storate
-
-        ExtractSite extractSite = new ExtractSite(config);
+        ExtractSite extractSite = new ExtractSite(vertx, config);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
         httpRequest.response().end();
