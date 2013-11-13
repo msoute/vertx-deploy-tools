@@ -17,8 +17,8 @@
     </modules>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/msoute/vertx-deploy-mod.git</developerConnection>
-        <connection>scm:git:https://github.com/msoute/vertx-deploy-mod.git</connection>
+        <developerConnection>scm:git:https://github.com/msoute/vertx-deploy-tools.git</developerConnection>
+        <connection>scm:git:https://github.com/msoute/vertx-deploy-tools.git</connection>
         <url>https://github.com/msoute/vertx-deploy-mod</url>
     </scm>
 
