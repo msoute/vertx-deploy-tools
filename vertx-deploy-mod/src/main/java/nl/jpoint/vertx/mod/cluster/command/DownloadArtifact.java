@@ -57,10 +57,12 @@ public class DownloadArtifact implements Command {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
 
         credsProvider.setCredentials(
-                new AuthScope("build.edubase.malmberg.nl", 443),
+                new AuthScope(config.getString("http.authUri"), 443),
                 new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 
+
         CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+
         boolean downloaded = false;
 
         Iterator<String> it = remoteRepositories.iterator();

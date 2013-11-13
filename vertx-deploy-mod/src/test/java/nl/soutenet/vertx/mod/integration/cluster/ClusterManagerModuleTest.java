@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.integration.cluster;
+package nl.soutenet.vertx.mod.integration.cluster;
 
 
 import junit.framework.Assert;
@@ -104,7 +104,7 @@ public class ClusterManagerModuleTest {
     private JsonObject createDeploySiteCommand() {
         JsonObject object = new JsonObject()
                 .putString("group_id","nl.malmberg.edubase.stubs")
-                .putString("artifact_id","dtdl-service-stub")
+                .putString("artifact_id", "dtdl-service-stub")
                 .putString("version","1.0.1-SNAPSHOT")
                 .putString("context","bvj");
 
