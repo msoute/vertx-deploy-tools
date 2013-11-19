@@ -2,6 +2,7 @@ package nl.jpoint.maven.vertx.utils;
 
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
+import nl.jpoint.maven.vertx.request.DeploySiteRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -47,9 +48,25 @@ public class DeployUtils {
         return activeConfiguration;
     }
 
-    public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
-
+    public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
+        for (Dependency dependency :createDeployList(activeConfiguration, siteClassifier)) {
+            deployModuleRequests.add(new DeploySiteRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), activeConfiguration.getSiteBasePath()));
+        }
+        return deployModuleRequests;
+    }
+
+    public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
+        List<Request> deployModuleRequests = new ArrayList<>();
+        for (Dependency dependency :createDeployList(activeConfiguration, classifier)) {
+            deployModuleRequests.add(new DeployRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4));
+        }
+        return deployModuleRequests;
+    }
+
+    private List<Dependency> createDeployList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
+
+        List<Dependency> deployModuleDependencies = new ArrayList<>();
 
         List<Dependency> dependencies = project.getDependencies();
 
@@ -60,10 +77,10 @@ public class DeployUtils {
             }
 
             if (classifier.equals(dependency.getClassifier()) && !excluded(activeConfiguration, dependency) || inScope(activeConfiguration.isTestScope(), dependency, classifier)) {
-                deployModuleRequests.add(new DeployRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4));
+                deployModuleDependencies.add(dependency);
             }
         }
-        return deployModuleRequests;
+        return deployModuleDependencies;
     }
 
     private boolean excluded(DeployConfiguration activeConfiguration, Dependency dependency) {

@@ -12,6 +12,8 @@ public class DeployConfiguration {
     private List<String> hosts;
     private String target;
 
+    private String siteBasePath;
+
     private List<Exclusion> exclusions;
 
     private boolean deploySnapshots = true;
@@ -39,5 +41,9 @@ public class DeployConfiguration {
 
     public String getTarget() {
         return target;
+    }
+
+    public String getSiteBasePath() {
+        return siteBasePath;
     }
 }
