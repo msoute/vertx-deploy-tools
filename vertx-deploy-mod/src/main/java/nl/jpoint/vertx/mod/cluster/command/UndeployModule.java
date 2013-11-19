@@ -31,10 +31,10 @@ public class UndeployModule implements Command {
             LOG.info("[{} - {}]: Stopping module {}", LogConstants.DEPLOY_REQUEST, request.getId(),file);
 
             try {
-                killProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "stop", request.getModuleId()});
+                killProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "stop", file});
                 killProcess.waitFor();
             } catch (IOException | InterruptedException e) {
-                LOG.error("[{} - {}]: Failed to initialize module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
+                LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
                 return null;
             }
 
