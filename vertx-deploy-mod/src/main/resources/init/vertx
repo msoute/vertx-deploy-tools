@@ -61,8 +61,6 @@ start_module () {
 			exit 3
 		fi
 	fi
-	echo $DAEMON
-	echo $DAEMON_OPTS
         start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $DAEMON_OPTS || true
 }
 
@@ -83,7 +81,7 @@ stop_module () {
 }
 
 bootstrap_container () {
-        DEPLOY_MOD="nl.jpoint.vertx~vertx-deploy-mod~1.0.0-SNAPSHOT"
+        DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
         PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
 	if [ -f $PIDFILE ]; then
 	        stop_module $PIDFILE
@@ -119,3 +117,5 @@ case "$1" in
 esac
 
 exit 0
+
+#DONE

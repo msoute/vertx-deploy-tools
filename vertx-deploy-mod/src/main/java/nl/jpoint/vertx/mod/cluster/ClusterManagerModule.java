@@ -21,16 +21,13 @@ public class ClusterManagerModule extends Verticle {
     @Override
     public void start() {
 
-        DeployModuleService deployService = new DeployModuleService(getVertx());
+        DeployModuleService deployService = new DeployModuleService(getVertx(), container.config());
         DeploySiteService deploySiteService = new DeploySiteService(getVertx(), container.config());
 
-
         HttpServer httpServer = getVertx().createHttpServer();
-
         RouteMatcher matcher = new RouteMatcher();
         matcher.post("/deploy/module*", new RestDeployHandler(deployService));
         matcher.post("/deploy/site*", new RestDeploySiteHandler(deploySiteService));
-
         matcher.noMatch(new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest event) {
@@ -42,7 +39,6 @@ public class ClusterManagerModule extends Verticle {
 
         httpServer.requestHandler(matcher);
         httpServer.listen(6789);
-
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
 
     }

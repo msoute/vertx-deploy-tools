@@ -21,24 +21,14 @@ import java.io.File;
 
 public class DeployModuleService implements DeployService {
     private static final Logger LOG = LoggerFactory.getLogger(DeployModuleService.class);
-    private static final String MODS_DIR_PROP_NAME = "vertx.mods";
-    private static final String LOCAL_MODS_DIR = "mods";
     private final Vertx vertx;
     private final PlatformManager platformManager;
     private final File modRoot;
 
-    public DeployModuleService(final Vertx vertx) {
+    public DeployModuleService(final Vertx vertx, JsonObject config) {
         this.vertx = vertx;
         platformManager = PlatformLocator.factory.createPlatformManager();
-
-        String modDir = System.getProperty(MODS_DIR_PROP_NAME);
-        if (modDir != null && !modDir.trim().equals("")) {
-            modRoot = new File(modDir);
-        } else {
-            // Default to local module directory
-            modRoot = new File(LOCAL_MODS_DIR);
-        }
-
+        modRoot = new File(config.getString("mod.root"));
     }
 
     public void deploy(final ModuleRequest deployRequest, final HttpServerRequest request) {
@@ -81,7 +71,7 @@ public class DeployModuleService implements DeployService {
             return;
         }
 
-        LOG.info("[{} - {}] : Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
+        LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
 
         if (!deployRequest.isAsync()) {
             respondOk(request);

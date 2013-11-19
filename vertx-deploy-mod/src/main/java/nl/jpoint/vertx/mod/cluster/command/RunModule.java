@@ -22,7 +22,7 @@ public class RunModule implements Command {
 
     @Override
     public JsonObject execute(final ModuleRequest request) {
-        LOG.info("[{} - {}] : Running module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        LOG.info("[{} - {}]: Running module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
         boolean success = false;
 
         try {
@@ -37,14 +37,14 @@ public class RunModule implements Command {
             BufferedReader output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
             String outputLine;
             while ((outputLine = output.readLine()) != null) {
-                LOG.info("[{} - {}] : {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
+                LOG.info("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
             }
 
             if (exitValue != 0) {
                 BufferedReader errorOut = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()));
                 String errorLine;
                 while ((errorLine = errorOut.readLine()) != null) {
-                    LOG.error("[{} - {}] : {}", LogConstants.DEPLOY_REQUEST, request.getId(), errorLine);
+                    LOG.error("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), errorLine);
                 }
             }
         } catch (IOException | InterruptedException e) {
