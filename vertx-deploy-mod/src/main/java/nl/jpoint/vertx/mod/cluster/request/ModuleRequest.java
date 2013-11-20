@@ -5,15 +5,20 @@ import java.util.UUID;
 public class ModuleRequest {
 
     private final UUID id = UUID.randomUUID();
-
     private final String groupId;
     private final String artifactId;
     private final String version;
+    private final String classifier;
 
-    protected ModuleRequest(final String groupId, final String artifactId, final String version) {
+    protected ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
+        this.classifier = classifier;
+    }
+
+    protected ModuleRequest(final String groupId, final String artifactId, final String version) {
+        this(groupId, artifactId, version, null);
     }
 
     public String getGroupId() {
@@ -48,7 +53,13 @@ public class ModuleRequest {
                 .append("/")
                 .append(getVersion())
                 .append("/")
-                .append(getArtifactId()).append("-").append(getVersion()).append(".zip");
+                .append(getArtifactId()).append("-")
+                .append(getVersion());
+        if (classifier != null && !classifier.isEmpty()) {
+            builder.append("-")
+                    .append(classifier);
+        }
+        builder.append(".zip");
         return builder.toString();
     }
 
@@ -60,7 +71,12 @@ public class ModuleRequest {
                 .append("/")
                 .append(getVersion())
                 .append("/")
-                .append(getArtifactId()).append("-").append(getVersion().replace("SNAPSHOT", buildId)).append(".zip");
+                .append(getArtifactId()).append("-").append(getVersion().replace("SNAPSHOT", buildId));
+        if (classifier != null && !classifier.isEmpty()) {
+            builder.append("-")
+                    .append(classifier);
+        }
+        builder.append(".zip");
         return builder.toString();
     }
 

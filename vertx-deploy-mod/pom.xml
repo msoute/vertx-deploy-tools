@@ -82,7 +82,7 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>nl.jpoint.vertx</groupId>
+                        <groupId>nl.jpoint.vertx-deploy-tools</groupId>
                         <artifactId>vertx-deploy-mod</artifactId>
                         <version>1.0.0-SNAPSHOT</version>
                     </dependency>

@@ -1,10 +1,10 @@
 package nl.jpoint.vertx.mod.cluster;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import nl.jpoint.vertx.mod.cluster.handler.RestDeployArtifactHandler;
 import nl.jpoint.vertx.mod.cluster.handler.RestDeployHandler;
-import nl.jpoint.vertx.mod.cluster.handler.RestDeploySiteHandler;
+import nl.jpoint.vertx.mod.cluster.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
-import nl.jpoint.vertx.mod.cluster.service.DeploySiteService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +22,12 @@ public class ClusterManagerModule extends Verticle {
     public void start() {
 
         DeployModuleService deployService = new DeployModuleService(getVertx(), container.config());
-        DeploySiteService deploySiteService = new DeploySiteService(getVertx(), container.config());
+        DeployArtifactService deploySiteService = new DeployArtifactService(getVertx(), container.config());
 
         HttpServer httpServer = getVertx().createHttpServer();
         RouteMatcher matcher = new RouteMatcher();
         matcher.post("/deploy/module*", new RestDeployHandler(deployService));
-        matcher.post("/deploy/site*", new RestDeploySiteHandler(deploySiteService));
+        matcher.post("/deploy/site*", new RestDeployArtifactHandler(deploySiteService));
         matcher.noMatch(new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest event) {

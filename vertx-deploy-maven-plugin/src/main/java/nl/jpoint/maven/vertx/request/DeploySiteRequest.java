@@ -6,8 +6,8 @@ public class DeploySiteRequest extends Request {
 
     private final String basePath;
 
-    public DeploySiteRequest(String group_id, String artifact_id, String version, String base_path) {
-        super(group_id, artifact_id, version);
+    public DeploySiteRequest(final String group_id, final String artifact_id, final String version, final String classifier, final String base_path) {
+        super(group_id, artifact_id, version, classifier);
         this.basePath = base_path;
     }
 

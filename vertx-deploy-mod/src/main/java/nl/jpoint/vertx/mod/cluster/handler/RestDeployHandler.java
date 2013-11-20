@@ -1,7 +1,7 @@
 package nl.jpoint.vertx.mod.cluster.handler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.service.DeployService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 }
 
                 JsonObject jsonRequest = new JsonObject(new String(postData));
-                DeployRequest deployRequest = DeployRequest.fromJsonMessage(jsonRequest);
+                DeployModuleRequest deployRequest = DeployModuleRequest.fromJsonMessage(jsonRequest);
                 LOG.info("[{} - {}]: Received deploy request {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), jsonRequest.encode());
                 service.deploy(deployRequest, request);
             }

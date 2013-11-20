@@ -10,11 +10,18 @@ public abstract class Request {
     protected String group_id;
     protected String artifact_id;
     protected String version;
+    protected String classifier;
 
-    public Request(String group_id, String artifact_id, String version) {
+    public Request(String group_id, String artifact_id, String version, String classifier) {
         this.group_id = group_id;
         this.artifact_id = artifact_id;
         this.version = version;
+        this.classifier = classifier;
+    }
+
+
+    public Request(String group_id, String artifact_id, String version) {
+      this(group_id,artifact_id,version, null);
     }
 
     public String getGroup_id() {

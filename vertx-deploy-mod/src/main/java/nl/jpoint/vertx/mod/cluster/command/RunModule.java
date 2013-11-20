@@ -1,7 +1,7 @@
 package nl.jpoint.vertx.mod.cluster.command;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
-import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class RunModule implements Command {
         boolean success = false;
 
         try {
-            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start", request.getModuleId(), String.valueOf(((DeployRequest)request).getInstances())});
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start", request.getModuleId(), String.valueOf(((DeployModuleRequest)request).getInstances())});
             runProcess.waitFor();
 
             int exitValue = runProcess.exitValue();
