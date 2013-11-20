@@ -22,7 +22,6 @@ PIDDIR=/var/run/vertx
 PIDFILE=$PIDDIR/$VERTICLE.pid
 
 set -e
-export VERTX_MODS=$VERTX_HOME/mods
 
 . /lib/lsb/init-functions
 if [ ! -d "$PIDDIR" ]; then
@@ -86,9 +85,9 @@ bootstrap_container () {
 	if [ -f $PIDFILE ]; then
 	        stop_module $PIDFILE
 	fi
-        rm -rf  /opt/vert.x/mods/nl.jpoint.vertx~vertx-deploy-mod~1.0.0-SNAPSHOT/
-        $DAEMON install $DEPLOY_MOD
-        BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf $VERTX_HOME/mods/$DEPLOY_MOD/config.json"
+        rm -rf  /opt/vert.x/sys-mods/$DEPLOY_MOD
+       $DAEMON install $DEPLOY_MOD
+        BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf $VERTX_HOME/sys-mods/$DEPLOY_MOD/config.json"
         start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
@@ -117,5 +116,3 @@ case "$1" in
 esac
 
 exit 0
-
-#DONE
