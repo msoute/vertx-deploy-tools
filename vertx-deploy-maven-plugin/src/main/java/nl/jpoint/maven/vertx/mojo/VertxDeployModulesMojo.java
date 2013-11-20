@@ -9,7 +9,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.util.List;
 
-@Mojo(name = "deploy")
+@Mojo(name = "deploy-module")
 public class VertxDeployModulesMojo extends AbstractDeployMojo {
 
     private static final String MODULE_CLASSIFIER = "mod";
