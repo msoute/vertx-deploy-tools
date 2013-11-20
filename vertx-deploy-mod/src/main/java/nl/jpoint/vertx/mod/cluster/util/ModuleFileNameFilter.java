@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 public class ModuleFileNameFilter implements FilenameFilter {
-
     private final ModuleRequest deployRequest;
 
     public ModuleFileNameFilter(final ModuleRequest moduleRequest) {

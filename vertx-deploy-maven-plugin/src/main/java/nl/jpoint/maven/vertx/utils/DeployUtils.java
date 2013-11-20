@@ -51,7 +51,7 @@ public class DeployUtils {
     public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency :createDeployList(activeConfiguration, siteClassifier)) {
-            deployModuleRequests.add(new DeploySiteRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), activeConfiguration.getSiteBasePath()));
+            deployModuleRequests.add(new DeploySiteRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), activeConfiguration.getContext()));
         }
         return deployModuleRequests;
     }

@@ -12,13 +12,12 @@ public class DeployConfiguration {
     private List<String> hosts;
     private String target;
 
-    private String siteBasePath;
+    private String context;
 
     private List<Exclusion> exclusions;
 
     private boolean deploySnapshots = true;
     private boolean testScope = false;
-    private boolean cleanAll = false;
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -32,9 +31,6 @@ public class DeployConfiguration {
         return hosts;
     }
 
-    public boolean isCleanAll() {
-        return cleanAll;
-    }
     public boolean isTestScope() {
         return testScope;
     }
@@ -43,7 +39,7 @@ public class DeployConfiguration {
         return target;
     }
 
-    public String getSiteBasePath() {
-        return siteBasePath;
+    public String getContext() {
+        return context;
     }
 }

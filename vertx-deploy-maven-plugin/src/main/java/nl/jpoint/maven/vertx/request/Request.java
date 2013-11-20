@@ -10,6 +10,7 @@ public abstract class Request {
     protected String group_id;
     protected String artifact_id;
     protected String version;
+
     protected String classifier;
 
     public Request(String group_id, String artifact_id, String version, String classifier) {
@@ -19,10 +20,10 @@ public abstract class Request {
         this.classifier = classifier;
     }
 
-
     public Request(String group_id, String artifact_id, String version) {
       this(group_id,artifact_id,version, null);
     }
+
 
     public String getGroup_id() {
         return group_id;
@@ -34,6 +35,10 @@ public abstract class Request {
 
     public String getVersion() {
         return version;
+    }
+
+    public String getClassifier() {
+        return classifier;
     }
 
     public String toJson() {
