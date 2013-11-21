@@ -39,8 +39,10 @@ public class RequestExecutor {
                     post.setEntity(entity);
 
                     try (CloseableHttpResponse response = httpClient.execute(post)) {
-                        log.info("DeployModuleCommand : Post response status " + response.getStatusLine().getStatusCode());
+                        log.info("DeployModuleCommand : Post response status code -> " + response.getStatusLine().getStatusCode());
+
                         if (response.getStatusLine().getStatusCode() != 200) {
+                            log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
                             throw new MojoExecutionException("Error deploying module. ");
                         }
                     } catch (IOException e) {
