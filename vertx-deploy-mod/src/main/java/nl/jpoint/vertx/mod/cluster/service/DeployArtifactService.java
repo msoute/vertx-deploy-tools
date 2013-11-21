@@ -33,14 +33,12 @@ public class DeployArtifactService implements DeployService {
         ExtractArtifact extractSite = new ExtractArtifact(vertx, config);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
+        if (!extractResult.getBoolean("success")) {
+            httpRequest.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+            httpRequest.response().end();
+            return;
+        }
+
         httpRequest.response().end();
-
     }
-
-    public void extractSite() {
-
-
-    }
-
-
 }
