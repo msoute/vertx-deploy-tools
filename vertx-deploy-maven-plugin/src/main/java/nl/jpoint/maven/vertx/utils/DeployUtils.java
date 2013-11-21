@@ -12,6 +12,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class DeployUtils {
@@ -70,13 +71,25 @@ public class DeployUtils {
 
         List<Dependency> dependencies = project.getDependencies();
 
+        Iterator<Dependency> it = dependencies.iterator();
+
+        if (!activeConfiguration.isTestScope()) {
+            while(it.hasNext()) {
+                Dependency dependency = it.next();
+                if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
+                    log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
+                    it.remove();
+                }
+            }
+        }
+
         for (Dependency dependency : dependencies) {
 
             if (dependency.getVersion().endsWith("-SNAPSHOT") && !activeConfiguration.isDeploySnapshots()) {
                 throw new MojoFailureException("Target does not allow for snapshots to be deployed");
             }
 
-            if (classifier.equals(dependency.getClassifier()) && !excluded(activeConfiguration, dependency) || inScope(activeConfiguration.isTestScope(), dependency, classifier)) {
+            if (classifier.equals(dependency.getClassifier()) && !excluded(activeConfiguration, dependency)) {
                 deployModuleDependencies.add(dependency);
             }
         }
@@ -94,15 +107,6 @@ public class DeployUtils {
                 return true;
             }
         }
-        return false;
-    }
-
-    private boolean inScope(boolean useTestScope, Dependency dependency, String classifier) {
-        if (useTestScope && classifier.equals(dependency.getClassifier()) && Artifact.SCOPE_TEST.equals(dependency.getScope())) {
-            log.info("Including artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
-            return true;
-        }
-        log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
         return false;
     }
 }
