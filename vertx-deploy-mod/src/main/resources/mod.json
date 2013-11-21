@@ -1,5 +1,5 @@
 {
     "main": "nl.jpoint.vertx.mod.cluster.ClusterManagerModule",
-    "system": true
-
+    "system": true,
+    "worker": true
 }
