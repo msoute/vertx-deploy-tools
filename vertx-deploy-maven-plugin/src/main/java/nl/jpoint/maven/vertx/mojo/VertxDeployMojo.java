@@ -1,5 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import nl.jpoint.maven.vertx.utils.RequestExecutor;
@@ -9,21 +10,19 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.util.List;
 
-@Mojo(name = "deploy-site")
-public class VertxDeploySiteMojo extends AbstractDeployMojo {
-
-    private static final String SITE_CLASSIFIER = "site";
-
+@Mojo(name = "deploy")
+public class VertxDeployMojo extends AbstractDeployMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        setActiveDeployConfig();
+
         final DeployUtils utils = new DeployUtils(getLog(), project);
         final RequestExecutor executor = new RequestExecutor(getLog());
 
-        activeConfiguration = utils.setActiveDeployConfig(deployConfigurations, activeTarget);
+        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
+        final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
 
-        final List<Request> deployModuleRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
-
-        executor.executeDeployRequests(activeConfiguration, deployModuleRequests);
+        DeployRequest deployRequest = new DeployRequest(deployModuleRequests, deployArtifactRequests);
+        executor.executeDeployRequests(activeConfiguration, deployRequest);
     }
-
 }

@@ -1,22 +1,43 @@
 package nl.jpoint.maven.vertx.request;
 
-public class DeployRequest extends Request {
-    private static final String ENDPOINT = "/deploy/module";
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
-    private int instances;
+import java.util.ArrayList;
+import java.util.List;
 
-    public DeployRequest(String group_id, String artifact_id, String version, int instances) {
-        super(group_id, artifact_id, version);
-        this.instances = instances;
+public class DeployRequest {
+
+    private static ObjectWriter writer = new ObjectMapper().writer();
+    private static final String ENDPOINT = "/deploy/deploy";
+
+    private final List<Request> modules;
+    private final List<Request> artifacts;
+
+    public DeployRequest(List<Request> modules, List<Request> artifacts) {
+        this.modules = modules;
+        this.artifacts = artifacts;
     }
 
-    public int getInstances() {
-        return instances;
+    public List<Request> getModules() {
+        return new ArrayList<>(modules);
     }
 
-    @Override
+    public List<Request> getArtifacts() {
+        return new ArrayList<>(artifacts);
+    }
+
+    public String toJson() {
+        try {
+            return writer.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
     public String getEndpoint() {
         return ENDPOINT;
     }
 }
-

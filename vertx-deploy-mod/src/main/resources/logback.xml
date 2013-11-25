@@ -19,7 +19,7 @@
     <logger name="org.hibernate" level="off"/>
     <logger name="org.sonatype.aether" level="off" />
 
-    <root level="INFO">
+    <root level="STDOUT">
         <appender-ref ref="FILE"/>
     </root>
 </configuration>

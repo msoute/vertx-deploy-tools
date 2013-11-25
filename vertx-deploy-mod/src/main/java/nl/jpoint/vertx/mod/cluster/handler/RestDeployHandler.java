@@ -1,7 +1,11 @@
 package nl.jpoint.vertx.mod.cluster.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.service.DeployService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -9,16 +13,21 @@ import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+
+import java.io.IOException;
 
 public class RestDeployHandler implements Handler<HttpServerRequest> {
 
-    private Logger LOG = LoggerFactory.getLogger(RestDeployHandler.class);
+    private final ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
+    private final DeployService moduleDeployService;
+    private final DeployService artifactDeployService;
 
-    private final DeployService service;
+    private Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployHandler(final DeployService service) {
-        this.service = service;
+    public RestDeployHandler(final DeployService moduleDeployService, final DeployService artifactDeployService) {
+
+        this.moduleDeployService = moduleDeployService;
+        this.artifactDeployService = artifactDeployService;
     }
 
     @Override
@@ -26,22 +35,58 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
         request.bodyHandler(new Handler<Buffer>() {
             @Override
             public void handle(Buffer event) {
-                byte[] postData = event.getBytes();
 
-                if (postData == null || postData.length == 0) {
+                DeployRequest deployRequest = null;
+
+                if (event.getBytes() == null || event.getBytes().length == 0) {
                     LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
-                    request.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-                    request.response().end();
+                    respondFailed(request);
+                    return;
+                }
+                try {
+                    deployRequest = reader.readValue(event.getBytes());
+                } catch (IOException e) {
+                    LOG.error("{}: Error while reading postdata -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
+                    respondFailed(request);
                     return;
                 }
 
-                JsonObject jsonRequest = new JsonObject(new String(postData));
-                DeployModuleRequest deployRequest = DeployModuleRequest.fromJsonMessage(jsonRequest);
-                LOG.info("[{} - {}]: Received deploy request {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), jsonRequest.encode());
-                service.deploy(deployRequest, request);
+                LOG.info("[{} - {}]: Received deploy request with {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModules().size(), deployRequest.getArtifacts().size());
+
+                boolean deployOk = false;
+
+                for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
+                    deployOk = moduleDeployService.deploy(moduleRequest);
+
+                    if (!deployOk) {
+                        respondFailed(request);
+                        return;
+                    }
+                }
+
+                if (deployOk) {
+                    for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
+                        deployOk = artifactDeployService.deploy(artifactRequest);
+
+                        if (!deployOk) {
+                            respondFailed(request);
+                            return;
+                        }
+                    }
+                }
+
+                respondOk(request);
             }
         });
     }
 
+    private void respondOk(HttpServerRequest request) {
+        request.response().setStatusCode(HttpResponseStatus.OK.code());
+        request.response().end();
+    }
 
+    private void respondFailed(HttpServerRequest request) {
+        request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+        request.response().end();
+    }
 }

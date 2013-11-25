@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.utils;
 
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
+import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -12,7 +13,6 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class RequestExecutor {
 
@@ -23,36 +23,53 @@ public class RequestExecutor {
         this.log = log;
     }
 
-    public void executeDeployRequests(DeployConfiguration activeConfiguration, List<Request> requestList) throws MojoExecutionException {
+    private void executeRequest(HttpPost postRequest) throws MojoExecutionException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
+                log.info("DeployModuleCommand : Post response status code -> " + response.getStatusLine().getStatusCode());
 
-        for (String host : activeConfiguration.getHosts()) {
-
-            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-
-                for (Request request : requestList) {
-                    HttpPost post = new HttpPost(host + request.getEndpoint());
-
-                    ByteArrayInputStream bos = new ByteArrayInputStream(request.toJson().getBytes());
-                    BasicHttpEntity entity = new BasicHttpEntity();
-                    entity.setContent(bos);
-                    entity.setContentLength(request.toJson().getBytes().length);
-                    post.setEntity(entity);
-
-                    try (CloseableHttpResponse response = httpClient.execute(post)) {
-                        log.info("DeployModuleCommand : Post response status code -> " + response.getStatusLine().getStatusCode());
-
-                        if (response.getStatusLine().getStatusCode() != 200) {
-                            log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
-                            throw new MojoExecutionException("Error deploying module. ");
-                        }
-                    } catch (IOException e) {
-                        log.error("testDeployModuleCommand ", e);
-                    }
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
+                    throw new MojoExecutionException("Error deploying module. ");
                 }
             } catch (IOException e) {
                 log.error("testDeployModuleCommand ", e);
                 throw new MojoExecutionException("Error deploying module.", e);
             }
+
+        } catch (IOException e) {
+            log.error("testDeployModuleCommand ", e);
+            throw new MojoExecutionException("Error deploying module.", e);
+        }
+    }
+
+    public void executeSingleDeployRequest(DeployConfiguration activeConfiguration, Request request) throws MojoExecutionException {
+        for (String host : activeConfiguration.getHosts()) {
+            HttpPost post = new HttpPost(host + request.getEndpoint());
+
+            ByteArrayInputStream bos = new ByteArrayInputStream(request.toJson().getBytes());
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContent(bos);
+            entity.setContentLength(request.toJson().getBytes().length);
+            post.setEntity(entity);
+
+            this.executeRequest(post);
+        }
+    }
+
+    public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest) throws MojoExecutionException {
+
+        for (String host : activeConfiguration.getHosts()) {
+
+                HttpPost post = new HttpPost(host + deployRequest.getEndpoint());
+
+                ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson().getBytes());
+                BasicHttpEntity entity = new BasicHttpEntity();
+                entity.setContent(bos);
+                entity.setContentLength(deployRequest.toJson().getBytes().length);
+                post.setEntity(entity);
+                log.info(deployRequest.toJson());
+                this.executeRequest(post);
 
         }
     }

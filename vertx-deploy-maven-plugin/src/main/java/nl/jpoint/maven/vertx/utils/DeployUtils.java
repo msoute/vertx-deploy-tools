@@ -1,8 +1,8 @@
 package nl.jpoint.maven.vertx.utils;
 
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
-import nl.jpoint.maven.vertx.request.DeployRequest;
-import nl.jpoint.maven.vertx.request.DeploySiteRequest;
+import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
+import nl.jpoint.maven.vertx.request.DeployModuleRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -26,33 +26,10 @@ public class DeployUtils {
         this.project = project;
     }
 
-    public DeployConfiguration setActiveDeployConfig(List<DeployConfiguration> configurations, String target) throws MojoFailureException {
-        DeployConfiguration activeConfiguration = null;
-        if (configurations.size() == 1) {
-            log.info("Found exactly one deploy config to activate.");
-            activeConfiguration = configurations.get(0);
-        } else {
-            for (DeployConfiguration config : configurations) {
-                if (target.equals(config.getTarget())) {
-                    activeConfiguration = config;
-                    break;
-                }
-            }
-        }
-
-        if (activeConfiguration == null) {
-            log.error("No active deployConfig !");
-            throw new MojoFailureException("No active deployConfig !, config should contain at least one config with scope default");
-        }
-
-        log.info("Deploy config with target " + activeConfiguration.getTarget() + " activated");
-        return activeConfiguration;
-    }
-
     public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency :createDeployList(activeConfiguration, siteClassifier)) {
-            deployModuleRequests.add(new DeploySiteRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), activeConfiguration.getContext()));
+            deployModuleRequests.add(new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), activeConfiguration.getContext()));
         }
         return deployModuleRequests;
     }
@@ -60,7 +37,7 @@ public class DeployUtils {
     public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency :createDeployList(activeConfiguration, classifier)) {
-            deployModuleRequests.add(new DeployRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4));
+            deployModuleRequests.add(new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4));
         }
         return deployModuleRequests;
     }

@@ -1,6 +1,5 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.command.InstallModule;
 import nl.jpoint.vertx.mod.cluster.command.RunModule;
@@ -12,7 +11,6 @@ import nl.jpoint.vertx.mod.cluster.util.ModuleVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.PlatformLocator;
 import org.vertx.java.platform.PlatformManager;
@@ -31,19 +29,18 @@ public class DeployModuleService implements DeployService {
         modRoot = new File(config.getString("mod.root"));
     }
 
-    public void deploy(final ModuleRequest deployRequest, final HttpServerRequest request) {
+    public boolean deploy(final ModuleRequest deployRequest) {
 
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
         // If the module with the same version is already installed there is no need to take any further action.
         if (moduleInstalled.equals(ModuleVersion.INSTALLED)) {
-            respondOk(request);
-            return;
+            return true;
         }
 
         // Respond OK if the deployment is async.
         if (deployRequest.isAsync()) {
-            respondOk(request);
+            return true;
         }
 
         // If an older version (or SNAPSHOT) is installed undeploy it first.
@@ -58,8 +55,7 @@ public class DeployModuleService implements DeployService {
 
         // Respond failed if install did not complete.
         if (!result.getBoolean(Constants.STATUS_SUCCESS)) {
-            this.respondFailed(request);
-            return;
+            return false;
         }
 
         // Run the newly installed module.
@@ -67,27 +63,14 @@ public class DeployModuleService implements DeployService {
         result = runModCommand.execute(deployRequest);
 
         if (!result.getBoolean(Constants.STATUS_SUCCESS) && !deployRequest.isAsync()) {
-            this.respondFailed(request);
-            return;
+            return false;
         }
-
         LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
-
-        if (!deployRequest.isAsync()) {
-            respondOk(request);
-        }
+        return true;
 
     }
 
-    private void respondOk(HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.OK.code());
-        request.response().end();
-    }
 
-    private void respondFailed(HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-        request.response().end();
-    }
 
     private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {
 
