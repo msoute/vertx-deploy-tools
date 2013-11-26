@@ -61,7 +61,7 @@ public class DeployModuleService implements DeployService {
         }
 
         // Install the new module.
-        InstallModule installCommand = new InstallModule(platformManager, vertx.eventBus());
+        InstallModule installCommand = new InstallModule(platformManager);
         JsonObject result = installCommand.execute(deployRequest);
 
         // Respond failed if install did not complete.

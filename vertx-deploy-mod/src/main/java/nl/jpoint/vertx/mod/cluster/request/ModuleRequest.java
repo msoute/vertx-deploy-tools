@@ -12,14 +12,14 @@ public class ModuleRequest {
 
     private String snapshotVersion = null;
 
-    protected ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier) {
+    ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.classifier = classifier;
     }
 
-    protected ModuleRequest(final String groupId, final String artifactId, final String version) {
+    ModuleRequest(final String groupId, final String artifactId, final String version) {
         this(groupId, artifactId, version, null);
     }
 
@@ -86,15 +86,8 @@ public class ModuleRequest {
         return version.endsWith("-SNAPSHOT");
     }
     public String getMetadataLocation() {
-        StringBuilder builder = new StringBuilder()
-                .append(getGroupId().replaceAll("\\.", "/"))
-                .append("/")
-                .append(getArtifactId())
-                .append("/")
-                .append(getVersion())
-                .append("/")
-                .append("maven-metadata.xml");
-        return builder.toString();
+        return getGroupId().replaceAll("\\.", "/") + "/" + getArtifactId() + "/" + getVersion() + "/" + "maven-metadata.xml";
+
     }
 
 

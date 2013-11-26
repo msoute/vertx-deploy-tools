@@ -14,14 +14,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class ArtifactContextUtil {
-    private static XPath xPath = XPathFactory.newInstance().newXPath();
+    private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String BASE_LOCATION = "/artifact/baselocation/text()";
 
     public static String getBaseLocation(byte[] metadata ) {
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = null;
+        DocumentBuilder builder;
         try {
             builder = builderFactory.newDocumentBuilder();
             Document document = builder.parse(

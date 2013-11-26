@@ -8,23 +8,23 @@ import org.apache.maven.project.MavenProject;
 
 import java.util.List;
 
-public abstract class AbstractDeployMojo extends AbstractMojo {
+abstract class AbstractDeployMojo extends AbstractMojo {
 
-    protected static final String SITE_CLASSIFIER = "site";
-    protected static final String MODULE_CLASSIFIER = "mod";
+    static final String SITE_CLASSIFIER = "site";
+    static final String MODULE_CLASSIFIER = "mod";
 
-    protected DeployConfiguration activeConfiguration;
+    DeployConfiguration activeConfiguration;
     @Component
-    protected MavenProject project;
+    MavenProject project;
     @Parameter
-    protected List<DeployConfiguration> deployConfigurations;
+    private List<DeployConfiguration> deployConfigurations;
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
-    protected String activeTarget;
+    private String activeTarget;
     @Parameter(defaultValue = "false", property = "deploy.testScope")
     protected Boolean testScope;
 
 
-    protected DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
+    DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {
             getLog().info("Found exactly one deploy config to activate.");
             activeConfiguration = deployConfigurations.get(0);

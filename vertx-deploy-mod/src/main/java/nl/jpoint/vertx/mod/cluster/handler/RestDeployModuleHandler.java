@@ -16,7 +16,7 @@ import java.io.IOException;
 public class RestDeployModuleHandler implements Handler<HttpServerRequest> {
 
     private final DeployService service;
-    private Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
+    private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
     public RestDeployModuleHandler(final DeployService service) {
         this.service = service;

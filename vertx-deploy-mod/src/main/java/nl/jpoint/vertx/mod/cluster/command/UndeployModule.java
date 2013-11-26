@@ -25,7 +25,7 @@ public class UndeployModule implements Command {
 
     @Override
     public JsonObject execute(ModuleRequest request) {
-        Process killProcess = null;
+        Process killProcess;
 
         for (String file : modRoot.list(new ModuleFileNameFilter(request))) {
             LOG.info("[{} - {}]: Stopping module {}", LogConstants.DEPLOY_REQUEST, request.getId(),file);

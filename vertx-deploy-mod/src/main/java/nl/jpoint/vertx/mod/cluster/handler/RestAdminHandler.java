@@ -4,7 +4,7 @@ import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
-public class RestAdminHandler implements Handler<HttpServerRequest> {
+class RestAdminHandler implements Handler<HttpServerRequest> {
     private final DeployModuleService clusterDeployManager;
 
     public RestAdminHandler(final DeployModuleService manager) {

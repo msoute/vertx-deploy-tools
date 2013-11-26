@@ -7,7 +7,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 @Mojo(name = "deploy-module")
-public class VertxDeployModuleMojo extends AbstractDeployMojo {
+class VertxDeployModuleMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

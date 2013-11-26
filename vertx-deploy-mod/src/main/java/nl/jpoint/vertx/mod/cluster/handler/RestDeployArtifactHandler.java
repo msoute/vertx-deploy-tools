@@ -16,7 +16,7 @@ import java.io.IOException;
 public class RestDeployArtifactHandler implements Handler<HttpServerRequest> {
 
     private final DeployService service;
-    private Logger LOG = LoggerFactory.getLogger(RestDeployArtifactHandler.class);
+    private final Logger LOG = LoggerFactory.getLogger(RestDeployArtifactHandler.class);
 
     public RestDeployArtifactHandler(final DeployService service) {
         this.service = service;

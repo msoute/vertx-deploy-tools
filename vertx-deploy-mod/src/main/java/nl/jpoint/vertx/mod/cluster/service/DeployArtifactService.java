@@ -41,9 +41,6 @@ public class DeployArtifactService implements DeployService {
         ExtractArtifact extractSite = new ExtractArtifact(vertx, config);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
-        if (!extractResult.getBoolean("success")) {
-            return false;
-        }
-        return true;
+        return extractResult.getBoolean("success");
     }
 }

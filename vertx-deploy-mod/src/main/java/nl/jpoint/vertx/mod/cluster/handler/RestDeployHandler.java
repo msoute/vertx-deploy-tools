@@ -22,7 +22,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
     private final DeployService moduleDeployService;
     private final DeployService artifactDeployService;
 
-    private Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
+    private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
     public RestDeployHandler(final DeployService moduleDeployService, final DeployService artifactDeployService) {
 
@@ -36,7 +36,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
             @Override
             public void handle(Buffer event) {
 
-                DeployRequest deployRequest = null;
+                DeployRequest deployRequest;
 
                 if (event.getBytes() == null || event.getBytes().length == 0) {
                     LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);

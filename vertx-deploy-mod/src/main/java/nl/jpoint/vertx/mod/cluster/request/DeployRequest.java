@@ -11,8 +11,8 @@ import java.util.UUID;
 public class DeployRequest {
     private final UUID id = UUID.randomUUID();
 
-    private List<DeployModuleRequest> modules;
-    private List<DeployArtifactRequest> artifacts;
+    private final List<DeployModuleRequest> modules;
+    private final List<DeployArtifactRequest> artifacts;
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List< DeployModuleRequest > modules,

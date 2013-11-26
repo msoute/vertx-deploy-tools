@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployArtifactRequest extends ModuleRequest {
 
-    private String context;
+    private final String context;
 
     @JsonCreator
     private DeployArtifactRequest(@JsonProperty("group_id") final String groupId,@JsonProperty("artifact_id") final String artifactId,

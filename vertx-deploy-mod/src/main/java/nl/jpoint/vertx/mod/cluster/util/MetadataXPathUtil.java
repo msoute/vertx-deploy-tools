@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class MetadataXPathUtil {
 
-    private static XPath xPath = XPathFactory.newInstance().newXPath();
+    private static final XPath xPath = XPathFactory.newInstance().newXPath();
     private static final String TIMESTAMP = "/metadata/versioning/snapshot/timestamp/text()";
     private static final String BUILD_NUMBER = "/metadata/versioning/snapshot/buildNumber/text()";
 
@@ -25,7 +25,7 @@ public class MetadataXPathUtil {
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
 
-        DocumentBuilder builder = null;
+        DocumentBuilder builder;
 
         try {
             builder = builderFactory.newDocumentBuilder();

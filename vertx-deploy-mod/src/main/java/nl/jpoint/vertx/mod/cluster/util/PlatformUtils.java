@@ -19,7 +19,7 @@ public class PlatformUtils {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(reposFile))));
 
-            String line = null;
+            String line;
             remoteRepositories = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("maven:")) {

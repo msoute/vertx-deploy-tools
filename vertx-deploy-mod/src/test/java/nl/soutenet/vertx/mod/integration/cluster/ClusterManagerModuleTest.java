@@ -85,34 +85,31 @@ public class ClusterManagerModuleTest {
 
 
     private JsonObject createDeployCommand() {
-        JsonObject object = new JsonObject()
+        return new JsonObject()
                 .putString("group_id", "nl.jpoint.vertx-deploy-tools")
                 .putString("artifact_id", "vertx-deploy-mod")
                 .putString("version", "1.0.0-SNAPSHOT")
                 .putNumber("instances", 1);
-        return object;
     }
 
     private JsonObject createDeploySiteCommand() {
-        JsonObject object = new JsonObject()
+
+        return new JsonObject()
                 .putString("group_id", "nl.malmberg.vooruit.frontend")
                 .putString("artifact_id", "vooruit")
                 .putString("version", "1.0.0-SNAPSHOT")
                 .putString("classifier", "site")
                 .putString("context", "/var/www/vooruit");
-
-        return object;
     }
 
     private JsonObject createDeploySiteCommand2() {
-        JsonObject object = new JsonObject()
+
+        return new JsonObject()
                 .putString("group_id", "nl.malmberg.vooruit")
                 .putString("artifact_id", "static")
                 .putString("version", "1.2.0-SNAPSHOT")
                 .putString("classifier", "site")
                 .putString("context", "/var/www/vooruit-assets");
-
-        return object;
     }
 
 

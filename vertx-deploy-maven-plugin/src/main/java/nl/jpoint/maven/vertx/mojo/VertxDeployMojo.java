@@ -11,7 +11,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import java.util.List;
 
 @Mojo(name = "deploy")
-public class VertxDeployMojo extends AbstractDeployMojo {
+class VertxDeployMojo extends AbstractDeployMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         setActiveDeployConfig();

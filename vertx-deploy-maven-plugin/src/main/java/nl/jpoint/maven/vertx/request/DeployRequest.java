@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DeployRequest {
 
-    private static ObjectWriter writer = new ObjectMapper().writer();
+    private static final ObjectWriter writer = new ObjectMapper().writer();
     private static final String ENDPOINT = "/deploy/deploy";
 
     private final List<Request> modules;

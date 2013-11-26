@@ -19,7 +19,7 @@ public class ExtractArtifact implements Command {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractArtifact.class);
     private static final String ARTIFACT_CONTEXT = "artifact_context.xml";
     private final Vertx vertx;
-    private JsonObject config;
+    private final JsonObject config;
 
     public ExtractArtifact(Vertx vertx, JsonObject config) {
         this.vertx = vertx;

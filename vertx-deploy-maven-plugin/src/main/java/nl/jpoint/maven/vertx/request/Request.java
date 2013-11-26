@@ -5,22 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 public abstract class Request {
-    private static ObjectWriter writer = new ObjectMapper().writer();
+    private static final ObjectWriter writer = new ObjectMapper().writer();
 
-    protected String group_id;
-    protected String artifact_id;
-    protected String version;
+    private final String group_id;
+    private final String artifact_id;
+    private final String version;
 
-    protected String classifier;
+    private final String classifier;
 
-    public Request(String group_id, String artifact_id, String version, String classifier) {
+    Request(String group_id, String artifact_id, String version, String classifier) {
         this.group_id = group_id;
         this.artifact_id = artifact_id;
         this.version = version;
         this.classifier = classifier;
     }
 
-    public Request(String group_id, String artifact_id, String version) {
+    Request(String group_id, String artifact_id, String version) {
       this(group_id,artifact_id,version, null);
     }
 
