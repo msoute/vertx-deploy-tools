@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.PlatformLocator;
 import org.vertx.java.platform.PlatformManager;
 
@@ -21,12 +22,14 @@ public class DeployModuleService implements DeployService {
     private final JsonObject config;
     private final PlatformManager platformManager;
     private final File modRoot;
+    private final ConcurrentSharedMap<String, String> installedModules;
 
     public DeployModuleService(final Vertx vertx, JsonObject config) {
         this.vertx = vertx;
         this.config = config;
-        platformManager = PlatformLocator.factory.createPlatformManager();
-      modRoot = new File(config.getString("mod.root"));
+        this.platformManager = PlatformLocator.factory.createPlatformManager();
+        this.modRoot = new File(config.getString("mod.root"));
+        this.installedModules = this.vertx.sharedData().getMap("installed_modules");
     }
 
     public boolean deploy(final ModuleRequest deployRequest) {
@@ -73,6 +76,9 @@ public class DeployModuleService implements DeployService {
         if (!result.getBoolean(Constants.STATUS_SUCCESS) && !deployRequest.isAsync()) {
             return false;
         }
+
+        installedModules.put(deployRequest.getMavenArtifactId(),deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
+
         LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
         return true;
     }
@@ -88,6 +94,10 @@ public class DeployModuleService implements DeployService {
                 LOG.info("[{} - {}]: Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
                 return ModuleVersion.INSTALLED;
             } else {
+                if (deployRequest.getSnapshotVersion().equals(installedModules.get(deployRequest.getMavenArtifactId()))) {
+                    LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
+                    return ModuleVersion.INSTALLED;
+                }
                 LOG.info("[{} - {}]: Older version of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
                 return ModuleVersion.OLDER_VERSION;
             }
