@@ -15,7 +15,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.platform.Verticle;
 
-class ClusterManagerModule extends Verticle {
+public class ClusterManagerModule extends Verticle {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModule.class);
 
     @Override
