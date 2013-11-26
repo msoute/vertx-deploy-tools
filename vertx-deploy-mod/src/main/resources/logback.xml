@@ -7,7 +7,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>/var/log/edubase/deploy.log</file>
+        <file>/var/log/vertx/deploy.log</file>
         <append>true</append>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %-5level - %msg%n</pattern>
@@ -19,7 +19,7 @@
     <logger name="org.hibernate" level="off"/>
     <logger name="org.sonatype.aether" level="off" />
 
-    <root level="STDOUT">
+    <root level="INFO">
         <appender-ref ref="FILE"/>
     </root>
 </configuration>
