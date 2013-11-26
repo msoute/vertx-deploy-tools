@@ -23,6 +23,7 @@ public class VertxDeployMojo extends AbstractDeployMojo {
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
 
         DeployRequest deployRequest = new DeployRequest(deployModuleRequests, deployArtifactRequests);
+        getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
         executor.executeDeployRequests(activeConfiguration, deployRequest);
     }
 }

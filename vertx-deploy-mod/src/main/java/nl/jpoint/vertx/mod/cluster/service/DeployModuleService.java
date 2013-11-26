@@ -1,9 +1,7 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
-import nl.jpoint.vertx.mod.cluster.command.InstallModule;
-import nl.jpoint.vertx.mod.cluster.command.RunModule;
-import nl.jpoint.vertx.mod.cluster.command.UndeployModule;
+import nl.jpoint.vertx.mod.cluster.command.*;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
@@ -20,16 +18,26 @@ import java.io.File;
 public class DeployModuleService implements DeployService {
     private static final Logger LOG = LoggerFactory.getLogger(DeployModuleService.class);
     private final Vertx vertx;
+    private final JsonObject config;
     private final PlatformManager platformManager;
     private final File modRoot;
 
     public DeployModuleService(final Vertx vertx, JsonObject config) {
         this.vertx = vertx;
+        this.config = config;
         platformManager = PlatformLocator.factory.createPlatformManager();
-        modRoot = new File(config.getString("mod.root"));
+      modRoot = new File(config.getString("mod.root"));
     }
 
     public boolean deploy(final ModuleRequest deployRequest) {
+        if (deployRequest.isSnapshot()) {
+            Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);
+            JsonObject result = resolveVersion.execute(deployRequest);
+
+            if (result.getBoolean("success")) {
+                deployRequest.setSnapshotVersion(result.getString("version"));
+            }
+        }
 
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
@@ -67,10 +75,7 @@ public class DeployModuleService implements DeployService {
         }
         LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
         return true;
-
     }
-
-
 
     private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {
 

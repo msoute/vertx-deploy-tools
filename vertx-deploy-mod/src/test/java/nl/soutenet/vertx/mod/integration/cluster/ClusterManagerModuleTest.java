@@ -2,8 +2,6 @@ package nl.soutenet.vertx.mod.integration.cluster;
 
 
 import junit.framework.Assert;
-import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
-import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
@@ -23,7 +21,7 @@ public class ClusterManagerModuleTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModuleTest.class);
     private static final String POST_URI = "http://localhost:6789/deploy/module";
-    private static final String POST_URI_SITE = "http://localhost:6789/deploy/site";
+    private static final String POST_URI_SITE = "http://localhost:6789/deploy/artifact";
 
     @Test
     public void testInvalidDeployModuleCommand() {
@@ -84,17 +82,11 @@ public class ClusterManagerModuleTest {
 
     }
 
-    @Test
-    public void testArtifactId() {
-        JsonObject obj = createDeploySiteCommand();
-        ModuleRequest request = DeployArtifactRequest.fromJsonMessage(obj);
-        System.out.println(request.getRemoteLocation());
 
-    }
 
     private JsonObject createDeployCommand() {
         JsonObject object = new JsonObject()
-                .putString("group_id", "nl.jpoint.vertx")
+                .putString("group_id", "nl.jpoint.vertx-deploy-tools")
                 .putString("artifact_id", "vertx-deploy-mod")
                 .putString("version", "1.0.0-SNAPSHOT")
                 .putNumber("instances", 1);
@@ -105,7 +97,7 @@ public class ClusterManagerModuleTest {
         JsonObject object = new JsonObject()
                 .putString("group_id", "nl.malmberg.vooruit.frontend")
                 .putString("artifact_id", "vooruit")
-                .putString("version", "1.2.0-SNAPSHOT")
+                .putString("version", "1.0.0-SNAPSHOT")
                 .putString("classifier", "site")
                 .putString("context", "/var/www/vooruit");
 

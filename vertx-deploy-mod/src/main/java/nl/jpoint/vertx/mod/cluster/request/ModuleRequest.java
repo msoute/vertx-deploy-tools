@@ -10,6 +10,8 @@ public class ModuleRequest {
     private final String version;
     private final String classifier;
 
+    private String snapshotVersion = null;
+
     protected ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -53,8 +55,13 @@ public class ModuleRequest {
                 .append("/")
                 .append(getVersion())
                 .append("/")
-                .append(getArtifactId()).append("-")
-                .append(getVersion());
+                .append(getArtifactId()).append("-");
+
+        if (snapshotVersion != null) {
+            builder.append(getSnapshotVersion());
+        } else {
+            builder.append(getVersion());
+        }
         if (classifier != null && !classifier.isEmpty()) {
             builder.append("-")
                     .append(classifier);
@@ -63,21 +70,12 @@ public class ModuleRequest {
         return builder.toString();
     }
 
-    public String getRemoteLocation(String buildId) {
-        StringBuilder builder = new StringBuilder()
-                .append(getGroupId().replaceAll("\\.", "/"))
-                .append("/")
-                .append(getArtifactId())
-                .append("/")
-                .append(getVersion())
-                .append("/")
-                .append(getArtifactId()).append("-").append(getVersion().replace("SNAPSHOT", buildId));
-        if (classifier != null && !classifier.isEmpty()) {
-            builder.append("-")
-                    .append(classifier);
-        }
-        builder.append(".zip");
-        return builder.toString();
+    public String getSnapshotVersion() {
+        return snapshotVersion;
+    }
+
+    public void setSnapshotVersion(String snapshotVersion) {
+        this.snapshotVersion = snapshotVersion;
     }
 
     public boolean isAsync() {
@@ -87,7 +85,6 @@ public class ModuleRequest {
     public boolean isSnapshot() {
         return version.endsWith("-SNAPSHOT");
     }
-
     public String getMetadataLocation() {
         StringBuilder builder = new StringBuilder()
                 .append(getGroupId().replaceAll("\\.", "/"))
@@ -99,4 +96,6 @@ public class ModuleRequest {
                 .append("maven-metadata.xml");
         return builder.toString();
     }
+
+
 }

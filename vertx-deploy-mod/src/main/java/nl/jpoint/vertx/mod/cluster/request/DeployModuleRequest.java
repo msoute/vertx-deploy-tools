@@ -3,7 +3,6 @@ package nl.jpoint.vertx.mod.cluster.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.vertx.java.core.json.JsonObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployModuleRequest extends ModuleRequest {
@@ -20,10 +19,5 @@ public class DeployModuleRequest extends ModuleRequest {
     public int getInstances() {
         return instances;
     }
-
-    public static DeployModuleRequest fromJsonMessage(final JsonObject request) {
-        return new DeployModuleRequest(request.getString("group_id"), request.getString("artifact_id"), request.getString("version"), request.getInteger("instances"));
-    }
-
 
 }

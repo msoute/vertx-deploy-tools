@@ -21,10 +21,12 @@ public class MetadataXPathUtil {
     private static final String TIMESTAMP = "/metadata/versioning/snapshot/timestamp/text()";
     private static final String BUILD_NUMBER = "/metadata/versioning/snapshot/buildNumber/text()";
 
-    public static String getArtifactIdFromMetadata(byte[] metadata, ModuleRequest request) {
+    public static String getRealSnapshotVersionFromMetadata(byte[] metadata, ModuleRequest request) {
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
+
         DocumentBuilder builder = null;
+
         try {
             builder = builderFactory.newDocumentBuilder();
             Document document = builder.parse(
@@ -32,13 +34,12 @@ public class MetadataXPathUtil {
             String timestamp = (String) xPath.compile(TIMESTAMP).evaluate(document, XPathConstants.STRING);
             String buildNumber = (String) xPath.compile(BUILD_NUMBER).evaluate(document, XPathConstants.STRING);
 
-            if (!timestamp.isEmpty() && !buildNumber.isEmpty()) {
-
-                return request.getRemoteLocation(timestamp + "-" + buildNumber);
+            if (!timestamp.isEmpty() && !buildNumber.isEmpty() && request.isSnapshot()) {
+                return request.getVersion().substring(0,request.getVersion().length()-8) + timestamp + "-" + buildNumber;
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
-            return request.getRemoteLocation();
+            return null;
         }
-        return request.getRemoteLocation();
+        return null;
     }
 }
