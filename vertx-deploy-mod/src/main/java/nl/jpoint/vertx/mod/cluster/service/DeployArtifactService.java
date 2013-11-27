@@ -29,7 +29,7 @@ public class DeployArtifactService implements DeployService {
     public boolean deploy(ModuleRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
-            Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);
+            Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_SITE_REQUEST);
             JsonObject result = resolveVersion.execute(deployRequest);
 
             if (result.getBoolean("success")) {
