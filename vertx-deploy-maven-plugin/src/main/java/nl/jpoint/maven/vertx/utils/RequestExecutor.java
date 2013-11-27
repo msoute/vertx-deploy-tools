@@ -13,6 +13,9 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class RequestExecutor {
 
@@ -24,8 +27,18 @@ public class RequestExecutor {
     }
 
     private void executeRequest(HttpPost postRequest) throws MojoExecutionException {
+
+        ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+        exec.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                log.info("Waiting for deploy request to return...");
+            }
+        }, 5, 5, TimeUnit.SECONDS);
+
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
+                exec.shutdown();
                 log.info("DeployModuleCommand : Post response status code -> " + response.getStatusLine().getStatusCode());
 
                 if (response.getStatusLine().getStatusCode() != 200) {
@@ -40,6 +53,11 @@ public class RequestExecutor {
         } catch (IOException e) {
             log.error("testDeployModuleCommand ", e);
             throw new MojoExecutionException("Error deploying module.", e);
+        } finally {
+            if (!exec.isShutdown()) {
+                log.info("Shutdown executor after error");
+                exec.shutdown();
+            }
         }
     }
 
