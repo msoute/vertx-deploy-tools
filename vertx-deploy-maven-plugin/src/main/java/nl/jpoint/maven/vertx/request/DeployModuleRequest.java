@@ -1,6 +1,12 @@
 package nl.jpoint.maven.vertx.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties({"endpoint"})
 public class DeployModuleRequest extends Request {
+
     private static final String ENDPOINT = "/deploy/module";
 
     private final int instances;
