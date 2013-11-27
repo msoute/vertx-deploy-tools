@@ -17,7 +17,7 @@ public class DeployConfiguration {
     private List<Exclusion> exclusions;
 
     private boolean deploySnapshots = true;
-    private final boolean testScope = false;
+    private boolean testScope = false;
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
