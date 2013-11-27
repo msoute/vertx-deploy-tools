@@ -25,9 +25,18 @@ set -e
 
 . /lib/lsb/init-functions
 if [ ! -d "$PIDDIR" ]; then
-
   mkdir $PIDDIR
   chown $VERTX_USER:$VERTX_USER $PIDDIR
+fi
+
+if [ ! -d "/var/log/vertx"]; then
+    mkdir /var/log/vertx
+    chown $VERTX_USER:$VERTX_USER /var/log/vertx
+fi
+
+if [ ! -d "/var/run/vertx"]; then
+    mkdir /var/run/vertx
+    chown $VERTX_USER:$VERTX_USER /var/run/vertx
 fi
 
 if [ ! -d "$VERTX_HOME/mods/$VERTICLE" ]; then
@@ -38,12 +47,6 @@ fi
 
 
 start_module () {
-
-    if [ -z "$1" ]; then
-        log_daemon_msg "No module name provided"
-        log_end_msg 1
-        exit 4
-    fi;
 
     if [ -f $PIDFILE ]; then
 		PID=$(cat $PIDFILE)
@@ -85,10 +88,10 @@ bootstrap_container () {
 	if [ -f $PIDFILE ]; then
 	        stop_module $PIDFILE
 	fi
-        rm -rf  /opt/vert.x/sys-mods/$DEPLOY_MOD
-       $DAEMON install $DEPLOY_MOD
-        BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf $VERTX_HOME/sys-mods/$DEPLOY_MOD/config.json"
-        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
+        rm -rf /opt/vert.x/sys-mods/$DEPLOY_MOD
+        su $VERTX_USER -c "$DAEMON install $DEPLOY_MOD"
+	BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
+        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
 
