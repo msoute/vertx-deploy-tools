@@ -17,8 +17,7 @@ import java.util.*;
 public class AwsUtil {
 
 
-    private static final List<String> ignoreUpperCase  = new ArrayList<>(Arrays.asList("x-amz-date"));
-
+    private static final List<String> ignoreUpperCase = new ArrayList<>(Arrays.asList("x-amz-date"));
     private static final String EOL = "\n";
     private static final String COLON = ":";
     private static final String SEMICOLON = ";";
@@ -30,31 +29,35 @@ public class AwsUtil {
     private final String awsSecretAccessKey;
 
 
-    public AwsUtil(final String awsSecretAccessKey, final String awsAccessKey) throws UnsupportedEncodingException {
+    public AwsUtil(final String awsSecretAccessKey, final String awsAccessKey) {
         this.awsAccessKey = awsAccessKey;
         this.awsSecretAccessKey = awsSecretAccessKey;
     }
 
-    public HttpPost createSignedPost(String targetHost, Map<String,String> signedHeaders, String date, String payload, String service, String region) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+    public HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region) throws AwsException {
+        HttpPost awsPost = null;
+        try {
+            String canonicalRequest = this.createCanonicalRequest(signedHeaders, payload);
+            String signString = this.createSignString(date, region, service, canonicalRequest);
+            String signature = this.createSignature(date, region, service, signString);
+            String authorization = this.createAuthorizationHeaderValue(date, region, service, signedHeaders, signature);
 
-        String canonicalRequest = this.createCanonicalRequest(signedHeaders, payload);
-        String signString = this.createSignString(date, region, service, canonicalRequest);
-        String signature = this.createSignature(date,region, service, signString);
-        String authorization = this.createAuthorizationHeaderValue(date, region, service, signedHeaders, signature);
+            awsPost = new HttpPost("https://" + targetHost);
+            awsPost.addHeader("Host", targetHost);
+            awsPost.addHeader("X-Amz-Date", date);
+            awsPost.addHeader("Authorization", authorization);
+            awsPost.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
 
-        HttpPost awsPost = new HttpPost("https://"+targetHost);
-        awsPost.addHeader("Host", targetHost);
-        awsPost.addHeader("X-Amz-Date", date);
-        awsPost.addHeader("Authorization", authorization);
-        awsPost.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
-
-        ByteArrayInputStream bos = new ByteArrayInputStream(payload.getBytes());
-        BasicHttpEntity entity = new BasicHttpEntity();
-        entity.setContent(bos);
-        entity.setContentLength(payload.getBytes().length);
-        awsPost.setEntity(entity);
-
+            ByteArrayInputStream bos = new ByteArrayInputStream(payload.getBytes());
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContent(bos);
+            entity.setContentLength(payload.getBytes().length);
+            awsPost.setEntity(entity);
+        } catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+            throw new AwsException(e);
+        }
         return awsPost;
+
     }
 
     public String createAuthorizationHeaderValue(String date, String region, String service, Map<String, String> headers, String signature) {
@@ -75,8 +78,6 @@ public class AwsUtil {
     public String createSignString(String date, String region, String service, String canonicalRequest) {
         return AWS_SIGN_ALGORITHM + EOL + date + EOL + toShortDate(date) + "/" + region + "/" + service + "/" + "aws4_request" + EOL + hash(canonicalRequest);
     }
-
-
 
     public String createCanonicalRequest(Map<String, String> headers, String payload) {
 
@@ -128,7 +129,7 @@ public class AwsUtil {
 
     private String hash(String toSign) {
         try {
-            MessageDigest  md = MessageDigest.getInstance(ALGORITHM);
+            MessageDigest md = MessageDigest.getInstance(ALGORITHM);
             md.update(toSign.getBytes(UTF_8));
             byte[] digest = md.digest();
             return Hex.encodeHexString(digest).toLowerCase();
@@ -139,10 +140,10 @@ public class AwsUtil {
     }
 
     private String toShortDate(String date) {
-     return date.substring(0,date.indexOf('T'));
+        return date.substring(0, date.indexOf('T'));
     }
 
-    private SortedMap<String, String> toSortedMap(Map<String,String> toSort) {
+    private SortedMap<String, String> toSortedMap(Map<String, String> toSort) {
 
         SortedMap<String, String> sortedMap = new TreeMap<>(new Comparator<String>() {
             @Override
