@@ -55,7 +55,7 @@ public class DownloadArtifact implements Command {
     public JsonObject execute(ModuleRequest request) {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
 
-        credsProvider.setCredentials (
+        credsProvider.setCredentials(
                 new AuthScope(config.getString("http.authUri"), 443),
                 new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 

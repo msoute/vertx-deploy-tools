@@ -28,7 +28,7 @@ public class UndeployModule implements Command {
         Process killProcess;
 
         for (String file : modRoot.list(new ModuleFileNameFilter(request))) {
-            LOG.info("[{} - {}]: Stopping module {}", LogConstants.DEPLOY_REQUEST, request.getId(),file);
+            LOG.info("[{} - {}]: Stopping module {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
 
             try {
                 killProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "stop", file});
@@ -38,7 +38,7 @@ public class UndeployModule implements Command {
                 return null;
             }
 
-            vertx.fileSystem().deleteSync(modRoot+"/"+file, true);
+            vertx.fileSystem().deleteSync(modRoot + "/" + file, true);
             LOG.info("[{} - {}]: Undeployed old module : {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
         }
         return null;

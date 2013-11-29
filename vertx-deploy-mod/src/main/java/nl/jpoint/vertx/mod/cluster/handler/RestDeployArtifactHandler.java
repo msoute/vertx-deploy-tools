@@ -41,7 +41,7 @@ public class RestDeployArtifactHandler implements Handler<HttpServerRequest> {
                 try {
                     artifactRequest = new ObjectMapper().reader(DeployArtifactRequest.class).readValue(postData);
                 } catch (IOException e) {
-                    LOG.error("[{}]: Failed to read postdata {}" , new String(postData));
+                    LOG.error("[{}]: Failed to read postdata {}", new String(postData));
                     respondFailed(request);
                     return;
                 }

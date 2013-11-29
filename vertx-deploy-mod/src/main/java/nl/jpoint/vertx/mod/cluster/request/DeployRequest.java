@@ -15,7 +15,7 @@ public class DeployRequest {
     private final List<DeployArtifactRequest> artifacts;
 
     @JsonCreator
-    public DeployRequest(@JsonProperty("modules") List< DeployModuleRequest > modules,
+    public DeployRequest(@JsonProperty("modules") List<DeployModuleRequest> modules,
                          @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts) {
         this.modules = modules;
         this.artifacts = artifacts;

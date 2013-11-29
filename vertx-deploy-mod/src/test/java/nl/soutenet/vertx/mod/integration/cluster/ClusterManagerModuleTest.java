@@ -83,7 +83,6 @@ public class ClusterManagerModuleTest {
     }
 
 
-
     private JsonObject createDeployCommand() {
         return new JsonObject()
                 .putString("group_id", "nl.jpoint.vertx-deploy-tools")

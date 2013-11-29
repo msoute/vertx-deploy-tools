@@ -26,7 +26,7 @@ public class RunModule implements Command {
         boolean success = false;
 
         try {
-            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start", request.getModuleId(), String.valueOf(((DeployModuleRequest)request).getInstances())});
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start", request.getModuleId(), String.valueOf(((DeployModuleRequest) request).getInstances())});
             runProcess.waitFor();
 
             int exitValue = runProcess.exitValue();

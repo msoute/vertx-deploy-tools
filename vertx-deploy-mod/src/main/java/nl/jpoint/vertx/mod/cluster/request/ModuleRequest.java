@@ -85,6 +85,7 @@ public class ModuleRequest {
     public boolean isSnapshot() {
         return version.endsWith("-SNAPSHOT");
     }
+
     public String getMetadataLocation() {
         return getGroupId().replaceAll("\\.", "/") + "/" + getArtifactId() + "/" + getVersion() + "/" + "maven-metadata.xml";
 

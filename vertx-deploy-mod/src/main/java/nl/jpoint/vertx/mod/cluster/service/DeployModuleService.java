@@ -77,7 +77,7 @@ public class DeployModuleService implements DeployService {
             return false;
         }
 
-        installedModules.put(deployRequest.getMavenArtifactId(),deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
+        installedModules.put(deployRequest.getMavenArtifactId(), deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
 
         LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
         return true;

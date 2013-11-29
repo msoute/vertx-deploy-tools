@@ -18,7 +18,7 @@ public class ArtifactContextUtil {
 
     private static final String BASE_LOCATION = "/artifact/baselocation/text()";
 
-    public static String getBaseLocation(byte[] metadata ) {
+    public static String getBaseLocation(byte[] metadata) {
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;

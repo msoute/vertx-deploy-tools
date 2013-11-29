@@ -29,12 +29,12 @@ public class AwsUtil {
     private final String awsSecretAccessKey;
 
 
-    public AwsUtil(final String awsSecretAccessKey, final String awsAccessKey) {
+    AwsUtil(final String awsAccessKey, final String awsSecretAccessKey) {
         this.awsAccessKey = awsAccessKey;
         this.awsSecretAccessKey = awsSecretAccessKey;
     }
 
-    public HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region) throws AwsException {
+    HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region) throws AwsException {
         HttpPost awsPost = null;
         try {
             String canonicalRequest = this.createCanonicalRequest(signedHeaders, payload);
@@ -60,7 +60,7 @@ public class AwsUtil {
 
     }
 
-    public String createAuthorizationHeaderValue(String date, String region, String service, Map<String, String> headers, String signature) {
+    private String createAuthorizationHeaderValue(String date, String region, String service, Map<String, String> headers, String signature) {
         return new StringBuilder(AWS_SIGN_ALGORITHM)
                 .append(" ").append("Credential=").append(awsAccessKey).append("/").
                         append(toShortDate(date)).append("/").
@@ -71,15 +71,15 @@ public class AwsUtil {
                 .append("Signature=").append(signature).toString();
     }
 
-    public String createSignature(String date, String region, String service, String signString) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+    private String createSignature(String date, String region, String service, String signString) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
         return Hex.encodeHexString(hmac(deriveSigningKey(date, region, service), signString));
     }
 
-    public String createSignString(String date, String region, String service, String canonicalRequest) {
+    private String createSignString(String date, String region, String service, String canonicalRequest) {
         return AWS_SIGN_ALGORITHM + EOL + date + EOL + toShortDate(date) + "/" + region + "/" + service + "/" + "aws4_request" + EOL + hash(canonicalRequest);
     }
 
-    public String createCanonicalRequest(Map<String, String> headers, String payload) {
+    private String createCanonicalRequest(Map<String, String> headers, String payload) {
 
         SortedMap<String, String> sortedHeaders = toSortedMap(headers);
 
@@ -114,7 +114,7 @@ public class AwsUtil {
         return builder.toString();
     }
 
-    public byte[] deriveSigningKey(String date, String region, String service) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+    private byte[] deriveSigningKey(String date, String region, String service) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
         return hmac(hmac(hmac(hmac(("AWS4" + awsSecretAccessKey).getBytes(UTF_8), toShortDate(date)), region), service), "aws4_request");
     }
 

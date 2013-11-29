@@ -37,8 +37,8 @@ public class DeployArtifactService implements DeployService {
             }
         }
 
-        if (installedArtifacts.containsKey(deployRequest.getGroupId()+":"+deployRequest.getArtifactId())
-                && installedArtifacts.get(deployRequest.getGroupId()+":"+deployRequest.getArtifactId()).equals(deployRequest.getSnapshotVersion())) {
+        if (installedArtifacts.containsKey(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId())
+                && installedArtifacts.get(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId()).equals(deployRequest.getSnapshotVersion())) {
             LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Artifact {} already installed.", LogConstants.DEPLOY_SITE_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
             return true;
         }
@@ -53,7 +53,7 @@ public class DeployArtifactService implements DeployService {
         JsonObject extractResult = extractSite.execute(deployRequest);
 
         if (deployRequest.getSnapshotVersion() != null) {
-            installedArtifacts.put(deployRequest.getGroupId()+":"+deployRequest.getArtifactId(), deployRequest.getSnapshotVersion());
+            installedArtifacts.put(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId(), deployRequest.getSnapshotVersion());
         }
         return extractResult.getBoolean("success");
     }

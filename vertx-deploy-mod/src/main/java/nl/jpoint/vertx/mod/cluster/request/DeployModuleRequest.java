@@ -11,7 +11,7 @@ public class DeployModuleRequest extends ModuleRequest {
 
     @JsonCreator
     private DeployModuleRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
-                                @JsonProperty("version") final String version, @JsonProperty("instances")  final int instances) {
+                                @JsonProperty("version") final String version, @JsonProperty("instances") final int instances) {
         super(groupId, artifactId, version);
         this.instances = instances;
     }

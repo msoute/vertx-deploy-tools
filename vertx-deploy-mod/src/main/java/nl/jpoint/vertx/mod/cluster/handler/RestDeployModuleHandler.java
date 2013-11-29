@@ -40,7 +40,7 @@ public class RestDeployModuleHandler implements Handler<HttpServerRequest> {
                 try {
                     deployRequest = new ObjectMapper().reader(DeployModuleRequest.class).readValue(postData);
                 } catch (IOException e) {
-                    LOG.error("[{}]: Failed to read postdata {}" , new String(postData));
+                    LOG.error("[{}]: Failed to read postdata {}", new String(postData));
                     respondFailed(request);
                     return;
                 }
