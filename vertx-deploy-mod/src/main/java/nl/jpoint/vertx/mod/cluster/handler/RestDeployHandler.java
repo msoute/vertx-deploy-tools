@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
+import nl.jpoint.vertx.mod.cluster.service.AwsService;
 import nl.jpoint.vertx.mod.cluster.service.DeployService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -21,15 +22,16 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
     private final ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
     private final DeployService moduleDeployService;
     private final DeployService artifactDeployService;
+    private final AwsService awsService;
 
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployHandler(final DeployService moduleDeployService, final DeployService artifactDeployService) {
+    public RestDeployHandler(final DeployService moduleDeployService, final DeployService artifactDeployService, AwsService awsService) {
 
         this.moduleDeployService = moduleDeployService;
         this.artifactDeployService = artifactDeployService;
+        this.awsService = awsService;
     }
-
     @Override
     public void handle(final HttpServerRequest request) {
         request.bodyHandler(new Handler<Buffer>() {
@@ -54,6 +56,17 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 LOG.info("[{} - {}]: Received deploy request with {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModules().size(), deployRequest.getArtifacts().size());
 
                 boolean deployOk = false;
+
+
+                if (deployRequest.withAws()) {
+                    if (awsService.registerRequest(deployRequest)) {
+                        respondContinue(request, deployRequest.getId().toString());
+                        awsService.deRegisterInstance(deployRequest.getId().toString());
+                    }   else {
+                        respondFailed(request);
+                    }
+                    return;
+                }
 
                 for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                     deployOk = moduleDeployService.deploy(moduleRequest);
@@ -83,6 +96,12 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
     private void respondOk(HttpServerRequest request) {
         request.response().setStatusCode(HttpResponseStatus.OK.code());
         request.response().end();
+    }
+
+    private void respondContinue(HttpServerRequest request, String id) {
+        request.response().setStatusCode(HttpResponseStatus.OK.code());
+        request.response().setStatusMessage(id);
+        request.response().end(id);
     }
 
     private void respondFailed(HttpServerRequest request) {

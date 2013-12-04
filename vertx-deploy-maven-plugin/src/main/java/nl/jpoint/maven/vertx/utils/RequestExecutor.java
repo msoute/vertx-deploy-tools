@@ -4,10 +4,12 @@ import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RequestExecutor {
 
@@ -24,6 +27,73 @@ public class RequestExecutor {
     public RequestExecutor(Log log) {
 
         this.log = log;
+    }
+
+    private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            final String buildId;
+            final AtomicInteger waitFor = new AtomicInteger(1);
+            final AtomicInteger status = new AtomicInteger(0);
+            try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
+                    throw new MojoExecutionException("Error deploying module. ");
+                }
+
+                buildId = EntityUtils.toString(response.getEntity());
+            }
+
+            ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+
+
+            exec.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+
+                    HttpGet get = new HttpGet(postRequest.getURI().getScheme()+"://"+postRequest.getURI().getHost() +":"+postRequest.getURI().getPort()+ "/deploy/status/" + buildId);
+                    try (CloseableHttpResponse response = httpClient.execute(get)) {
+                        int code = response.getStatusLine().getStatusCode();
+                        String state = response.getStatusLine().getReasonPhrase();
+
+                        switch (code) {
+                            case 200:
+                                log.info("Deploy request finished executing");
+                                status.set(200);
+                                waitFor.decrementAndGet();
+                                break;
+                            case 500:
+                                status.set(500);
+                                log.error("Deploy request failed");
+                                waitFor.decrementAndGet();
+                            default:
+                                log.info("Waiting for deploy to finish. Current status : " + state);
+                        }
+
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                        status.set(500);
+                        waitFor.decrementAndGet();
+                    }
+                }
+            }, 0, 15, TimeUnit.SECONDS);
+
+            while (waitFor.intValue() != 0) {
+                Thread.sleep(15000);
+            }
+
+            exec.shutdown();
+
+            if (status.get() != 200) {
+                throw new MojoExecutionException("Error deploying module.");
+            }
+
+
+        } catch (IOException e) {
+            log.error("testDeployModuleCommand ", e);
+            throw new MojoExecutionException("Error deploying module.", e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     private void executeRequest(HttpPost postRequest) throws MojoExecutionException {
@@ -79,16 +149,20 @@ public class RequestExecutor {
 
         for (String host : activeConfiguration.getHosts()) {
 
-                HttpPost post = new HttpPost(host + deployRequest.getEndpoint());
+            HttpPost post = new HttpPost(host + deployRequest.getEndpoint());
 
-                ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson().getBytes());
-                BasicHttpEntity entity = new BasicHttpEntity();
-                entity.setContent(bos);
-                entity.setContentLength(deployRequest.toJson().getBytes().length);
-                post.setEntity(entity);
-                log.info(deployRequest.toJson());
+            ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson().getBytes());
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContent(bos);
+            entity.setContentLength(deployRequest.toJson().getBytes().length);
+            post.setEntity(entity);
+            if (!activeConfiguration.getAws()) {
                 this.executeRequest(post);
+            } else {
+                this.executeAwsRequest(post, host);
+            }
 
         }
     }
+
 }

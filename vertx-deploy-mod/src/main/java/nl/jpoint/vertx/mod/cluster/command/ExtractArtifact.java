@@ -15,7 +15,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 
-public class ExtractArtifact implements Command {
+public class ExtractArtifact implements Command<ModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractArtifact.class);
     private static final String ARTIFACT_CONTEXT = "artifact_context.xml";
     private final Vertx vertx;

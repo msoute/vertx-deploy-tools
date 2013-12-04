@@ -18,6 +18,7 @@ public class DeployConfiguration {
 
     private boolean deploySnapshots = true;
     private boolean testScope = false;
+    private boolean aws = false;
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -41,5 +42,9 @@ public class DeployConfiguration {
 
     public String getContext() {
         return context;
+    }
+
+    public boolean getAws() {
+        return this.aws;
     }
 }

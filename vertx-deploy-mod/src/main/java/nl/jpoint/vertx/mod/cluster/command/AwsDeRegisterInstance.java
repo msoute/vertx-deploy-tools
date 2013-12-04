@@ -13,34 +13,37 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
 
-public class AwsRegisterInstance implements Command<DeployRequest> {
-    private static final Logger LOG = LoggerFactory.getLogger(AwsRegisterInstance.class);
+public class AwsDeRegisterInstance implements Command<DeployRequest> {
+    private static final Logger LOG = LoggerFactory.getLogger(AwsDeRegisterInstance.class);
     private final Vertx vertx;
     private final AwsElbUtil awsElbUtil;
 
-    public AwsRegisterInstance(Vertx vertx, AwsElbUtil awsElbUtil) {
+    public AwsDeRegisterInstance(Vertx vertx, AwsElbUtil awsElbUtil) {
         this.vertx = vertx;
+
         this.awsElbUtil = awsElbUtil;
     }
-
     @Override
     public JsonObject execute(DeployRequest request) {
+
         try {
             List<String> instances = awsElbUtil.listLBInstanceMembers();
-            if (instances.contains(awsElbUtil.forInstanceId())) {
-                LOG.info("[{} - {}]: InstanceId {} is all ready listed as member of loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
+            if (!instances.contains(awsElbUtil.forInstanceId())) {
+                LOG.info("[{} - {}]: Instance {} not registered with loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
                 return new JsonObject().putBoolean("success", false);
             }
-
-            awsElbUtil.registerInstanceWithLoadbalancer();
+            if (awsElbUtil.deRegisterInstanceFromLoadbalancer()) {
+                LOG.info("[{} - {}]: Failed to de-register Instance {} from loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
+                return new JsonObject().putBoolean("success", false);
+            }
             LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-            vertx.setPeriodic(30000L, new AwsRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.INSERVICE));
-
-            return new JsonObject().putBoolean("success", true);
+            vertx.setPeriodic(5000L, new AwsRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.OUTOFSERVICE));
 
         } catch (AwsException e) {
-            LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage());
+            LOG.error("[{} - {}]: Error de-register instance {} from loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
             return new JsonObject().putBoolean("success", false);
         }
+
+        return new JsonObject().putBoolean("success", true);
     }
 }

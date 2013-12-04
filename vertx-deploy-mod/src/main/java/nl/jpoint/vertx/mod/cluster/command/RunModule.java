@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 /**
  * TODO : Vertx homedir should be configurable.
  */
-public class RunModule implements Command {
+public class RunModule implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RunModule.class);
 

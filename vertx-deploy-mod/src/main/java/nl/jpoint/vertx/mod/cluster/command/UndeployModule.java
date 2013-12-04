@@ -11,10 +11,9 @@ import org.vertx.java.core.json.JsonObject;
 import java.io.File;
 import java.io.IOException;
 
-public class UndeployModule implements Command {
+public class UndeployModule implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(UndeployModule.class);
-    private static final String PID_DIR = "/var/run/edubase/";
     private final Vertx vertx;
     private final File modRoot;
 

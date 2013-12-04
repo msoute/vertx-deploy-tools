@@ -1,6 +1,7 @@
 package nl.jpoint.vertx.mod.cluster.aws;
 
 
+import nl.jpoint.vertx.mod.cluster.util.AwsXpathUtil;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -13,7 +14,7 @@ import java.util.*;
 
 public class AwsElbUtil {
 
-    public static final String EQUALSSIGN = "=";
+    private static final String EQUALSSIGN = "=";
     private static final String AWS_ELB_SERVICE = "elasticloadbalancing";
     private static final String AWS_ACTION = "Action";
 
@@ -23,35 +24,43 @@ public class AwsElbUtil {
     private static final String SERVICE_VERSION = "2012-06-01";
     protected final SimpleDateFormat compressedIso8601DateFormat =
             new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-    private AwsUtil awsUtil;
+    private final String region;
+    private final String loadbalancer;
+    private final AwsUtil awsUtil;
+    private final String instanceId;
 
-    public AwsElbUtil(String accessKey, String secretAccessKey) {
+    public AwsElbUtil(String accessKey, String secretAccessKey, String region, String loadbalancer, String instanceId) {
+        this.region = region;
+        this.loadbalancer = loadbalancer;
+        this.instanceId = instanceId;
 
         this.awsUtil = new AwsUtil(accessKey, secretAccessKey);
-        compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public List<String> listLBInstanceMembers(String region, String loadbalancer) throws AwsException {
-        byte[] lbInfo = executeDescribeLBRequest(region, loadbalancer);
-        return AwsXpathUtil.extractInstances(lbInfo);
+    public List<String> listLBInstanceMembers() throws AwsException {
+        byte[] lbInfo = executeDescribeLBRequest();
+        return AwsXpathUtil.listInstances(lbInfo);
     }
 
-    public void registerInstanceFromLoadbalancer(String region, String loadbalancer, String instanceId) throws AwsException {
-        byte[] result = this.executeRegisterInstanceFromLoadbalancer(AWS_ACTION_REGISTER_INSTANCE, region, loadbalancer, instanceId);
+    public boolean registerInstanceWithLoadbalancer() throws AwsException {
+        byte[] result = this.executeRegisterInstanceFromLoadbalancer(AWS_ACTION_REGISTER_INSTANCE);
+        List<String> members = AwsXpathUtil.listInstances(result);
+        return members.contains(instanceId);
     }
 
-    public void deRegisterInstanceFromLoadbalancer(String region, String loadbalancer, String instanceId) throws AwsException {
-        byte[] result = this.executeRegisterInstanceFromLoadbalancer(AWS_ACTION_DEREGISTER_INSTANCE, region, loadbalancer, instanceId);
-        System.out.println(new String(result));
+    public boolean deRegisterInstanceFromLoadbalancer() throws AwsException {
+        byte[] result = this.executeRegisterInstanceFromLoadbalancer(AWS_ACTION_DEREGISTER_INSTANCE);
+        List<String> members = AwsXpathUtil.listInstances(result);
+        return members.contains(instanceId);
     }
     
-    public void getInstanceState(String region, String loadbalancer, String instanceId) throws AwsException {
-        byte[] result = this.executeGetInstanceState(region, loadbalancer, instanceId);
-        System.out.println(new String(result));
-        
+    public AwsState getInstanceState() throws AwsException {
+        byte[] result = this.executeGetInstanceState();
+        return AwsState.valueOf(AwsXpathUtil.instanceState(result, forInstanceId()).toUpperCase());
     }
 
-    private byte[] executeGetInstanceState(String region, String loadbalancer, String instanceId) throws AwsException {
+    private byte[] executeGetInstanceState() throws AwsException {
         String targetHost = AWS_ELB_SERVICE + "." + region + ".amazonaws.com";
         String date = compressedIso8601DateFormat.format(new Date());
 
@@ -65,12 +74,9 @@ public class AwsElbUtil {
         HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_ELB_SERVICE, region);
 
         return this.executeRequest(awsPost);
-
-
     }
 
-
-    private byte[] executeRegisterInstanceFromLoadbalancer(String action, String region, String loadbalancer, String instanceId) throws AwsException {
+    private byte[] executeRegisterInstanceFromLoadbalancer(String action) throws AwsException {
         String targetHost = AWS_ELB_SERVICE + "." + region + ".amazonaws.com";
         String date = compressedIso8601DateFormat.format(new Date());
 
@@ -88,7 +94,7 @@ public class AwsElbUtil {
 
     }
 
-    private byte[] executeDescribeLBRequest(String region, String loadbalancer) throws AwsException {
+    private byte[] executeDescribeLBRequest() throws AwsException {
 
         String targetHost = AWS_ELB_SERVICE + "." + region + ".amazonaws.com";
         String date = compressedIso8601DateFormat.format(new Date());
@@ -119,5 +125,17 @@ public class AwsElbUtil {
         signedHeaders.put("X-Amz-Date", date);
         signedHeaders.put("Host", targetHost);
         return signedHeaders;
+    }
+
+    public String forInstanceId() {
+        return instanceId;
+    }
+
+    public String forLoadbalancer() {
+        return loadbalancer;
+    }
+
+    public String forRegion() {
+        return region;
     }
 }

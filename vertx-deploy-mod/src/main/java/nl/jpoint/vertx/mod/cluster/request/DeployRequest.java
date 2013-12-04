@@ -10,15 +10,19 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployRequest {
     private final UUID id = UUID.randomUUID();
-
     private final List<DeployModuleRequest> modules;
     private final List<DeployArtifactRequest> artifacts;
+    @JsonProperty("aws")
+    private final boolean aws;
+    private DeployState state;
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployModuleRequest> modules,
-                         @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts) {
+                         @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts,
+                         @JsonProperty("aws") boolean aws) {
         this.modules = modules;
         this.artifacts = artifacts;
+        this.aws = aws;
     }
 
     public List<DeployArtifactRequest> getArtifacts() {
@@ -31,5 +35,17 @@ public class DeployRequest {
 
     public UUID getId() {
         return id;
+    }
+
+    public boolean withAws() {
+        return aws;
+    }
+
+    public void setState(DeployState state) {
+        this.state = state;
+    }
+
+    public DeployState getState() {
+        return this.state;
     }
 }

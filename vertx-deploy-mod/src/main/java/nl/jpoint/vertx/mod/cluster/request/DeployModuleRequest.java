@@ -10,7 +10,7 @@ public class DeployModuleRequest extends ModuleRequest {
     private final int instances;
 
     @JsonCreator
-    private DeployModuleRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
+    public DeployModuleRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
                                 @JsonProperty("version") final String version, @JsonProperty("instances") final int instances) {
         super(groupId, artifactId, version);
         this.instances = instances;

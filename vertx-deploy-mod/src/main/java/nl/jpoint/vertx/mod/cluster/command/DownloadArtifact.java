@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class DownloadArtifact implements Command {
+public class DownloadArtifact implements Command<ModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DownloadArtifact.class);
     private static final String CONF_REPOS_TXT = "/conf/repos.txt";
     private final JsonObject config;

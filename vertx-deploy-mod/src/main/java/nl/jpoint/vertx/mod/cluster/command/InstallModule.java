@@ -12,7 +12,7 @@ import org.vertx.java.platform.PlatformManager;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class InstallModule implements Command {
+public class InstallModule implements Command<ModuleRequest> {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(InstallModule.class);

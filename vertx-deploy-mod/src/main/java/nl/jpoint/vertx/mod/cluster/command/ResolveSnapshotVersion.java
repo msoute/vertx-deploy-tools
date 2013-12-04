@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-public class ResolveSnapshotVersion implements Command {
+public class ResolveSnapshotVersion implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResolveSnapshotVersion.class);
     private final JsonObject config;
@@ -54,9 +54,10 @@ public class ResolveSnapshotVersion implements Command {
                     LOG.info("[{} - {}]: Artifact is -SNAPSHOT, trying to parse metadata for last version {}.", logId, request.getId(), request.getModuleId());
                     realSnapshotVersion = this.retrieveAndParseMetadata(request, httpclient, uri);
                     if (realSnapshotVersion != null) {
+                        LOG.info("[{} - {}]: Parsed metadata. Snapshot version is {} ", logId, request.getId(), realSnapshotVersion);
                         resolved = true;
                     }
-                    LOG.info("[{} - {}]: Parsed metadata. Snapshot version is {} ", logId, request.getId(), realSnapshotVersion);
+
                 }
             }
         } catch (IOException e) {
@@ -70,7 +71,7 @@ public class ResolveSnapshotVersion implements Command {
         HttpGet getMetadata = new HttpGet(repoUri + "/" + request.getMetadataLocation());
         try (CloseableHttpResponse response = httpclient.execute(getMetadata)) {
             if (response.getStatusLine().getStatusCode() != HttpResponseStatus.OK.code()) {
-                LOG.error("[{} - {}]: Not metadata found for module {}. Returning default remote location", logId, request.getId(), request.getModuleId());
+                LOG.error("[{} - {}]: No metadata found for module {}.", logId, request.getId(), request.getModuleId());
                 return null;
             }
             byte[] metadata = EntityUtils.toByteArray(response.getEntity());

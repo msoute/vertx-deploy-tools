@@ -2,8 +2,11 @@ package nl.jpoint.vertx.mod.cluster;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.jpoint.vertx.mod.cluster.handler.RestDeployArtifactHandler;
+import nl.jpoint.vertx.mod.cluster.handler.RestDeployAwsHandler;
 import nl.jpoint.vertx.mod.cluster.handler.RestDeployHandler;
 import nl.jpoint.vertx.mod.cluster.handler.RestDeployModuleHandler;
+import nl.jpoint.vertx.mod.cluster.handler.servicebus.DeployHandler;
+import nl.jpoint.vertx.mod.cluster.service.AwsService;
 import nl.jpoint.vertx.mod.cluster.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
@@ -20,16 +23,19 @@ public class ClusterManagerModule extends Verticle {
 
     @Override
     public void start() {
-
         DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
         DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
+        AwsService awsService = new AwsService(getVertx(), container.config());
+
+        vertx.eventBus().registerLocalHandler("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService));
 
         HttpServer httpServer = getVertx().createHttpServer();
         RouteMatcher matcher = new RouteMatcher();
 
-        matcher.post("/deploy/deploy*", new RestDeployHandler(deployModuleService, deployArtifactService));
+        matcher.post("/deploy/deploy*", new RestDeployHandler(deployModuleService, deployArtifactService, awsService));
         matcher.post("/deploy/module*", new RestDeployModuleHandler(deployModuleService));
         matcher.post("/deploy/artifact*", new RestDeployArtifactHandler(deployArtifactService));
+        matcher.get("/deploy/status/:id", new RestDeployAwsHandler(awsService));
 
         matcher.noMatch(new Handler<HttpServerRequest>() {
             @Override
