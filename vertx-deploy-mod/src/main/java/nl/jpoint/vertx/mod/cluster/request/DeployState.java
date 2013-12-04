@@ -6,5 +6,5 @@ public enum DeployState {
     DEPLOYING_ARTIFACTS,
     UNKNOWN,
     FAILED,
-    SUCCESS;
+    SUCCESS, WAITING_FOR_REGISTER;
 }

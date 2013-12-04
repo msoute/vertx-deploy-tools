@@ -77,6 +77,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
                 }
             }
         }
+        awsService.updateAndGetRequest(DeployState.WAITING_FOR_REGISTER, deployId);
         awsService.registerInstance(deployId);
     }
 
