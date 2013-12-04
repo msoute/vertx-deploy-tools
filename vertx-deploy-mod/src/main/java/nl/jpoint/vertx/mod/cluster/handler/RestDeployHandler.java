@@ -77,7 +77,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     }
                 }
 
-                if (deployOk) {
+                if (deployOk || deployRequest.getModules().size() == 0) {
                     for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                         deployOk = artifactDeployService.deploy(artifactRequest);
 
