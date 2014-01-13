@@ -149,8 +149,9 @@ public class RequestExecutor {
 
         for (String host : activeConfiguration.getHosts()) {
 
-            HttpPost post = new HttpPost(host + deployRequest.getEndpoint());
+            log.info("Deploying to host : " + host);
 
+            HttpPost post = new HttpPost(host + deployRequest.getEndpoint());
             ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson().getBytes());
             BasicHttpEntity entity = new BasicHttpEntity();
             entity.setContent(bos);
