@@ -32,12 +32,20 @@ mkdir /opt/vert.x/repo
 mkdir /opt/vert.x/sys-mods
 mkdir /opt/vert.x/mods
 
+mkdir /var/www
+
 # Copy extra libs
 cp $bundledjardir/*.jar /opt/vert.x/lib
 
-unzip -d /opt/vert.x/sys-mods/vertx-deploy-mod-1.0.0-SNAPSHOT /$datadir/vertx-deploy-mod-1.0.0-SNAPSHOT.zip
+unzip -d /opt/vert.x/sys-mods/nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT /$datadir/vertx-deploy-mod-1.0.0-SNAPSHOT.zip
 cp /$datadir/logback.xml /opt/vert.x/conf/
+cp /$datadir/repos.txt /opt/vert.x/conf/
 
 # Set user rights
 chown -R $VERTX_USER:$VERTX_USER /opt/vert.x/
 chown -R $VERTX_USER:$VERTX_USER /var/log/vertx
+chown -R $VERTX_USER:$VERTX_USER /etc/vertx
+
+chown -R $VERTX_USER:$VERTX_USER /var/www
+
+/etc/init.d/vertx start-deploy-mod
