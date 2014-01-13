@@ -29,12 +29,12 @@ if [ ! -d "$PIDDIR" ]; then
   chown $VERTX_USER:$VERTX_USER $PIDDIR
 fi
 
-if [ ! -d "/var/log/vertx"]; then
+if [ ! -d /var/log/vertx ]; then
     mkdir /var/log/vertx
     chown $VERTX_USER:$VERTX_USER /var/log/vertx
 fi
 
-if [ ! -d "/var/run/vertx"]; then
+if [ ! -d /var/run/vertx ]; then
     mkdir /var/run/vertx
     chown $VERTX_USER:$VERTX_USER /var/run/vertx
 fi
@@ -94,9 +94,9 @@ bootstrap_container () {
     start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
-start_mod () {
-        DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
-        PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
+start_deploy_mod () {
+    DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
+    PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
 	if [ -f $PIDFILE ]; then
 	        stop_module $PIDFILE
 	fi
@@ -104,6 +104,13 @@ start_mod () {
     start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
+stop_deploy_mod () {
+    DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
+    PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
+	if [ -f $PIDFILE ]; then
+	        stop_module $PIDFILE
+	fi
+}
 
 case "$1" in
 	start)
@@ -122,13 +129,18 @@ case "$1" in
 		bootstrap_container $2
 		log_end_msg 0
 		;;
-	init)
+	start-deploy-mod)
 	    log_daemon_msg "Starting Vert.x deploy Mod"
-	    start_mod $2
+	    start_deploy_mod $2
+	    log_end_msg 0
+        ;;
+	stop-deploy-mod)
+	    log_daemon_msg "Starting Vert.x deploy Mod"
+	    stop_deploy_mod $2
 	    log_end_msg 0
         ;;
 	*)
-		log_daemon_msg "Usage: $NAME {start|stop|init|bootstrap}"
+		log_daemon_msg "Usage: $NAME {start|stop|start-deploy-mod|stop-deploy-mod|bootstrap}"
 		log_end_msg 0
 		;;
 esac
