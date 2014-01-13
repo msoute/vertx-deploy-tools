@@ -1,7 +1,12 @@
 package nl.soutenet.vertx.mod.integration.cluster;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import junit.framework.Assert;
+import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
@@ -14,14 +19,19 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.fail;
 
 public class ClusterManagerModuleTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModuleTest.class);
-    private static final String POST_URI = "http://localhost:6789/deploy/module";
+
+    private static final String POST_URI = "http://localhost:6789/deploy/deploy";
     private static final String POST_URI_SITE = "http://localhost:6789/deploy/artifact";
+    private static final String POST_URI_MODULE = "http://localhost:6789/deploy/module";
 
     @Test
     public void testInvalidDeployModuleCommand() {
@@ -40,7 +50,7 @@ public class ClusterManagerModuleTest {
     public void testDeployModuleCommand() {
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpPost post = new HttpPost(POST_URI);
+        HttpPost post = new HttpPost(POST_URI_MODULE);
 
         JsonObject postData = createDeployCommand();
 
@@ -82,12 +92,40 @@ public class ClusterManagerModuleTest {
 
     }
 
+    @Test
+    public void testDeployAWSCommand() throws JsonProcessingException {
+
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpPost post = new HttpPost(POST_URI);
+
+        final ObjectWriter writer = new ObjectMapper().writer();
+
+        List<DeployModuleRequest> moduleRequests = new ArrayList<>(1);
+        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils","mongo-connector","1.0.1-SNAPSHOT",1));
+        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, false);
+
+        String postData = writer.writeValueAsString(request);
+        ByteArrayInputStream bos = new ByteArrayInputStream(postData.getBytes());
+        BasicHttpEntity entity = new BasicHttpEntity();
+        entity.setContent(bos);
+        entity.setContentLength(postData.getBytes().length);
+        post.setEntity(entity);
+
+        try (CloseableHttpResponse response = httpclient.execute(post)) {
+            LOG.info("testDeployModuleCommand : Post response status {}", response.getStatusLine().getStatusCode());
+            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+        } catch (IOException e) {
+            LOG.error("testDeployModuleCommand : {}", e);
+            fail();
+        }
+    }
+
 
     private JsonObject createDeployCommand() {
         return new JsonObject()
                 .putString("group_id", "nl.jpoint.vertx-deploy-tools")
                 .putString("artifact_id", "vertx-deploy-mod")
-                .putString("version", "1.0.0-SNAPSHOT")
+                .putString("version", "1.0.6-SNAPSHOT")
                 .putNumber("instances", 1);
     }
 

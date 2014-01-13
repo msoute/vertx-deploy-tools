@@ -1,0 +1,18 @@
+VERTX_VERSION=vert.x-2.0.2-final
+DELETE_USER=false
+
+if [ -d /opt/vert.x ]
+then
+   rm /opt/vert.x
+fi
+
+if [  -d /opt/$VERTX_VERSION ]
+then
+    rm -r /opt/$VERTX_VERSION
+fi
+
+getent passwd $VERTX_USER >/dev/null 2>&1 && DELETE_USER=true
+
+if $DELETE_USER; then
+    deluser vertx
+fi

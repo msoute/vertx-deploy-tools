@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>nl.jpoint</groupId>
+        <artifactId>vertx-deploy-tools</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+    <artifactId>vertx-deploy-mod-deb</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+            <artifactId>vertx-deploy-mod</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+
+    <!--<name>Vert.X deploy module debian package</name>-->
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+                            <artifactId>vertx-deploy-mod</artifactId>
+                            <version>1.0.0-SNAPSHOT</version>
+                            <type>zip</type>
+                            <overWrite>false</overWrite>
+                            <outputDirectory>${project.basedir}/src/main/auxfiles</outputDirectory>
+                            <destFileName>vertx-deploy-mod-${project.version}.zip</destFileName>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>de.tarent.maven.plugins</groupId>
+                <artifactId>pkg-maven-plugin</artifactId>
+                <version>5.0.6</version>
+                <configuration>
+                    <target>precise</target>
+                    <artifactInclusion>dependencies</artifactInclusion>
+                    <ignorePackagingTypes>jar</ignorePackagingTypes>
+                    <targetConfigurations>
+                        <targetConfiguration>
+                            <bundleAll>true</bundleAll>
+                            <target>precise</target>
+                            <revision>r0</revision>
+                            <distros>
+                                <distro>ubuntu_precise</distro>
+                            </distros>
+                            <maintainer>Marcel Soute &lt;msoute@jpoint.nl&gt;</maintainer>
+                            <section>devel</section>
+                            <architecture>all</architecture>
+                            <sysconfFiles>
+                                <sysconfFile>
+                                    <from>config</from>
+                                    <to>vertx/deploy.json</to>
+                                    <rename>true</rename>
+                                </sysconfFile>
+                                <sysconfFile>
+                                    <from>defaults</from>
+                                    <to>default/vertx</to>
+                                    <rename>true</rename>
+                                </sysconfFile>
+                                <sysconfFile>
+                                    <from>init</from>
+                                    <to>init.d/vertx</to>
+                                    <rename>true</rename>
+                                </sysconfFile>
+                            </sysconfFiles>
+                            <DataFiles>
+                                <DataFile>
+                                    <from>vertx-deploy-mod-${project.version}.zip</from>
+                                </DataFile>
+                                <DataFile>
+                                    <from>logback.xml</from>
+                                </DataFile>
+                            </DataFiles>
+                            <postinstScript>postInstallScript</postinstScript>
+                            <postrmScript>postRmScript</postrmScript>
+                        </targetConfiguration>
+                    </targetConfigurations>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>evolvis-release-repository</id>
+            <name>evolvis.org release repository</name>
+            <url>http://maven-repo.evolvis.org/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
