@@ -83,15 +83,25 @@ stop_module () {
 }
 
 bootstrap_container () {
+    DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
+    PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
+	if [ -f $PIDFILE ]; then
+	        stop_module $PIDFILE
+	fi
+    rm -rf /opt/vert.x/sys-mods/$DEPLOY_MOD
+    su $VERTX_USER -c "$DAEMON install $DEPLOY_MOD"
+	BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
+    start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
+}
+
+start_mod () {
         DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
         PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
 	if [ -f $PIDFILE ]; then
 	        stop_module $PIDFILE
 	fi
-        rm -rf /opt/vert.x/sys-mods/$DEPLOY_MOD
-        su $VERTX_USER -c "$DAEMON install $DEPLOY_MOD"
 	BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
-        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
+    start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
 
@@ -112,10 +122,13 @@ case "$1" in
 		bootstrap_container $2
 		log_end_msg 0
 		;;
+	init)
+	    log_daemon_msg "Starting Vert.x deploy Mod"
+	    start_mod $2
+	    log_end_msg 0
+        ;;
 	*)
-		log_daemon_msg "Usage: $NAME {start|stop|bootstrap}"
+		log_daemon_msg "Usage: $NAME {start|stop|init|bootstrap}"
 		log_end_msg 0
 		;;
 esac
-
-exit 0
