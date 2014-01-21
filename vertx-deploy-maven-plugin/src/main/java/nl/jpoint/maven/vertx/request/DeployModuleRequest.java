@@ -10,10 +10,12 @@ public class DeployModuleRequest extends Request {
     private static final String ENDPOINT = "/deploy/module";
 
     private final int instances;
+    private final boolean restart;
 
-    public DeployModuleRequest(String group_id, String artifact_id, String version, int instances) {
+    public DeployModuleRequest(String group_id, String artifact_id, String version, int instances, boolean restart) {
         super(group_id, artifact_id, version);
         this.instances = instances;
+        this.restart = restart;
     }
 
     public int getInstances() {
@@ -24,5 +26,7 @@ public class DeployModuleRequest extends Request {
     public String getEndpoint() {
         return ENDPOINT;
     }
+
+    public boolean doRestart() { return restart; }
 }
 

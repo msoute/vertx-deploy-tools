@@ -20,6 +20,8 @@ public class DeployConfiguration {
     private boolean testScope = false;
     private boolean aws = false;
 
+    private boolean restart = false;
+
     public boolean isDeploySnapshots() {
         return deploySnapshots;
     }
@@ -47,4 +49,6 @@ public class DeployConfiguration {
     public boolean getAws() {
         return this.aws;
     }
+
+    public boolean doRestart() { return restart; }
 }

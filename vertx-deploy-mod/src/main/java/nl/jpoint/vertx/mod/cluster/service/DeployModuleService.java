@@ -2,6 +2,7 @@ package nl.jpoint.vertx.mod.cluster.service;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.command.*;
+import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
@@ -45,35 +46,38 @@ public class DeployModuleService implements DeployService {
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
         // If the module with the same version is already installed there is no need to take any further action.
-        if (moduleInstalled.equals(ModuleVersion.INSTALLED)) {
+        if (moduleInstalled.equals(ModuleVersion.INSTALLED) && !((DeployModuleRequest) deployRequest).doRestart()) {
             return true;
         }
 
-        // Respond OK if the deployment is async.
-        if (deployRequest.isAsync()) {
-            return true;
-        }
+        if (!moduleInstalled.equals(ModuleVersion.INSTALLED)) {
 
-        // If an older version (or SNAPSHOT) is installed undeploy it first.
-        if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
-            UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
-            undeployCommand.execute(deployRequest);
-        }
+            // Respond OK if the deployment is async.
+            if (deployRequest.isAsync()) {
+                return true;
+            }
 
-        // Install the new module.
-        InstallModule installCommand = new InstallModule(platformManager);
-        JsonObject result = installCommand.execute(deployRequest);
+            // If an older version (or SNAPSHOT) is installed undeploy it first.
+            if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
+                UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
+                undeployCommand.execute(deployRequest);
+            }
 
-        // Respond failed if install did not complete.
-        if (!result.getBoolean(Constants.STATUS_SUCCESS)) {
-            return false;
+            // Install the new module.
+            InstallModule installCommand = new InstallModule(platformManager);
+            JsonObject installResult = installCommand.execute(deployRequest);
+
+            // Respond failed if install did not complete.
+            if (!installResult.getBoolean(Constants.STATUS_SUCCESS)) {
+                return false;
+            }
         }
 
         // Run the newly installed module.
         RunModule runModCommand = new RunModule();
-        result = runModCommand.execute(deployRequest);
+        JsonObject runResult = runModCommand.execute(deployRequest);
 
-        if (!result.getBoolean(Constants.STATUS_SUCCESS) && !deployRequest.isAsync()) {
+        if (!runResult.getBoolean(Constants.STATUS_SUCCESS) && !deployRequest.isAsync()) {
             return false;
         }
 

@@ -34,10 +34,10 @@ public class DeployUtils {
         return deployModuleRequests;
     }
 
-    public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
+    public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier, boolean doRestart) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency :createDeployList(activeConfiguration, classifier)) {
-            deployModuleRequests.add(new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4));
+            deployModuleRequests.add(new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4, doRestart));
         }
         return deployModuleRequests;
     }

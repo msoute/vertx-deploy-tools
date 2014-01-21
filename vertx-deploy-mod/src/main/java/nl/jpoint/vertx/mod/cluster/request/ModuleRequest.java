@@ -9,18 +9,20 @@ public class ModuleRequest {
     private final String artifactId;
     private final String version;
     private final String classifier;
+    private final boolean restart;
 
     private String snapshotVersion = null;
 
-    ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier) {
+    ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier, final boolean restart) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.classifier = classifier;
+        this.restart = restart;
     }
 
     ModuleRequest(final String groupId, final String artifactId, final String version) {
-        this(groupId, artifactId, version, null);
+        this(groupId, artifactId, version, null, false);
     }
 
     public String getGroupId() {

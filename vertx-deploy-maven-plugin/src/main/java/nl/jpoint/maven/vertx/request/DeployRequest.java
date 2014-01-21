@@ -34,7 +34,8 @@ public class DeployRequest {
         return new ArrayList<>(artifacts);
     }
 
-  /*  public boolean getAws() {
+
+    /*  public boolean getAws() {
         return this.aws;
     }*/
 
