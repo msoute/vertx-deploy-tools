@@ -30,7 +30,7 @@ public class AwsDeRegisterInstance implements Command<DeployRequest> {
             List<String> instances = awsElbUtil.listLBInstanceMembers();
             if (!instances.contains(awsElbUtil.forInstanceId())) {
                 LOG.info("[{} - {}]: Instance {} not registered with loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-                return new JsonObject().putBoolean("success", false);
+                return new JsonObject().putBoolean("success", true);
             }
             if (awsElbUtil.deRegisterInstanceFromLoadbalancer()) {
                 LOG.info("[{} - {}]: Failed to de-register Instance {} from loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
