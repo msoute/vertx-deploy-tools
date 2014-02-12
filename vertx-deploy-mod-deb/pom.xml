@@ -117,6 +117,15 @@
                         </targetConfiguration>
                     </targetConfigurations>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>pkg</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>pkg</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
