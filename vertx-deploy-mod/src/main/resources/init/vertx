@@ -6,8 +6,8 @@
 # Required-Stop:     $local_fs $remote_fs $network $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts vert.x module
-# Description:       starts vert.x module using start-stop-daemon
+# Short-Description: starts vert.x modules
+# Description:       starts vert.x modules using start-stop-daemon
 ### END INIT INFO
 
 . /etc/default/vertx
@@ -17,7 +17,7 @@ DAEMON=$VERTX_HOME/bin/vertx
 VERTICLE=$2
 SERVICENAME=$( echo $2 | cut -d '~' -f 1,2)
 INSTANCES=$3
-DAEMON_OPTS="runmod $VERTICLE -instances 1 -cluster $"
+DAEMON_OPTS=" -instances 2 -cluster $"
 PIDDIR=/var/run/vertx
 PIDFILE=$PIDDIR/$VERTICLE.pid
 
@@ -29,12 +29,12 @@ if [ ! -d "$PIDDIR" ]; then
   chown $VERTX_USER:$VERTX_USER $PIDDIR
 fi
 
-if [ ! -d "/var/log/vertx"]; then
+if [ ! -d /var/log/vertx ]; then
     mkdir /var/log/vertx
     chown $VERTX_USER:$VERTX_USER /var/log/vertx
 fi
 
-if [ ! -d "/var/run/vertx"]; then
+if [ ! -d /var/run/vertx ]; then
     mkdir /var/run/vertx
     chown $VERTX_USER:$VERTX_USER /var/run/vertx
 fi
@@ -45,15 +45,34 @@ if [ ! -d "$VERTX_HOME/mods/$VERTICLE" ]; then
    exit 1
 fi
 
+start_modules () {
+     for i in $( ls $VERTX_HOME/mods ); do
+        VERTICLE=$i
+        PIDFILE=$PIDDIR/$VERTICLE.pid
+        SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
+        start_module
+     done
+}
+
+stop_modules () {
+    for i in $( ls $VERTX_HOME/mods ); do
+        VERTICLE=$i
+        PIDFILE=$PIDDIR/$VERTICLE.pid
+        SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
+        stop_module $PIDFILE
+    done
+}
+
 
 start_module () {
 
     if [ -f $PIDFILE ]; then
 		PID=$(cat $PIDFILE)
-        log_daemon_msg "Module $DESC allready running on pid $PID."
+        log_daemon_msg "Module $VERTICLE allready running on pid $PID."
         log_end_msg 1
 		exit 2
 	fi
+
 	LIST=$(ls -l /opt/vert.x/mods|grep $SERVICENAME |wc -l)
 	if [ "$LIST" -gt "0" ]; then
 		OTHER=$(ls /opt/vert.x/mods | grep $SERVICENAME)
@@ -63,14 +82,16 @@ start_module () {
 			exit 3
 		fi
 	fi
-        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $DAEMON_OPTS || true
+	    log_daemon_msg "Starting $VERTICLE."
+        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- runmod $VERTICLE $DAEMON_OPTS || true
+        log_end_msg 0
 }
 
 stop_module () {
-
+        log_daemon_msg "Stopping $VERTICLE"
         if [ -f $1 ]; then
     		if [ ! $(kill $(cat $1) > /dev/null 2>&1) ]; then
-			log_daemon_msg "Kill process for ${PIDFILE}"
+			log_daemon_msg "Kill process for $PIDFILE"
 		else
 			kill $(cat $1)
 		fi
@@ -78,44 +99,27 @@ stop_module () {
 	else
 
 		log_end_msg 0
-		exit 0
 	fi
-}
-
-bootstrap_container () {
-        DEPLOY_MOD="nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT"
-        PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
-	if [ -f $PIDFILE ]; then
-	        stop_module $PIDFILE
-	fi
-        rm -rf /opt/vert.x/sys-mods/$DEPLOY_MOD
-        su $VERTX_USER -c "$DAEMON install $DEPLOY_MOD"
-	BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
-        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
 
 case "$1" in
-	start)
-		log_daemon_msg "Starting $2."
+    start)
+        start_modules
+        ;;
+    stop)
+        stop_modules
+        ;;
+	start-module)
 		start_module
-		log_end_msg 0
-		;;
 
-	stop)
-		log_daemon_msg "Stopping $2"
-		stop_module $PIDFILE
-		log_end_msg 0
 		;;
-	bootstrap)
-		log_daemon_msg "Bootstrapping Vert.x container"
-		bootstrap_container $2
-		log_end_msg 0
+	stop-module)
+
+		stop_module $PIDFILE
 		;;
 	*)
-		log_daemon_msg "Usage: $NAME {start|stop|bootstrap}"
+		log_daemon_msg "Usage: $NAME {start|stop|start-deploy-mod|stop-deploy-mod|bootstrap}"
 		log_end_msg 0
 		;;
 esac
-
-exit 0
