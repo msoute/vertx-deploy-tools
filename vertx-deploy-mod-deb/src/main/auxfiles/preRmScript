@@ -1,1 +1,4 @@
 /etc/init.d/vertx stop-deploy-mod
+
+update-rc.d -f vertx-deploy remove
+update-rc.d -f vertx remove

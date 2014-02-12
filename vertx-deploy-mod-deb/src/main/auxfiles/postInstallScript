@@ -48,4 +48,7 @@ chown -R $VERTX_USER:$VERTX_USER /etc/vertx
 
 chown -R $VERTX_USER:$VERTX_USER /var/www
 
-/etc/init.d/vertx start-deploy-mod
+/etc/init.d/vertx-deploy start
+
+update-rc.d vertx-deploy defaults
+update-rc.d vertx defaults
