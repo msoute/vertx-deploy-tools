@@ -59,6 +59,15 @@
                         </artifactItem>
                     </artifactItems>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>pkg</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>de.tarent.maven.plugins</groupId>
