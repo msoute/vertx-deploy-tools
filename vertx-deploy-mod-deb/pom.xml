@@ -47,6 +47,11 @@
             <resource>
                 <filtering>true</filtering>
                 <directory>${basedir}/src/main/auxfiles</directory>
+               <!-- <targetPath>${basedir}/src/main/auxfiles</targetPath>
+                <includes>
+                    <include>postInstallScript</include>
+                    <include>defaults</include>
+                </includes>-->
             </resource>
         </resources>
         <plugins>
@@ -96,7 +101,7 @@
 
                             <section>devel</section>
                             <architecture>all</architecture>
-                            <srcAuxFilesDir>${project.build.directory}/classes/</srcAuxFilesDir>
+                            <srcAuxFilesDir>target/classes/</srcAuxFilesDir>
                             <sysconfFiles>
                                 <sysconfFile>
                                     <from>config</from>
