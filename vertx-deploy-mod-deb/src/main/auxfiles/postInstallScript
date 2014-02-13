@@ -5,6 +5,7 @@ VERTX_USER=vertx
 CREATE_USER=false
 
 chmod +x /etc/init.d/vertx
+chmod +x /etc/init.d/vertx-deploy
 
 # Download and unpack vert.x
 wget -P /tmp $VERTX_URL
@@ -37,7 +38,7 @@ mkdir /var/www
 # Copy extra libs
 cp $bundledjardir/*.jar /opt/vert.x/lib
 
-unzip -d /opt/vert.x/sys-mods/nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.0-SNAPSHOT /$datadir/vertx-deploy-mod-1.0.0-SNAPSHOT.zip
+unzip -d /opt/vert.x/sys-mods/nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~${project.version} /$datadir/vertx-deploy-mod-${project.version}.zip
 cp /$datadir/logback.xml /opt/vert.x/conf/
 cp /$datadir/repos.txt /opt/vert.x/conf/
 

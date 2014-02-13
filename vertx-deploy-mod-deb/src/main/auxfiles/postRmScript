@@ -1,6 +1,8 @@
 VERTX_VERSION=vert.x-2.0.2-final
 DELETE_USER=false
 
+
+
 if [ -d /opt/vert.x ]
 then
    rm /opt/vert.x
