@@ -1,8 +1,6 @@
 VERTX_VERSION=vert.x-2.0.2-final
 DELETE_USER=false
 
-
-
 if [ -d /opt/vert.x ]
 then
    rm /opt/vert.x
@@ -16,5 +14,8 @@ fi
 getent passwd $VERTX_USER >/dev/null 2>&1 && DELETE_USER=true
 
 if $DELETE_USER; then
-    deluser vertx
+    ONLINE=`who|grep $1 |  cut -f1 -d" "`
+    if [ -z "$ONLINE" ]; then
+        deluser vertx
+    fi
 fi
