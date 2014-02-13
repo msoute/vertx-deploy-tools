@@ -52,6 +52,11 @@
                     <include>postInstallScript</include>
                     <include>defaults</include>
                 </includes>-->
+                <excludes>
+                    <exclude>vertx-deploy-mod-${project.version}.zip</exclude>
+                    <exclude>logback.xml</exclude>
+                    <exclude>repos.txt</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -93,7 +98,7 @@
                         <targetConfiguration>
                             <bundleAll>true</bundleAll>
                             <target>precise</target>
-                            <revision>r1</revision>
+                            <revision>r2</revision>
                             <distros>
                                 <distro>ubuntu_precise</distro>
                             </distros>
@@ -102,6 +107,7 @@
                             <section>devel</section>
                             <architecture>all</architecture>
                             <srcAuxFilesDir>target/classes/</srcAuxFilesDir>
+                            <srcDataFilesDir>src/main/auxfiles</srcDataFilesDir>
                             <sysconfFiles>
                                 <sysconfFile>
                                     <from>config</from>
