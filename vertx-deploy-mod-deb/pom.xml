@@ -93,7 +93,7 @@
                         <targetConfiguration>
                             <bundleAll>true</bundleAll>
                             <target>precise</target>
-                            <revision>r0</revision>
+                            <revision>r1</revision>
                             <distros>
                                 <distro>ubuntu_precise</distro>
                             </distros>
