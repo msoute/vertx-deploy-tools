@@ -96,6 +96,7 @@
 
                             <section>devel</section>
                             <architecture>all</architecture>
+                            <srcAuxFilesDir>${project.build.directory}/classes/</srcAuxFilesDir>
                             <sysconfFiles>
                                 <sysconfFile>
                                     <from>config</from>
