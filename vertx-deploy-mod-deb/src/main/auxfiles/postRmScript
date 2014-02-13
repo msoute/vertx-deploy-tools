@@ -10,12 +10,3 @@ if [  -d /opt/$VERTX_VERSION ]
 then
     rm -r /opt/$VERTX_VERSION
 fi
-
-getent passwd $VERTX_USER >/dev/null 2>&1 && DELETE_USER=true
-
-if $DELETE_USER; then
-    ONLINE=`who|grep $1 |  cut -f1 -d" "`
-    if [ -z "$ONLINE" ]; then
-        deluser vertx
-    fi
-fi
