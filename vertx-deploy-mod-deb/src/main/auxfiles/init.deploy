@@ -101,7 +101,7 @@ case "$1" in
 	    log_end_msg 0
         ;;
 	*)
-		log_daemon_msg "Usage: $NAME {start|stop|start-deploy-mod|stop-deploy-mod|bootstrap}"
+		log_daemon_msg "Usage: $NAME {start|stop|bootstrap}"
 		log_end_msg 0
 		;;
 esac

@@ -119,7 +119,7 @@ case "$1" in
 		stop_module $PIDFILE
 		;;
 	*)
-		log_daemon_msg "Usage: $NAME {start|stop|start-deploy-mod|stop-deploy-mod|bootstrap}"
+		log_daemon_msg "Usage: $NAME {start|stop|start-module|stop-module}"
 		log_end_msg 0
 		;;
 esac
