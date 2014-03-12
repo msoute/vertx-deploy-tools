@@ -50,7 +50,7 @@ start_modules () {
         VERTICLE=$i
         PIDFILE=$PIDDIR/$VERTICLE.pid
         SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
-        start_module
+        start_module $PIDFILE
      done
 }
 
@@ -66,8 +66,8 @@ stop_modules () {
 
 start_module () {
 
-    if [ -f $PIDFILE ]; then
-		PID=$(cat $PIDFILE)
+    if [ -f $1 ]; then
+		PID=$(cat $1)
         log_daemon_msg "Module $VERTICLE allready running on pid $PID."
         log_end_msg 1
 		exit 2
@@ -83,24 +83,18 @@ start_module () {
 		fi
 	fi
 	    log_daemon_msg "Starting $VERTICLE."
-        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- runmod $VERTICLE $DAEMON_OPTS || true
+        start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $1 --exec $DAEMON  -- runmod $VERTICLE $DAEMON_OPTS || true
         log_end_msg 0
 }
 
 stop_module () {
         log_daemon_msg "Stopping $VERTICLE"
-        if [ -f $1 ]; then
-    		if [ ! $(kill $(cat $1) > /dev/null 2>&1) ]; then
-			log_daemon_msg "Kill process for $PIDFILE"
-		else
-			kill $(cat $1)
-		fi
-	        rm  $1
-	else
-
-		log_end_msg 0
+	start-stop-daemon --user $VERTX_USER --oknodo --quiet --stop --pidfile $1
+	if [ -f $1 ]; then
+		rm $1
 	fi
 }
+
 
 
 case "$1" in
@@ -111,8 +105,7 @@ case "$1" in
         stop_modules
         ;;
 	start-module)
-		start_module
-
+		start_module $PIDFILE
 		;;
 	stop-module)
 
