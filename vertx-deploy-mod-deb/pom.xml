@@ -132,15 +132,15 @@
                                 <sysconfFile>
                                     <from>init.deploy</from>
                                     <to>init.d/vertx-deploy</to>
-
+                                    <rename>true</rename>
                                 </sysconfFile>
                                 <sysconfFile>
-                                    <from>logback.xml</from>
+                                    <from>logging.xml</from>
                                     <to>vertx/logback.xml</to>
-
+                                    <rename>true</rename>
                                 </sysconfFile>
                                 <sysconfFile>
-                                    <from>repos.txt</from>
+                                    <from>repos</from>
                                     <to>vertx/repos.txt</to>
                                     <rename>true</rename>
                                 </sysconfFile>
