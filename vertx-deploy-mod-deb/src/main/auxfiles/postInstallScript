@@ -39,7 +39,11 @@ mkdir /opt/vert.x/repo
 mkdir /opt/vert.x/sys-mods
 mkdir /opt/vert.x/mods
 
-mkdir /var/www
+if [ ! -d /var/www ]
+then
+   mkdir /var/www
+fi
+
 
 # Copy extra libs
 cp $bundledjardir/*.jar /opt/vert.x/lib

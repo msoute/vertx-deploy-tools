@@ -115,6 +115,11 @@
                                     <rename>true</rename>
                                 </sysconfFile>
                                 <sysconfFile>
+                                    <from>vertx.sudo</from>
+                                    <to>sudoers.d/vertx</to>
+                                    <rename>true</rename>
+                                </sysconfFile>
+                                <sysconfFile>
                                     <from>defaults</from>
                                     <to>default/vertx</to>
                                     <rename>true</rename>
