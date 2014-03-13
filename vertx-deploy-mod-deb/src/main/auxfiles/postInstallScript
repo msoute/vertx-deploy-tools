@@ -28,12 +28,6 @@ then
     mkdir /var/log/vertx
 fi
 
-# Add user to sudoers
-if [! -f /etc/sudoers.d ]
-then
-    echo "vertx ALL = NOPASSWD: /etc/init.d/vertx" > /etc/sudoers.d/vertx
-fi
-
 # Create default dirs
 mkdir /opt/vert.x/repo
 mkdir /opt/vert.x/sys-mods
