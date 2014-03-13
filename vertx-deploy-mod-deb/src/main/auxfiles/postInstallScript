@@ -44,7 +44,6 @@ then
    mkdir /var/www
 fi
 
-
 # Copy extra libs
 cp $bundledjardir/*.jar /opt/vert.x/lib
 
@@ -63,7 +62,7 @@ chown -R $VERTX_USER:$VERTX_USER /etc/vertx
 
 chown -R $VERTX_USER:$VERTX_USER /var/www
 
-chmod 0440 /opt/sudoers.d/vertx
+chmod 0440 /etc/sudoers.d/vertx
 
 /etc/init.d/vertx-deploy start
 
