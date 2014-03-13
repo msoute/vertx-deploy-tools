@@ -134,16 +134,20 @@
                                     <to>init.d/vertx-deploy</to>
                                     <rename>true</rename>
                                 </sysconfFile>
+                                <sysconfFile>
+                                    <from>logback.xml</from>
+                                    <to>vertx/logback.xml</to>
+                                    <rename>true</rename>
+                                </sysconfFile>
+                                <sysconfFile>
+                                    <from>repos.txt</from>
+                                    <to>vertx/repos.txt</to>
+                                    <rename>true</rename>
+                                </sysconfFile>
                             </sysconfFiles>
                             <DataFiles>
                                 <DataFile>
                                     <from>vertx-deploy-mod-${project.version}.zip</from>
-                                </DataFile>
-                                <DataFile>
-                                    <from>logback.xml</from>
-                                </DataFile>
-                                <DataFile>
-                                    <from>repos.txt</from>
                                 </DataFile>
                             </DataFiles>
 

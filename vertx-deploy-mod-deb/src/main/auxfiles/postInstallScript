@@ -49,8 +49,12 @@ fi
 cp $bundledjardir/*.jar /opt/vert.x/lib
 
 unzip -d /opt/vert.x/sys-mods/nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~${project.version} /$datadir/vertx-deploy-mod-${project.version}.zip
-cp /$datadir/logback.xml /opt/vert.x/conf/
-cp /$datadir/repos.txt /opt/vert.x/conf/
+# cp /$datadir/logback.xml /opt/vert.x/conf/
+# cp /$datadir/repos.txt /opt/vert.x/conf/
+rm /opt/vert.x/conf/repos.txt
+
+ln -sf /etc/vertx/logback.xml /opt/vert.x/conf/logback.xml
+ln -sf /etc/vertx/repos.txt /opt/vert.x/conf/repos.txt
 
 # Set user rights
 chown -R $VERTX_USER:$VERTX_USER /opt/vert.x/
@@ -58,6 +62,8 @@ chown -R $VERTX_USER:$VERTX_USER /var/log/vertx
 chown -R $VERTX_USER:$VERTX_USER /etc/vertx
 
 chown -R $VERTX_USER:$VERTX_USER /var/www
+
+chmod 0440 /opt/sudoers.d/vertx
 
 /etc/init.d/vertx-deploy start
 
