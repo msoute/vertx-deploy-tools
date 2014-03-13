@@ -14,9 +14,9 @@ then
     tar -C /opt -xzf /tmp/$VERTX_VERSION.tar.gz
 
     # Create default dirs
-    mkdir /opt/vert.x/repo
-    mkdir /opt/vert.x/sys-mods
-    mkdir /opt/vert.x/mods
+    mkdir /opt/$VERTX_VERSION/repo
+    mkdir /opt/$VERTX_VERSION/sys-mods
+    mkdir /opt/$VERTX_VERSION/mods
 fi
 
 ln -s /opt/$VERTX_VERSION /opt/vert.x
