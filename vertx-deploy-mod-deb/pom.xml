@@ -16,10 +16,6 @@
 
     <description>Vert.x deploy tools</description>
 
-    <properties>
-        <revision.number>0</revision.number>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -102,7 +98,7 @@
                         <targetConfiguration>
                             <bundleAll>true</bundleAll>
                             <target>precise</target>
-                            <revision>${revision.number}</revision>
+                            <revision>r0</revision>
                             <distros>
                                 <distro>ubuntu_precise</distro>
                             </distros>
