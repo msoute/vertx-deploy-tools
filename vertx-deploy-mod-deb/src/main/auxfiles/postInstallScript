@@ -11,7 +11,7 @@ if [ ! -d /opt/$VERTX_VERSION ]
 then
     # Download and unpack vert.x
     wget -P /tmp $VERTX_URL
-    tar -C /opt -xzvf /tmp/$VERTX_VERSION.tar.gz
+    tar -C /opt -xzf /tmp/$VERTX_VERSION.tar.gz
 fi
 
 ln -s /opt/$VERTX_VERSION /opt/vert.x
