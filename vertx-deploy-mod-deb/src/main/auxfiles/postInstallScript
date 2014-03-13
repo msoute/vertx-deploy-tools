@@ -7,11 +7,14 @@ CREATE_USER=false
 chmod +x /etc/init.d/vertx
 chmod +x /etc/init.d/vertx-deploy
 
-# Download and unpack vert.x
-wget -P /tmp $VERTX_URL
-tar -C /opt -xzvf /tmp/$VERTX_VERSION.tar.gz
-ln -s /opt/$VERTX_VERSION /opt/vert.x
+if [ ! -d /opt/$VERTX_VERSION ]
+then
+    # Download and unpack vert.x
+    wget -P /tmp $VERTX_URL
+    tar -C /opt -xzvf /tmp/$VERTX_VERSION.tar.gz
+fi
 
+ln -s /opt/$VERTX_VERSION /opt/vert.x
 # Add User
 getent passwd $VERTX_USER >/dev/null 2>&1 && CREATE_USER=true
 

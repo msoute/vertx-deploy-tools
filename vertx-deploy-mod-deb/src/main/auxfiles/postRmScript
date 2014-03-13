@@ -5,8 +5,3 @@ if [ -d /opt/vert.x ]
 then
    rm /opt/vert.x
 fi
-
-if [  -d /opt/$VERTX_VERSION ]
-then
-    rm -r /opt/$VERTX_VERSION
-fi
