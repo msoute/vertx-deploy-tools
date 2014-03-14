@@ -40,18 +40,10 @@ if [ ! -d /var/run/vertx ]; then
 fi
 
 stop_module () {
-
-        if [ -f $1 ]; then
-    		if [ ! $(kill $(cat $1) > /dev/null 2>&1) ]; then
-			log_daemon_msg "Kill process for ${PIDFILE}"
-		else
-			kill $(cat $1)
-		fi
-	        rm  $1
-	else
-
-		log_end_msg 0
-		exit 0
+    log_daemon_msg "Stopping Vert.X Deploy Module"
+	start-stop-daemon --user $VERTX_USER --oknodo --quiet --stop --pidfile $1
+	if [ -f $1 ]; then
+		rm $1
 	fi
 }
 
