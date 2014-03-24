@@ -31,9 +31,6 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
     @Override
     public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
-
-        LOG.info("Request {} ", body.encode());
-
         String deployId = body.getString("id");
         AwsState state = AwsState.valueOf(body.getString("state"));
 
