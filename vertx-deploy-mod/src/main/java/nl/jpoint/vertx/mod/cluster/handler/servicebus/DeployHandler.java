@@ -36,6 +36,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             return;
         }
         switch (state) {
+            case NOTREGISTERED:
             case OUTOFSERVICE :
                 this.deployArtifacts(deployId);
                 break;

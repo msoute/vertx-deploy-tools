@@ -30,7 +30,9 @@ public class AwsDeRegisterInstance implements Command<DeployRequest> {
             List<String> instances = awsElbUtil.listLBInstanceMembers();
             if (!instances.contains(awsElbUtil.forInstanceId())) {
                 LOG.info("[{} - {}]: Instance {} not registered with loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-                vertx.setPeriodic(5000L, new AwsRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.OUTOFSERVICE));
+                vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", true)
+                        .putString("id", request.getId().toString())
+                        .putString("state", AwsState.NOTREGISTERED.name()));
                 return new JsonObject().putBoolean("success", true);
             }
             if (awsElbUtil.deRegisterInstanceFromLoadbalancer()) {
