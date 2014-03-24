@@ -8,11 +8,15 @@ import nl.jpoint.vertx.mod.cluster.request.DeployState;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
 import nl.jpoint.vertx.mod.cluster.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 public class DeployHandler implements Handler<Message<JsonObject>> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DeployHandler.class);
 
     private final AwsService awsService;
     private final DeployModuleService deployModuleService;
@@ -28,6 +32,8 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
     public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
 
+        LOG.info("Request {} ", body.encode());
+
         String deployId = body.getString("id");
         AwsState state = AwsState.valueOf(body.getString("state"));
 
@@ -37,7 +43,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
         }
         switch (state) {
             case NOTREGISTERED:
-            case OUTOFSERVICE :
+            case OUTOFSERVICE:
                 this.deployArtifacts(deployId);
                 break;
             case INSERVICE:
@@ -53,7 +59,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
     }
 
     private void deployArtifacts(String deployId) {
-        DeployRequest deployRequest =  awsService.updateAndGetRequest(DeployState.DEPLOYING_MODULES, deployId);
+        DeployRequest deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_MODULES, deployId);
 
         boolean deployOk = false;
 
@@ -66,7 +72,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             }
         }
 
-        deployRequest =  awsService.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployId);
+        deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployId);
 
         if (deployOk) {
             for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
