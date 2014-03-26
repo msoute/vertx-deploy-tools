@@ -88,8 +88,8 @@ start_module () {
 }
 
 stop_module () {
-        log_daemon_msg "Stopping $VERTICLE"
-	start-stop-daemon --user $VERTX_USER --oknodo --quiet --stop --pidfile $1
+    log_daemon_msg "Stopping $VERTICLE"
+	start-stop-daemon --user $VERTX_USER --oknodo --quiet --retry=TERM/30/KILL/5 --stop --pidfile $1
 	if [ -f $1 ]; then
 		rm $1
 	fi
