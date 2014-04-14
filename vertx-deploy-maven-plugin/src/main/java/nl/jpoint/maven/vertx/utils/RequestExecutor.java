@@ -23,10 +23,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RequestExecutor {
 
     private final Log log;
+    private final long timeout;
 
     public RequestExecutor(Log log) {
 
         this.log = log;
+        timeout = System.currentTimeMillis() + 60 * 5000;
     }
 
     private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException {
@@ -66,11 +68,15 @@ public class RequestExecutor {
                                 log.error("Deploy request failed");
                                 waitFor.decrementAndGet();
                             default:
+                                if (System.currentTimeMillis() > timeout) {
+                                    status.set(500);
+                                    log.error("Timeout while waiting for deploy reques.");
+                                    waitFor.decrementAndGet();
+                                }
                                 log.info("Waiting for deploy to finish. Current status : " + state);
                         }
 
                     } catch (IOException e) {
-                        System.out.println(e.getMessage());
                         status.set(500);
                         waitFor.decrementAndGet();
                     }
@@ -82,6 +88,7 @@ public class RequestExecutor {
             }
 
             exec.shutdown();
+            exec.awaitTermination(30, TimeUnit.SECONDS);
 
             if (status.get() != 200) {
                 throw new MojoExecutionException("Error deploying module.");
