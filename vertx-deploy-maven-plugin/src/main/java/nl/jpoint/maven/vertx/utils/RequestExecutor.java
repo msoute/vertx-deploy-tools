@@ -104,7 +104,7 @@ public class RequestExecutor {
             log.error("testDeployModuleCommand ", e);
             throw new MojoExecutionException("Error deploying module.", e);
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new MojoExecutionException("Error deploying module.", e);
         }
     }
 
