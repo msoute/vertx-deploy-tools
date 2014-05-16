@@ -57,7 +57,6 @@ public class RequestExecutor {
                     try (CloseableHttpResponse response = httpClient.execute(get)) {
                         int code = response.getStatusLine().getStatusCode();
                         String state = response.getStatusLine().getReasonPhrase();
-                        log.info("waitFor 1 : " + waitFor.get());
                         switch (code) {
                             case 200:
                                 log.info("Deploy request finished executing");
@@ -89,16 +88,13 @@ public class RequestExecutor {
             }, 0, 15, TimeUnit.SECONDS);
 
             while (waitFor.intValue() > 0) {
-                log.info("waitFor 2 : " + waitFor.get());
                 Thread.sleep(15000);
             }
-            log.info("waitFor 3 : " + waitFor.get());
 
             log.info("Shutting down executor");
             exec.shutdown();
-            log.info("awaiting termination");
+            log.info("awaiting termination of executor");
             exec.awaitTermination(30, TimeUnit.SECONDS);
-            log.info("status " + status.get());
             if (status.get() != 200) {
                 throw new MojoFailureException("Error deploying module.");
             }
