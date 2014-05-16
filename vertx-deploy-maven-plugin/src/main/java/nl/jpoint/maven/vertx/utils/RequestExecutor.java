@@ -57,7 +57,7 @@ public class RequestExecutor {
                     try (CloseableHttpResponse response = httpClient.execute(get)) {
                         int code = response.getStatusLine().getStatusCode();
                         String state = response.getStatusLine().getReasonPhrase();
-
+                        log.info("waitFor : " + waitFor.get());
                         switch (code) {
                             case 200:
                                 log.info("Deploy request finished executing");
@@ -71,7 +71,7 @@ public class RequestExecutor {
                             default:
                                 if (System.currentTimeMillis() > timeout) {
                                     status.set(500);
-                                    log.error("Timeout while waiting for deploy reques.");
+                                    log.error("Timeout while waiting for deploy request.");
                                     waitFor.decrementAndGet();
                                 }
                                 log.info("Waiting for deploy to finish. Current status : " + state);
@@ -85,8 +85,7 @@ public class RequestExecutor {
             }, 0, 15, TimeUnit.SECONDS);
 
             while (waitFor.intValue() != 0) {
-                log.info("timeout while waiting for deploy request");
-                Thread.sleep(timeout);
+                Thread.sleep(15000);
             }
 
             exec.shutdown();
