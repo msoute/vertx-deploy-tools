@@ -82,13 +82,13 @@ public class RequestExecutor {
                         }
 
                     } catch (IOException e) {
-                        status.set(500);
+                        if (status.get() != 200) {status.set(500);}
                         waitFor.decrementAndGet();
                     }
                 }
             }, 0, 15, TimeUnit.SECONDS);
 
-            while (waitFor.intValue() != 0) {
+            while (waitFor.intValue() > 0) {
                 log.info("waitFor 2 : " + waitFor.get());
                 Thread.sleep(15000);
             }
