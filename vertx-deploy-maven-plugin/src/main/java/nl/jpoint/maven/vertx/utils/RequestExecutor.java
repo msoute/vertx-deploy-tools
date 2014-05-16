@@ -11,6 +11,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
 import java.io.ByteArrayInputStream;
@@ -31,7 +32,7 @@ public class RequestExecutor {
         timeout = System.currentTimeMillis() + 60 * 5000;
     }
 
-    private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException {
+    private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException, MojoFailureException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String buildId;
             final AtomicInteger waitFor = new AtomicInteger(1);
@@ -84,14 +85,15 @@ public class RequestExecutor {
             }, 0, 15, TimeUnit.SECONDS);
 
             while (waitFor.intValue() != 0) {
-                Thread.sleep(15000);
+                log.info("timeout while waiting for deploy request");
+                Thread.sleep(timeout);
             }
 
             exec.shutdown();
             exec.awaitTermination(30, TimeUnit.SECONDS);
 
             if (status.get() != 200) {
-                throw new MojoExecutionException("Error deploying module.");
+                throw new MojoFailureException("Error deploying module.");
             }
 
 
@@ -152,7 +154,7 @@ public class RequestExecutor {
         }
     }
 
-    public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest) throws MojoExecutionException {
+    public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest) throws MojoExecutionException, MojoFailureException {
 
         for (String host : activeConfiguration.getHosts()) {
 
