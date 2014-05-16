@@ -64,9 +64,11 @@ public class RequestExecutor {
                                 waitFor.decrementAndGet();
                                 break;
                             case 500:
-                                status.set(500);
-                                log.error("Deploy request failed");
-                                waitFor.decrementAndGet();
+                                if (status.get() != 200) {
+                                    status.set(500);
+                                    log.error("Deploy request failed");
+                                    waitFor.decrementAndGet();
+                                }
                                 break;
                             default:
                                 if (System.currentTimeMillis() > timeout) {
@@ -101,9 +103,10 @@ public class RequestExecutor {
 
 
         } catch (IOException e) {
-            log.error("testDeployModuleCommand ", e);
+            log.error("IOException ", e);
             throw new MojoExecutionException("Error deploying module.", e);
         } catch (InterruptedException e) {
+            log.error("InterruptedException ", e);
             throw new MojoExecutionException("Error deploying module.", e);
         }
     }
