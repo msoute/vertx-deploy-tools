@@ -166,6 +166,7 @@ public class RequestExecutor {
     public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest, Settings settings) throws MojoExecutionException, MojoFailureException {
 
         if (activeConfiguration.getOpsWorks() && activeConfiguration.getOpsWorksStackId() != null) {
+            log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
             activeConfiguration.getHosts().clear();
             if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
                 throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
@@ -176,6 +177,7 @@ public class RequestExecutor {
             try {
                 hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId());
                 for (String opsHost : hosts) {
+                    log.info("Adding host from opsworks response : " + opsHost);
                     activeConfiguration.getHosts().add("http://"+opsHost+":6789");
                 }
             } catch (AwsException e) {
