@@ -176,7 +176,7 @@ public class RequestExecutor {
             try {
                 hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId());
                 for (String opsHost : hosts) {
-                    activeConfiguration.getHosts().add(opsHost);
+                    activeConfiguration.getHosts().add("http://"+opsHost+":6789");
                 }
             } catch (AwsException e) {
                 throw new MojoFailureException(e.getMessage());
