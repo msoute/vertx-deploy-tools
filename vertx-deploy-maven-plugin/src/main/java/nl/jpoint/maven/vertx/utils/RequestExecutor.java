@@ -165,6 +165,24 @@ public class RequestExecutor {
 
     public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest, Settings settings) throws MojoExecutionException, MojoFailureException {
 
+        if (activeConfiguration.getOpsWorks() && activeConfiguration.getOpsWorksStackId() != null) {
+            activeConfiguration.getHosts().clear();
+            if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
+                throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
+            }
+            Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
+            AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
+            List<String> hosts;
+            try {
+                hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId());
+                for (String opsHost : hosts) {
+                    activeConfiguration.getHosts().add(opsHost);
+                }
+            } catch (AwsException e) {
+                throw new MojoFailureException(e.getMessage());
+            }
+        }
+
         for (String host : activeConfiguration.getHosts()) {
 
             log.info("Deploying to host : " + host);
@@ -176,25 +194,7 @@ public class RequestExecutor {
             entity.setContentLength(deployRequest.toJson().getBytes().length);
             post.setEntity(entity);
 
-            if (activeConfiguration.getOpsWorks() && activeConfiguration.getOpsWorksStackId() != null) {
-                activeConfiguration.getHosts().clear();
-                if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
-                    throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
-                }
-                Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
-                AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
-                List<String> hosts;
-                try {
-                    hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId());
-                    for (String opsHost : hosts) {
-                        activeConfiguration.getHosts().add(opsHost);
-                    }
-                } catch (AwsException e) {
-                    throw new MojoFailureException(e.getMessage());
-                }
 
-
-            }
 
             if (!activeConfiguration.getAws()) {
                 this.executeRequest(post);
