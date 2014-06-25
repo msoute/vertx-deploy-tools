@@ -13,9 +13,12 @@ import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -160,7 +163,7 @@ public class RequestExecutor {
         }
     }
 
-    public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest) throws MojoExecutionException, MojoFailureException {
+    public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest, Settings settings) throws MojoExecutionException, MojoFailureException {
 
         for (String host : activeConfiguration.getHosts()) {
 
@@ -172,6 +175,27 @@ public class RequestExecutor {
             entity.setContent(bos);
             entity.setContentLength(deployRequest.toJson().getBytes().length);
             post.setEntity(entity);
+
+            if (activeConfiguration.getOpsWorks() && activeConfiguration.getOpsWorksStackId() != null) {
+                activeConfiguration.getHosts().clear();
+                if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
+                    throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
+                }
+                Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
+                AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
+                List<String> hosts;
+                try {
+                    hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId());
+                    for (String opsHost : hosts) {
+                        activeConfiguration.getHosts().add(opsHost);
+                    }
+                } catch (AwsException e) {
+                    throw new MojoFailureException(e.getMessage());
+                }
+
+
+            }
+
             if (!activeConfiguration.getAws()) {
                 this.executeRequest(post);
             } else {

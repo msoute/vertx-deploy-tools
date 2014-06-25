@@ -9,10 +9,16 @@ public class DeployConfiguration {
 
     private List<String> dirsToClean = new ArrayList<>();
 
-    private List<String> hosts;
+    private List<String> hosts = new ArrayList<>();
     private String target;
 
     private String context;
+
+    public String getOpsWorksStackId() {
+        return opsWorksStackId;
+    }
+
+    private String opsWorksStackId;
 
     private List<Exclusion> exclusions;
 
@@ -21,6 +27,7 @@ public class DeployConfiguration {
     private boolean aws = false;
 
     private boolean restart = false;
+    private boolean opsWorks = false;
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -48,6 +55,10 @@ public class DeployConfiguration {
 
     public boolean getAws() {
         return this.aws;
+    }
+
+    public boolean getOpsWorks() {
+        return this.opsWorks;
     }
 
     public boolean doRestart() { return restart; }

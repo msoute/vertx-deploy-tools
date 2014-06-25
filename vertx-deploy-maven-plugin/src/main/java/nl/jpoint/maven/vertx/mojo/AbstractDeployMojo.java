@@ -5,6 +5,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     DeployConfiguration activeConfiguration;
     @Component
     MavenProject project;
+    @Component
+    Settings settings;
     @Parameter
     private List<DeployConfiguration> deployConfigurations;
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
