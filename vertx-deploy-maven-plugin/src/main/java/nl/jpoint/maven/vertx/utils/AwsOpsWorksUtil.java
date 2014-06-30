@@ -17,8 +17,7 @@ import java.util.*;
 public class AwsOpsWorksUtil {
 
     private final static String AWS_OPSWORKS_SERVICE = "opsworks";
-    private static final String AWS_ACTION = "Action";
-    private static final String EQUALSSIGN = "=";
+    private final String targetHost = AWS_OPSWORKS_SERVICE + "." + "us-east-1" + ".amazonaws.com";
 
     private final AwsUtil awsUtil;
     protected final SimpleDateFormat compressedIso8601DateFormat =
@@ -29,21 +28,56 @@ public class AwsOpsWorksUtil {
         this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
+    private String getElasticIp(String stackId, String instanceId) throws AwsException {
+        String date = compressedIso8601DateFormat.format(new Date());
+
+        StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\"}");
+
+        //StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\",\"StackId\":\""+stackId+"\"}");
+
+        Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
+
+        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeElasticIps");
+
+        byte[] result = this.executeRequest(awsPost);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonFactory factory = mapper.getFactory();
+        JsonParser parser = null;
+        try {
+            parser = factory.createParser(result);
+            JsonNode describeResult = mapper.readValue(parser, JsonNode.class);
+            if (describeResult != null) {
+                JsonNode eips = describeResult.get("ElasticIps");
+                if (eips != null) {
+                    Iterator<JsonNode> it = eips.elements();
+                    while (it.hasNext()) {
+                        JsonNode eip = it.next();
+                        if (instanceId.equals(eip.get("InstanceId").textValue())) {
+                            return eip.get("Ip").textValue();
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+           throw new AwsException(e);
+        }
+        return null;
+
+    }
+
     public List<String> ListStackInstances(final String stackId) throws AwsException {
 
         List<String> hosts = new ArrayList<>();
 
-        String targetHost = AWS_OPSWORKS_SERVICE + "." + "us-east-1" + ".amazonaws.com";
         String date = compressedIso8601DateFormat.format(new Date());
 
         StringBuilder payloadBuilder = new StringBuilder("{\"StackId\":\""+stackId+"\"}");
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
-        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1");
+        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeInstances");
 
         byte[] result = this.executeRequest(awsPost);
-
         ObjectMapper mapper = new ObjectMapper();
         JsonFactory factory = mapper.getFactory();
         try {
@@ -54,9 +88,16 @@ public class AwsOpsWorksUtil {
                 if (instances != null) {
                     Iterator<JsonNode> it = instances.elements();
                     while (it.hasNext()) {
+                        String host = null;
                         JsonNode instance = it.next();
-                        if (instance.get("PublicDns") != null) {
-                            hosts.add(instance.get("PublicDns").textValue());
+                        if (instance.get("InstanceId") != null) {
+                            host = getElasticIp(stackId, instance.get("InstanceId").textValue());
+                        } else if (instance.get("PublicDns") != null) {
+                            host = instance.get("PublicDns").textValue();
+
+                        }
+                        if (host != null) {
+                            hosts.add(host);
                         }
                     }
                 }
@@ -69,6 +110,8 @@ public class AwsOpsWorksUtil {
         return hosts;
 
     }
+
+
 
     private byte[] executeRequest(final HttpPost awsPost) throws AwsException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {

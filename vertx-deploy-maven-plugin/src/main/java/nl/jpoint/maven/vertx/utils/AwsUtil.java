@@ -29,12 +29,12 @@ public class AwsUtil {
     private final String awsSecretAccessKey;
 
 
-    AwsUtil(final String awsAccessKey, final String awsSecretAccessKey) {
+    public AwsUtil(final String awsAccessKey, final String awsSecretAccessKey) {
         this.awsAccessKey = awsAccessKey;
         this.awsSecretAccessKey = awsSecretAccessKey;
     }
 
-    HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region) throws AwsException {
+    HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region, String action) throws AwsException {
         HttpPost awsPost = null;
         try {
             String canonicalRequest = this.createCanonicalRequest(signedHeaders, payload);
@@ -45,7 +45,7 @@ public class AwsUtil {
             awsPost = new HttpPost("https://" + targetHost);
             awsPost.addHeader("Host", targetHost);
             awsPost.addHeader("X-Amz-Date", date);
-            awsPost.addHeader("X-Amz-Target","OpsWorks_20130218.DescribeInstances");
+            awsPost.addHeader("X-Amz-Target","OpsWorks_20130218."+ action);
             awsPost.addHeader("Authorization", authorization);
             awsPost.addHeader("Content-Type", "application/x-amz-json-1.1");
 
