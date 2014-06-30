@@ -92,7 +92,8 @@ public class AwsOpsWorksUtil {
                         JsonNode instance = it.next();
                         if (instance.get("InstanceId") != null) {
                             host = getElasticIp(stackId, instance.get("InstanceId").textValue());
-                        } else if (instance.get("PublicDns") != null) {
+                        }
+                        if (host == null && instance.get("PublicDns") != null) {
                             host = instance.get("PublicDns").textValue();
 
                         }
