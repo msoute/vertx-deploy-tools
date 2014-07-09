@@ -24,7 +24,7 @@
     </scm>
 
     <properties>
-        <vertx.platform.version>2.0.2-final</vertx.platform.version>
+        <vertx.platform.version>2.1.1</vertx.platform.version>
         <vertx.testtools.version>2.0.2-final</vertx.testtools.version>
     </properties>
     <build>
