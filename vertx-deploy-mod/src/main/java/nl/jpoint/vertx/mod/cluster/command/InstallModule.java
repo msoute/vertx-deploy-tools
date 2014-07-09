@@ -28,7 +28,7 @@ public class InstallModule implements Command<ModuleRequest> {
         boolean success = false;
 
         try {
-            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "install", request.getModuleId(), String.valueOf(((DeployModuleRequest) request).getInstances())});
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "install", request.getModuleId() });
             runProcess.waitFor();
 
             int exitValue = runProcess.exitValue();
