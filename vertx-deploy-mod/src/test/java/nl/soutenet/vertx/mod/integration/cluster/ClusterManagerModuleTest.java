@@ -101,7 +101,7 @@ public class ClusterManagerModuleTest {
         final ObjectWriter writer = new ObjectMapper().writer();
 
         List<DeployModuleRequest> moduleRequests = new ArrayList<>(1);
-        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils","mongo-connector","1.0.1-SNAPSHOT",1));
+        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils","mongo-connector","1.0.1-SNAPSHOT",1, false));
         DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, false);
 
         String postData = writer.writeValueAsString(request);
@@ -123,9 +123,9 @@ public class ClusterManagerModuleTest {
 
     private JsonObject createDeployCommand() {
         return new JsonObject()
-                .putString("group_id", "nl.jpoint.vertx-deploy-tools")
-                .putString("artifact_id", "vertx-deploy-mod")
-                .putString("version", "1.0.6-SNAPSHOT")
+                .putString("group_id", "nl.malmberg.edubase.utils")
+                .putString("artifact_id", "mongo-connector")
+                .putString("version", "1.3.0-SNAPSHOT")
                 .putNumber("instances", 1);
     }
 
