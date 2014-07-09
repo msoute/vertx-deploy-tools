@@ -1,6 +1,7 @@
 package nl.jpoint.vertx.mod.cluster.command;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
+import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -10,6 +11,9 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.PlatformManager;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InstallModule implements Command<ModuleRequest> {
@@ -17,37 +21,40 @@ public class InstallModule implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstallModule.class);
 
-    private final PlatformManager platformManager;
-
-    public InstallModule(PlatformManager platformManager) {
-        this.platformManager = platformManager;
-    }
-
     @Override
     public JsonObject execute(final ModuleRequest request) {
 
-        final AtomicInteger waitFor = new AtomicInteger(1);
-        final JsonObject result = new JsonObject();
-        LOG.info("[{} - {}]: Installing module {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        LOG.info("[{} - {}]: Installing module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        boolean success = false;
 
-        platformManager.installModule(request.getModuleId(), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> event) {
-                if (event.failed()) {
-                    LOG.error("[{} - {}]: Error installing module {} with cause {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId(), event.cause().getMessage());
-                    result.putBoolean(Constants.STATUS_SUCCESS, false);
-                } else {
-                    result.putBoolean(Constants.STATUS_SUCCESS, true);
-                    LOG.info("[{} - {}]: Installed module {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
-                }
-                waitFor.decrementAndGet();
+        try {
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "install", request.getModuleId(), String.valueOf(((DeployModuleRequest) request).getInstances())});
+            runProcess.waitFor();
+
+            int exitValue = runProcess.exitValue();
+            if (exitValue == 0) {
+                success = true;
             }
-        });
 
-        while (waitFor.intValue() != 0) {
-            // Wait for install
+            BufferedReader output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
+            String outputLine;
+            while ((outputLine = output.readLine()) != null) {
+                LOG.info("[{} - {}]: Install Module {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
+            }
+
+            if (exitValue != 0) {
+                BufferedReader errorOut = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()));
+                String errorLine;
+                while ((errorLine = errorOut.readLine()) != null) {
+                    LOG.error("[{} - {}]: Install module failed {}", LogConstants.DEPLOY_REQUEST, request.getId(), errorLine);
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            LOG.error("[{} - {}]: Failed to install module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         }
-        return result;
 
+        return new JsonObject()
+                .putString(Constants.DEPLOY_ID, request.getId().toString())
+                .putBoolean(Constants.STATUS_SUCCESS, success);
     }
 }
