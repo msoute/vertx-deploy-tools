@@ -95,9 +95,22 @@ stop_module () {
 	fi
 }
 
+install_module () {
+        start-stop-daemon --user $VERTX_USER  -c $VERTX_USER:$VERTX_USER --start --umask 0000 --chdir $VERTX_HOME --exec $DAEMON -- install $VERTICLE || true
+}
+
+uninstall_module () {
+        start-stop-daemon --user $VERTX_USER  -c $VERTX_USER:$VERTX_USER --start --umask 0000 --chdir $VERTX_HOME --exec $DAEMON -- uninstall $VERTICLE || true
+}
 
 
 case "$1" in
+    install)
+        install_module
+        ;;
+    remove)
+        uninstall_module
+        ;;
     start)
         start_modules
         ;;
