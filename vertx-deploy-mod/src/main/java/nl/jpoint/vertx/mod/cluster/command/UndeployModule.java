@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.cluster.command;
 
+import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
@@ -25,6 +26,7 @@ public class UndeployModule implements Command<ModuleRequest> {
     @Override
     public JsonObject execute(ModuleRequest request) {
         Process killProcess;
+        final JsonObject result = new JsonObject();
 
         for (String file : modRoot.list(new ModuleFileNameFilter(request))) {
             LOG.info("[{} - {}]: Stopping module {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
@@ -32,14 +34,16 @@ public class UndeployModule implements Command<ModuleRequest> {
             try {
                 killProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "stop-module", file});
                 killProcess.waitFor();
+                result.putBoolean(Constants.STOP_STATUS, true);
             } catch (IOException | InterruptedException e) {
                 LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
-                return null;
+                result.putBoolean(Constants.STOP_STATUS, false);
+                return result;
             }
 
             vertx.fileSystem().deleteSync(modRoot + "/" + file, true);
             LOG.info("[{} - {}]: Undeployed old module : {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
         }
-        return null;
+        return result;
     }
 }

@@ -45,6 +45,10 @@ public class DeployModuleService implements DeployService {
 
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
+        if (moduleInstalled.equals(ModuleVersion.ERROR)) {
+            return false;
+        }
+
         // If the module with the same version is already installed there is no need to take any further action.
         if (moduleInstalled.equals(ModuleVersion.INSTALLED) && !((DeployModuleRequest) deployRequest).doRestart()) {
             return true;
@@ -60,7 +64,11 @@ public class DeployModuleService implements DeployService {
             // If an older version (or SNAPSHOT) is installed undeploy it first.
             if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
                 UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
-                undeployCommand.execute(deployRequest);
+                JsonObject result = undeployCommand.execute(deployRequest);
+
+                if (!result.getBoolean(Constants.STOP_STATUS)) {
+                    return false;
+                }
             }
 
             // Install the new module.
@@ -90,7 +98,8 @@ public class DeployModuleService implements DeployService {
     private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {
 
         if (!modRoot.exists()) {
-            return ModuleVersion.NOT_INSTALLED;
+            LOG.error("[{} - {}]: Module root {} Does not exist.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), modRoot);
+            return ModuleVersion.ERROR;
         }
 
         for (String mod : modRoot.list(new ModuleFileNameFilter(deployRequest))) {

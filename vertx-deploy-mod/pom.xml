@@ -88,11 +88,11 @@
             <plugin>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-maven-plugin</artifactId>
-                <version>2.0.0-final</version>
+                <version>2.0.7-final</version>
                 <configuration>
-                    <modsDir>/opt/vert.x/mods</modsDir>
+                    <modsDir>/tmp</modsDir>
                     <configFile>src/main/resources/config.json</configFile>
-                    <classpath>src/main/resources/repos.txt</classpath>
+                    <instances>1</instances>
                 </configuration>
                 <dependencies>
                     <dependency>
