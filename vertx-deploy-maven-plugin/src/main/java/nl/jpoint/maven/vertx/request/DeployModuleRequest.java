@@ -27,6 +27,6 @@ public class DeployModuleRequest extends Request {
         return ENDPOINT;
     }
 
-    public boolean doRestart() { return restart; }
+    public boolean getRestart() { return restart; }
 }
 

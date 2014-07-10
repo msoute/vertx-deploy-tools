@@ -45,7 +45,6 @@ public abstract class Request {
         try {
             return writer.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return "";
         }
     }
