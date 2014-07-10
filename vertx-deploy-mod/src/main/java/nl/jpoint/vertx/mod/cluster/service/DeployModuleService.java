@@ -84,9 +84,7 @@ public class DeployModuleService implements DeployService {
             if (!installResult.getBoolean(Constants.STATUS_SUCCESS)) {
                 return false;
             }
-        }
-
-        if (moduleInstalled.equals(ModuleVersion.INSTALLED) && deployRequest.restart()) {
+        } else if (moduleInstalled.equals(ModuleVersion.INSTALLED) && deployRequest.restart()) {
             LOG.info("[{} - {}]: Stopping already installed module.", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
             StopModule stopModuleCommand = new StopModule(vertx, modRoot);
             JsonObject result =  stopModuleCommand.execute(deployRequest);
