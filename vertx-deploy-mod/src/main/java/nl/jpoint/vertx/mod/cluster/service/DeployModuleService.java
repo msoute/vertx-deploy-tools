@@ -34,6 +34,7 @@ public class DeployModuleService implements DeployService {
     }
 
     public boolean deploy(final ModuleRequest deployRequest) {
+
         if (deployRequest.isSnapshot()) {
             Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);
             JsonObject result = resolveVersion.execute(deployRequest);
@@ -50,7 +51,7 @@ public class DeployModuleService implements DeployService {
         }
 
         // If the module with the same version is already installed there is no need to take any further action.
-        if (moduleInstalled.equals(ModuleVersion.INSTALLED) && !((DeployModuleRequest) deployRequest).doRestart()) {
+        if (moduleInstalled.equals(ModuleVersion.INSTALLED) && !deployRequest.restart()) {
             return true;
         }
 
@@ -63,13 +64,29 @@ public class DeployModuleService implements DeployService {
 
             // If an older version (or SNAPSHOT) is installed undeploy it first.
             if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
+                StopModule stopModuleCommand = new StopModule(vertx, modRoot);
+                JsonObject result =  stopModuleCommand.execute(deployRequest);
+
+                if (!result.getBoolean(Constants.STOP_STATUS)) {
+                    return false;
+                }
+
                 UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
-                JsonObject result = undeployCommand.execute(deployRequest);
+                undeployCommand.execute(deployRequest);
+
+            }
+
+            if (moduleInstalled.equals(ModuleVersion.INSTALLED) && deployRequest.restart()) {
+                LOG.info("[{} - {}]: Stopping already installed module.", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
+                StopModule stopModuleCommand = new StopModule(vertx, modRoot);
+                JsonObject result =  stopModuleCommand.execute(deployRequest);
 
                 if (!result.getBoolean(Constants.STOP_STATUS)) {
                     return false;
                 }
             }
+
+
 
             // Install the new module.
             InstallModule installCommand = new InstallModule();

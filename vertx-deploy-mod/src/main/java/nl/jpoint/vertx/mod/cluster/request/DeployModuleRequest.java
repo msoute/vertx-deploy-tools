@@ -23,6 +23,8 @@ public class DeployModuleRequest extends ModuleRequest {
         return instances;
     }
 
-    public boolean doRestart() { return restart; }
-
+    @Override
+    public boolean restart() {
+        return restart;
+    }
 }
