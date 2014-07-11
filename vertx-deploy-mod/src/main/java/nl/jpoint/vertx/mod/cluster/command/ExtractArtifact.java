@@ -37,8 +37,9 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
             if (!basePath.getParent().toFile().exists() || !basePath.getParent().toFile().canWrite()) {
-                LOG.error("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toString());
-                return new JsonObject().putBoolean("success", false);
+                LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toString());
+                LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
+                //return new JsonObject().putBoolean("success", false);
             }
 
             if (basePath.toFile().exists()) {
