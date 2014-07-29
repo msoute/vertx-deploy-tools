@@ -12,6 +12,7 @@ import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -23,6 +24,7 @@ public class ClusterManagerModule extends Verticle {
 
     @Override
     public void start() {
+        MDC.put("service", "deploy");
         DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
         DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
         AwsService awsService = new AwsService(getVertx(), container.config());
