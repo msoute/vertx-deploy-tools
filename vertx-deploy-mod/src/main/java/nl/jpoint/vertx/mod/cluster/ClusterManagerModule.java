@@ -20,11 +20,12 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.platform.Verticle;
 
 public class ClusterManagerModule extends Verticle {
+
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModule.class);
 
     @Override
     public void start() {
-        MDC.put("service", "deploy");
+        MDC.put("service", Constants.SERVICE_ID);
         DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
         DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
         AwsService awsService = new AwsService(getVertx(), container.config());
