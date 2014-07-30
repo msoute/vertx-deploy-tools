@@ -1,8 +1,10 @@
 package nl.jpoint.vertx.mod.cluster.handler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.request.DeployState;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
+import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -10,6 +12,7 @@ public class RestDeployAwsHandler implements Handler<HttpServerRequest> {
     private final AwsService deployAwsService;
 
     public RestDeployAwsHandler(AwsService deployAwsService) {
+        MDC.put("service", Constants.SERVICE_ID);
         this.deployAwsService = deployAwsService;
     }
 
