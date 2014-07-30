@@ -13,7 +13,7 @@ public class DeployConfiguration {
     private String target;
 
     private String context;
-    private boolean awsPrivateIp;
+    private boolean awsPrivateIp = false;
 
     public String getOpsWorksStackId() {
         return opsWorksStackId;
