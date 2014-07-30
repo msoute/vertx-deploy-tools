@@ -20,4 +20,9 @@ public class DeployArtifactRequest extends ModuleRequest {
     public String getContext() {
         return context;
     }
+
+    @Override
+    public boolean restart() {
+        return false;
+    }
 }

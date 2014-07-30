@@ -34,16 +34,10 @@ public class DeployRequest {
         return new ArrayList<>(artifacts);
     }
 
-
-    /*  public boolean getAws() {
-        return this.aws;
-    }*/
-
     public String toJson() {
         try {
             return writer.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return "";
         }
     }

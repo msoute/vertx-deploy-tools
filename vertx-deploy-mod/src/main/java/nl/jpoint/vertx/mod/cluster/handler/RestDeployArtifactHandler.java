@@ -2,11 +2,13 @@ package nl.jpoint.vertx.mod.cluster.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.service.DeployService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -19,6 +21,7 @@ public class RestDeployArtifactHandler implements Handler<HttpServerRequest> {
     private final Logger LOG = LoggerFactory.getLogger(RestDeployArtifactHandler.class);
 
     public RestDeployArtifactHandler(final DeployService service) {
+        MDC.put("service", Constants.SERVICE_ID);
         this.service = service;
     }
 

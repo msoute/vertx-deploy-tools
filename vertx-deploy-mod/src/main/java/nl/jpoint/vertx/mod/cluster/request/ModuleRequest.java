@@ -2,7 +2,7 @@ package nl.jpoint.vertx.mod.cluster.request;
 
 import java.util.UUID;
 
-public class ModuleRequest {
+public abstract class ModuleRequest {
 
     private final UUID id = UUID.randomUUID();
     private final String groupId;
@@ -90,6 +90,8 @@ public class ModuleRequest {
         return getGroupId().replaceAll("\\.", "/") + "/" + getArtifactId() + "/" + getVersion() + "/" + "maven-metadata.xml";
 
     }
+
+    public abstract boolean restart();
 
 
 }
