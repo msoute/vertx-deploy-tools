@@ -65,7 +65,7 @@ public class AwsOpsWorksUtil {
 
     }
 
-    public List<String> ListStackInstances(final String stackId) throws AwsException {
+    public List<String> ListStackInstances(final String stackId, boolean usePrivateIp) throws AwsException {
 
         List<String> hosts = new ArrayList<>();
 
@@ -90,12 +90,16 @@ public class AwsOpsWorksUtil {
                     while (it.hasNext()) {
                         String host = null;
                         JsonNode instance = it.next();
-                        if (instance.get("InstanceId") != null) {
-                            host = getElasticIp(stackId, instance.get("InstanceId").textValue());
-                        }
-                        if (host == null && instance.get("PublicDns") != null) {
-                            host = instance.get("PublicDns").textValue();
+                        if (usePrivateIp) {
+                            host = instance.get("PrivateIp").textValue();
+                        } else {
+                            if (instance.get("InstanceId") != null) {
+                                host = getElasticIp(stackId, instance.get("InstanceId").textValue());
+                            }
+                            if (host == null && instance.get("PublicDns") != null) {
+                                host = instance.get("PublicDns").textValue();
 
+                            }
                         }
                         if (host != null) {
                             hosts.add(host);
