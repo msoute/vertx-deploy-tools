@@ -1,4 +1,4 @@
-VERTX_VERSION=vert.x-2.0.2-final
+VERTX_VERSION=vert.x-2.1.2
 VERTX_URL=http://dl.bintray.com/vertx/downloads/$VERTX_VERSION.tar.gz
 VERTX_USER=vertx
 
