@@ -32,7 +32,7 @@ public class RequestExecutor {
     public RequestExecutor(Log log) {
 
         this.log = log;
-        timeout = System.currentTimeMillis() + 60 * 5000;
+        timeout = System.currentTimeMillis() + 60 * 100000;
     }
 
     private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException, MojoFailureException {
