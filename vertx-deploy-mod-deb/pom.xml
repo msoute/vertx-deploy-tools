@@ -98,7 +98,7 @@
                         <targetConfiguration>
                             <bundleAll>true</bundleAll>
                             <target>precise</target>
-                            <revision>r5</revision>
+                            <revision>r6</revision>
                             <distros>
                                 <distro>ubuntu_precise</distro>
                             </distros>
