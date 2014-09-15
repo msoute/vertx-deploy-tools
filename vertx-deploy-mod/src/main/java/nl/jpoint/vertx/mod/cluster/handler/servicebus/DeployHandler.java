@@ -60,6 +60,9 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
 
         boolean deployOk = false;
 
+        if (deployRequest.withRestart()) {
+            deployModuleService.stopContainer(deployId);
+        }
         for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
             deployOk = deployModuleService.deploy(moduleRequest);
 

@@ -2,7 +2,6 @@ package nl.jpoint.vertx.mod.cluster.service;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.command.*;
-import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
@@ -51,7 +50,7 @@ public class DeployModuleService implements DeployService {
         }
 
         // If the module with the same version is already installed there is no need to take any further action.
-        if (moduleInstalled.equals(ModuleVersion.INSTALLED) && !deployRequest.restart()) {
+        if (moduleInstalled.equals(ModuleVersion.INSTALLED)) {
             return true;
         }
 
@@ -64,11 +63,13 @@ public class DeployModuleService implements DeployService {
 
             // If an older version (or SNAPSHOT) is installed undeploy it first.
             if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
-                StopModule stopModuleCommand = new StopModule(vertx, modRoot);
-                JsonObject result =  stopModuleCommand.execute(deployRequest);
+                if (!deployRequest.restart()) {
+                    StopModule stopModuleCommand = new StopModule(vertx, modRoot);
+                    JsonObject result = stopModuleCommand.execute(deployRequest);
 
-                if (!result.getBoolean(Constants.STOP_STATUS)) {
-                    return false;
+                    if (!result.getBoolean(Constants.STOP_STATUS)) {
+                        return false;
+                    }
                 }
 
                 UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
@@ -82,14 +83,6 @@ public class DeployModuleService implements DeployService {
 
             // Respond failed if install did not complete.
             if (!installResult.getBoolean(Constants.STATUS_SUCCESS)) {
-                return false;
-            }
-        } else if (moduleInstalled.equals(ModuleVersion.INSTALLED) && deployRequest.restart()) {
-            LOG.info("[{} - {}]: Stopping already installed module.", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
-            StopModule stopModuleCommand = new StopModule(vertx, modRoot);
-            JsonObject result =  stopModuleCommand.execute(deployRequest);
-
-            if (!result.getBoolean(Constants.STOP_STATUS)) {
                 return false;
             }
         }
@@ -129,5 +122,10 @@ public class DeployModuleService implements DeployService {
             }
         }
         return ModuleVersion.NOT_INSTALLED;
+    }
+
+    public void stopContainer(String deployId) {
+        Command<String> stopContainer = new InvokeContainer(deployId);
+        stopContainer.execute("stop");
     }
 }

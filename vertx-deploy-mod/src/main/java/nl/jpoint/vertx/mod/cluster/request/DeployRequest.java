@@ -14,15 +14,18 @@ public class DeployRequest {
     private final List<DeployArtifactRequest> artifacts;
     @JsonProperty("aws")
     private final boolean aws;
+    private final boolean restart;
     private DeployState state;
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployModuleRequest> modules,
                          @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts,
-                         @JsonProperty("aws") boolean aws) {
+                         @JsonProperty("aws") boolean aws,
+                         @JsonProperty("restart") boolean restart) {
         this.modules = modules;
         this.artifacts = artifacts;
         this.aws = aws;
+        this.restart = restart;
     }
 
     public List<DeployArtifactRequest> getArtifacts() {
@@ -39,6 +42,10 @@ public class DeployRequest {
 
     public boolean withAws() {
         return aws;
+    }
+
+    public boolean withRestart() {
+        return restart;
     }
 
     public void setState(DeployState state) {

@@ -33,8 +33,6 @@ public class AwsOpsWorksUtil {
 
         StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\"}");
 
-        //StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\",\"StackId\":\""+stackId+"\"}");
-
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
         HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeElasticIps");

@@ -8,6 +8,7 @@ import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
+import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
 import nl.jpoint.vertx.mod.cluster.service.DeployService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -70,6 +71,10 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     return;
                 }
 
+                if (deployRequest.withRestart()) {
+                    ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
+                }
+
                 for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                     deployOk = moduleDeployService.deploy(moduleRequest);
 
@@ -78,6 +83,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                         return;
                     }
                 }
+
 
                 if (deployOk || deployRequest.getModules().size() == 0) {
                     for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {

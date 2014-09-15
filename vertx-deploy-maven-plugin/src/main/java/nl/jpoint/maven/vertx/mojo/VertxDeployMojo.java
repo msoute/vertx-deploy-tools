@@ -22,7 +22,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER, activeConfiguration.doRestart());
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
 
-        DeployRequest deployRequest = new DeployRequest(deployModuleRequests, deployArtifactRequests, activeConfiguration.getAws());
+        DeployRequest deployRequest = new DeployRequest(deployModuleRequests, deployArtifactRequests, activeConfiguration.getAws(), activeConfiguration.doRestart());
 
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
