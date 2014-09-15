@@ -175,7 +175,7 @@ public class RequestExecutor {
             AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
             List<String> hosts;
             try {
-                hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getAwsPrivateIp());
+                hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getAwsPrivateIp(), log);
                 for (String opsHost : hosts) {
                     log.info("Adding host from opsworks response : " + opsHost);
                     activeConfiguration.getHosts().add("http://"+opsHost+":6789");

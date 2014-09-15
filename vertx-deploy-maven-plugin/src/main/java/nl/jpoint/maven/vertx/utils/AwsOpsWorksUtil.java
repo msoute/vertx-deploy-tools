@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -63,7 +64,7 @@ public class AwsOpsWorksUtil {
 
     }
 
-    public List<String> ListStackInstances(final String stackId, boolean usePrivateIp) throws AwsException {
+    public List<String> ListStackInstances(final String stackId, boolean usePrivateIp,  Log log) throws AwsException {
 
         List<String> hosts = new ArrayList<>();
 
@@ -88,6 +89,7 @@ public class AwsOpsWorksUtil {
                     while (it.hasNext()) {
                         String host = null;
                         JsonNode instance = it.next();
+                        String status = instance.get("Status").textValue();
                         if (usePrivateIp) {
                             host = instance.get("PrivateIp").textValue();
                         } else {
@@ -99,8 +101,10 @@ public class AwsOpsWorksUtil {
 
                             }
                         }
-                        if (host != null) {
+                        if (host != null && status.equals("online")) {
                             hosts.add(host);
+                        } else {
+                            log.warn("skipping host " + host + " with status " + status);
                         }
                     }
                 }
@@ -133,3 +137,4 @@ public class AwsOpsWorksUtil {
         return signedHeaders;
     }
 }
+
