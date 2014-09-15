@@ -51,6 +51,10 @@ public class DeployModuleService implements DeployService {
 
         // If the module with the same version is already installed there is no need to take any further action.
         if (moduleInstalled.equals(ModuleVersion.INSTALLED)) {
+            if (deployRequest.restart()) {
+                RunModule runModCommand = new RunModule();
+                runModCommand.execute(deployRequest);
+            }
             return true;
         }
 
