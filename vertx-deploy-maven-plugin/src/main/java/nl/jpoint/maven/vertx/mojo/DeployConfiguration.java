@@ -19,7 +19,8 @@ public class DeployConfiguration {
         return opsWorksStackId;
     }
 
-    private String opsWorksStackId;
+    private String opsWorksStackId = null;
+    private String opsWorksLayerId = null;
 
     private List<Exclusion> exclusions;
 
@@ -66,5 +67,9 @@ public class DeployConfiguration {
 
     public boolean getAwsPrivateIp() {
         return this.awsPrivateIp;
+    }
+
+    public String getOpsWorksLayerId() {
+        return this.opsWorksLayerId;
     }
 }

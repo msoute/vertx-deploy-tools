@@ -34,6 +34,8 @@ public class AwsOpsWorksUtil {
 
         StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\"}");
 
+        //StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\",\"StackId\":\""+stackId+"\"}");
+
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
         HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeElasticIps");
@@ -64,31 +66,41 @@ public class AwsOpsWorksUtil {
 
     }
 
-    public List<String> ListStackInstances(final String stackId, boolean usePrivateIp,  Log log) throws AwsException {
+    public List<String> ListStackInstances(final String stackId, final String layerId, boolean usePrivateIp,  Log log) throws AwsException {
 
         List<String> hosts = new ArrayList<>();
 
         String date = compressedIso8601DateFormat.format(new Date());
 
-        StringBuilder payloadBuilder = new StringBuilder("{\"StackId\":\""+stackId+"\"}");
+        StringBuilder payloadBuilder = new StringBuilder("{");
+        payloadBuilder.append("\"StackId\":\""+stackId+"\"");
+        payloadBuilder.append("}");
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
         HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeInstances");
 
         byte[] result = this.executeRequest(awsPost);
+
         ObjectMapper mapper = new ObjectMapper();
         JsonFactory factory = mapper.getFactory();
         try {
             JsonParser parser = factory.createParser(result);
             JsonNode describeResult = mapper.readValue(parser, JsonNode.class);
             if (describeResult != null) {
+                //JsonNode layers = describeResult.get("LayerIds");
+
+
                 JsonNode instances = describeResult.get("Instances");
                 if (instances != null) {
                     Iterator<JsonNode> it = instances.elements();
                     while (it.hasNext()) {
                         String host = null;
                         JsonNode instance = it.next();
+                        JsonNode layers = instance.get("LayerIds");
+                        if ( layerId != null && layerId.length() > 0 && !containesLayer(layerId, layers)) {
+                            continue;
+                        }
                         String status = instance.get("Status").textValue();
                         if (usePrivateIp) {
                             host = instance.get("PrivateIp").textValue();
@@ -118,6 +130,16 @@ public class AwsOpsWorksUtil {
 
     }
 
+    private boolean containesLayer(String layerId, JsonNode layers) {
+        Iterator<JsonNode> it = layers.elements();
+        while (it.hasNext()) {
+            JsonNode next = it.next();
+            if (next.asText().equals(layerId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     private byte[] executeRequest(final HttpPost awsPost) throws AwsException {
@@ -137,4 +159,3 @@ public class AwsOpsWorksUtil {
         return signedHeaders;
     }
 }
-
