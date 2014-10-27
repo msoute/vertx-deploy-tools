@@ -72,13 +72,9 @@ public class AwsOpsWorksUtil {
 
         String date = compressedIso8601DateFormat.format(new Date());
 
-        StringBuilder payloadBuilder = new StringBuilder("{");
-        payloadBuilder.append("\"StackId\":\""+stackId+"\"");
-        payloadBuilder.append("}");
-
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
-        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeInstances");
+        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, "{\"StackId\":\"" + stackId + "\"}", AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeInstances");
 
         byte[] result = this.executeRequest(awsPost);
 
@@ -88,9 +84,6 @@ public class AwsOpsWorksUtil {
             JsonParser parser = factory.createParser(result);
             JsonNode describeResult = mapper.readValue(parser, JsonNode.class);
             if (describeResult != null) {
-                //JsonNode layers = describeResult.get("LayerIds");
-
-
                 JsonNode instances = describeResult.get("Instances");
                 if (instances != null) {
                     Iterator<JsonNode> it = instances.elements();
