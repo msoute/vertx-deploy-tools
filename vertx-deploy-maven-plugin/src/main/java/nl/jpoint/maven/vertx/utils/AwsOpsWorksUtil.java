@@ -32,7 +32,7 @@ public class AwsOpsWorksUtil {
     private String getElasticIp(String stackId, String instanceId) throws AwsException {
         String date = compressedIso8601DateFormat.format(new Date());
 
-        StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\"}");
+        StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\"" + instanceId + "\"}");
 
         //StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\",\"StackId\":\""+stackId+"\"}");
 
@@ -60,13 +60,13 @@ public class AwsOpsWorksUtil {
                 }
             }
         } catch (IOException e) {
-           throw new AwsException(e);
+            throw new AwsException(e);
         }
         return null;
 
     }
 
-    public List<String> ListStackInstances(final String stackId, final String layerId, boolean usePrivateIp,  Log log) throws AwsException {
+    public List<String> ListStackInstances(final String stackId, final String layerId, boolean usePrivateIp, Log log) throws AwsException {
 
         List<String> hosts = new ArrayList<>();
 
@@ -91,25 +91,26 @@ public class AwsOpsWorksUtil {
                         String host = null;
                         JsonNode instance = it.next();
                         JsonNode layers = instance.get("LayerIds");
-                        if ( layerId != null && layerId.length() > 0 && !containesLayer(layerId, layers)) {
+                        if (layerId != null && layerId.length() > 0 && !containesLayer(layerId, layers)) {
                             continue;
                         }
                         String status = instance.get("Status").textValue();
-                        if (usePrivateIp) {
-                            host = instance.get("PrivateIp").textValue();
-                        } else {
-                            if (instance.get("InstanceId") != null) {
-                                host = getElasticIp(stackId, instance.get("InstanceId").textValue());
-                            }
-                            if (host == null && instance.get("PublicDns") != null) {
-                                host = instance.get("PublicDns").textValue();
 
+                        if (status.equals("online")) {
+                            if (usePrivateIp) {
+                                host = instance.get("PrivateIp").textValue();
+                            } else {
+                                if (instance.get("InstanceId") != null) {
+                                    host = getElasticIp(stackId, instance.get("InstanceId").textValue());
+                                }
+                                if (host == null && instance.get("PublicDns") != null) {
+                                    host = instance.get("PublicDns").textValue();
+
+                                }
                             }
-                        }
-                        if (host != null && status.equals("online")) {
                             hosts.add(host);
                         } else {
-                            log.warn("skipping host " + host + " with status " + status);
+                            log.warn("skipping host" + instance.get("InstanceId") + " with status " + status);
                         }
                     }
                 }
