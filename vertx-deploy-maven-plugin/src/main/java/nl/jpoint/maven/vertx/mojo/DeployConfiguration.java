@@ -72,4 +72,8 @@ public class DeployConfiguration {
     public String getOpsWorksLayerId() {
         return this.opsWorksLayerId;
     }
+
+    public void setTestScope(boolean testScope) {
+        this.testScope = testScope;
+    }
 }
