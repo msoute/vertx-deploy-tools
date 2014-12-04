@@ -57,8 +57,8 @@ public class DownloadArtifact implements Command<ModuleRequest> {
 
         boolean secure = true;
 
-        if (config.containsField("http.authUnsecure")) {
-            secure = config.getBoolean("http.authUnsecure");
+        if (config.containsField("http.authSecure")) {
+            secure = config.getBoolean("http.authSecure");
         }
 
         credsProvider.setCredentials(
