@@ -60,6 +60,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
                 if (request.isSnapshot()) {
                     LOG.info("[{} - {}]: Artifact is -SNAPSHOT, trying to parse metadata for last version {}.", logId, request.getId(), request.getModuleId());
                     realSnapshotVersion = this.retrieveAndParseMetadata(request, httpclient, uri);
+                    LOG.info("(tmp) realSnapshotVersion: " + realSnapshotVersion);
                     if (realSnapshotVersion != null) {
                         LOG.info("[{} - {}]: Parsed metadata. Snapshot version is {} ", logId, request.getId(), realSnapshotVersion);
                         resolved = true;
