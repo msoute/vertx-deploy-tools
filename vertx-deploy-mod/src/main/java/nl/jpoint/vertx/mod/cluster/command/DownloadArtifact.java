@@ -55,8 +55,14 @@ public class DownloadArtifact implements Command<ModuleRequest> {
     public JsonObject execute(ModuleRequest request) {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
 
+        boolean secure = true;
+
+        if (config.containsField("http.authUnsecure")) {
+            secure = config.getBoolean("http.authUnsecure");
+        }
+
         credsProvider.setCredentials(
-                new AuthScope(config.getString("http.authUri"), 443),
+                new AuthScope(config.getString("http.authUri"), secure ? 443 : 80),
                 new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 
 

@@ -26,6 +26,11 @@ public class ClusterManagerModule extends Verticle {
     @Override
     public void start() {
         MDC.put("service", Constants.SERVICE_ID);
+
+        if (container.config() == null) {
+            LOG.error("Unable to read config file");
+            throw new IllegalStateException("Unable to read config file");
+        }
         DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
         DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
         AwsService awsService = new AwsService(getVertx(), container.config());
