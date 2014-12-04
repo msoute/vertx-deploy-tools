@@ -2,6 +2,8 @@ package nl.jpoint.vertx.mod.cluster.util;
 
 
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -21,6 +23,8 @@ public class MetadataXPathUtil {
     private static final String TIMESTAMP = "/metadata/versioning/snapshot/timestamp/text()";
     private static final String BUILD_NUMBER = "/metadata/versioning/snapshot/buildNumber/text()";
 
+    private static final Logger LOG = LoggerFactory.getLogger(MetadataXPathUtil.class);
+
     public static String getRealSnapshotVersionFromMetadata(byte[] metadata, ModuleRequest request) {
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
@@ -38,8 +42,11 @@ public class MetadataXPathUtil {
                 return request.getVersion().substring(0, request.getVersion().length() - 8) + timestamp + "-" + buildNumber;
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
+            LOG.error("Error while parsing metadata", e);
             return null;
         }
+
+        LOG.error("(tmp) returning null");
         return null;
     }
 }
