@@ -152,13 +152,12 @@ public class RequestExecutor {
     public void executeSingleDeployRequest(DeployConfiguration activeConfiguration, DeployRequest request) throws MojoExecutionException {
         for (String host : activeConfiguration.getHosts()) {
             log.info("Deploying to host : " + host);
-            HttpPost post = new HttpPost(host + request.getEndpoint());
+            HttpPost post = new HttpPost(createDeployUri(host) + request.getEndpoint());
             ByteArrayInputStream bos = new ByteArrayInputStream(request.toJson().getBytes());
             BasicHttpEntity entity = new BasicHttpEntity();
             entity.setContent(bos);
             entity.setContentLength(request.toJson().getBytes().length);
             post.setEntity(entity);
-
             this.executeRequest(post);
         }
     }
@@ -207,4 +206,13 @@ public class RequestExecutor {
         }
     }
 
+    private String createDeployUri(String host) {
+        if (!host.startsWith("http://")) {
+            host = "http://"+host;
+        }
+        if (!host.endsWith(":6789")) {
+            host = host+":6789";
+        }
+        return host;
+    }
 }
