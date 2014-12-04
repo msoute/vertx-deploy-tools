@@ -60,8 +60,9 @@ stop_module () {
 start_deploy_mod () {
   PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
   if [ -f $PIDFILE ]; then
-    log_failure_msg "Module already running"
-    exit -1
+      PID=$(cat $PIDFILE)
+      log_failure_msg "Module $VERTICLE allready running on pid $PID."
+   	  exit 2
   fi
 
   su $VERTX_USER -c "cd $VERTX_HOME; $DAEMON $BOOTSTRAP_OPTS &"
