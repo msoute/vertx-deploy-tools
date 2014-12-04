@@ -85,9 +85,12 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
                 return null;
             }
             byte[] metadata = EntityUtils.toByteArray(response.getEntity());
-            LOG.error("(tmp) metadata: {}", new String(metadata));
+            LOG.error("(tmp) retrieveAndParseMetadata metadata: {}", new String(metadata));
             response.close();
-            return MetadataXPathUtil.getRealSnapshotVersionFromMetadata(metadata, request);
+            String result = MetadataXPathUtil.getRealSnapshotVersionFromMetadata(metadata, request);
+            LOG.error("(tmp) retrieveAndParseMetadata result: {}", result);
+            return result;
+
         } catch (IOException e) {
             LOG.error("[{} - {}]: Error while downloading metadata for module {} : {}", logId, request.getId(), request.getModuleId(), e.getMessage());
             return null;

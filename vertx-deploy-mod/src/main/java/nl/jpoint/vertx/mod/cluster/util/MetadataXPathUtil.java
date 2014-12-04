@@ -45,7 +45,9 @@ public class MetadataXPathUtil {
             LOG.error("(tmp) timestamp: {}, buildnumber: {}, request.snapshot: {}", timestamp, buildNumber, request.isSnapshot());
 
             if (!timestamp.isEmpty() && !buildNumber.isEmpty() && request.isSnapshot()) {
-                return request.getVersion().substring(0, request.getVersion().length() - 8) + timestamp + "-" + buildNumber;
+                String result = request.getVersion().substring(0, request.getVersion().length() - 8) + timestamp + "-" + buildNumber;
+                LOG.error("(tmp) returning result: {}", result);
+                return result;
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
             LOG.error("Error while parsing metadata", e);
