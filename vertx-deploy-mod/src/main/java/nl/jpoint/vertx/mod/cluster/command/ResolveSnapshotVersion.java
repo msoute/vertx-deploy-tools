@@ -60,7 +60,6 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
                 if (request.isSnapshot()) {
                     LOG.info("[{} - {}]: Artifact is -SNAPSHOT, trying to parse metadata for last version {}.", logId, request.getId(), request.getModuleId());
                     realSnapshotVersion = this.retrieveAndParseMetadata(request, httpclient, uri);
-                    LOG.info("(tmp) realSnapshotVersion: " + realSnapshotVersion);
                     if (realSnapshotVersion != null) {
                         LOG.info("[{} - {}]: Parsed metadata. Snapshot version is {} ", logId, request.getId(), realSnapshotVersion);
                         resolved = true;
@@ -76,19 +75,15 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
     }
 
     private String retrieveAndParseMetadata(ModuleRequest request, CloseableHttpClient httpclient, String repoUri) {
-        LOG.error("(tmp) retrieveAndParseMetadata: {}/{}",repoUri, request.getMetadataLocation());
         HttpGet getMetadata = new HttpGet(repoUri + "/" + request.getMetadataLocation());
         try (CloseableHttpResponse response = httpclient.execute(getMetadata)) {
-            LOG.error("(tmp) statuscode: {}", response.getStatusLine().getStatusCode());
             if (response.getStatusLine().getStatusCode() != HttpResponseStatus.OK.code()) {
                 LOG.error("[{} - {}]: No metadata found for module {} with error code {} with request {}", logId, request.getId(), request.getModuleId(), response.getStatusLine().getStatusCode(), getMetadata.getURI());
                 return null;
             }
             byte[] metadata = EntityUtils.toByteArray(response.getEntity());
-            LOG.error("(tmp) retrieveAndParseMetadata metadata: {}", new String(metadata));
             response.close();
             String result = MetadataXPathUtil.getRealSnapshotVersionFromMetadata(metadata, request);
-            LOG.error("(tmp) retrieveAndParseMetadata result: {}", result);
             return result;
 
         } catch (IOException e) {
