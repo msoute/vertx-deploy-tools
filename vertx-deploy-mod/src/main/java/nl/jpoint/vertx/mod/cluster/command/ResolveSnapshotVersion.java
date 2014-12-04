@@ -43,6 +43,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
 
         if (config.containsField("http.authSecure")) {
             secure = config.getBoolean("http.authSecure");
+            LOG.warn("[{} - {}]: Unsecure request to artifact repository.", logId, request.getId());
         }
 
         credsProvider.setCredentials(
@@ -77,7 +78,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
         HttpGet getMetadata = new HttpGet(repoUri + "/" + request.getMetadataLocation());
         try (CloseableHttpResponse response = httpclient.execute(getMetadata)) {
             if (response.getStatusLine().getStatusCode() != HttpResponseStatus.OK.code()) {
-                LOG.error("[{} - {}]: No metadata found for module {}.", logId, request.getId(), request.getModuleId());
+                LOG.error("[{} - {}]: No metadata found for module {} with error code {}.", logId, request.getId(), request.getModuleId(), response.getStatusLine().getStatusCode());
                 return null;
             }
             byte[] metadata = EntityUtils.toByteArray(response.getEntity());
