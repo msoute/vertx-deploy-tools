@@ -26,17 +26,23 @@ public class MetadataXPathUtil {
     private static final Logger LOG = LoggerFactory.getLogger(MetadataXPathUtil.class);
 
     public static String getRealSnapshotVersionFromMetadata(byte[] metadata, ModuleRequest request) {
+        LOG.error("(tmp) getRealSnapshotVersionFromMetadata - 1");
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
+
+        LOG.error("(tmp) getRealSnapshotVersionFromMetadata - 2");
 
         DocumentBuilder builder;
 
         try {
+            LOG.error("(tmp) getRealSnapshotVersionFromMetadata - 3");
             builder = builderFactory.newDocumentBuilder();
             Document document = builder.parse(
                     new ByteArrayInputStream(metadata));
             String timestamp = (String) xPath.compile(TIMESTAMP).evaluate(document, XPathConstants.STRING);
             String buildNumber = (String) xPath.compile(BUILD_NUMBER).evaluate(document, XPathConstants.STRING);
+
+            LOG.error("(tmp) timestamp: {}, buildnumber: {}, request.snapshot: {}", timestamp, buildNumber, request.isSnapshot());
 
             if (!timestamp.isEmpty() && !buildNumber.isEmpty() && request.isSnapshot()) {
                 return request.getVersion().substring(0, request.getVersion().length() - 8) + timestamp + "-" + buildNumber;
