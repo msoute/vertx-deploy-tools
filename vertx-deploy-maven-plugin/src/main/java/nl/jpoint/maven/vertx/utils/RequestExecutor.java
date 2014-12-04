@@ -149,10 +149,10 @@ public class RequestExecutor {
         }
     }
 
-    public void executeSingleDeployRequest(DeployConfiguration activeConfiguration, Request request) throws MojoExecutionException {
+    public void executeSingleDeployRequest(DeployConfiguration activeConfiguration, DeployRequest request) throws MojoExecutionException {
         for (String host : activeConfiguration.getHosts()) {
+            log.info("Deploying to host : " + host);
             HttpPost post = new HttpPost(host + request.getEndpoint());
-
             ByteArrayInputStream bos = new ByteArrayInputStream(request.toJson().getBytes());
             BasicHttpEntity entity = new BasicHttpEntity();
             entity.setContent(bos);

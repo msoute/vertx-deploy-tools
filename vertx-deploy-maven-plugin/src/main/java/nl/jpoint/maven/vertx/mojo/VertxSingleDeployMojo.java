@@ -36,7 +36,7 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
 
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
-        executor.executeDeployRequests(activeConfiguration, deployRequest, settings);
+        executor.executeSingleDeployRequest(activeConfiguration, deployRequest);
 
     }
 }
