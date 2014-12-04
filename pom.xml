@@ -26,7 +26,9 @@
     <properties>
         <vertx.platform.version>2.1.1</vertx.platform.version>
         <vertx.testtools.version>2.0.2-final</vertx.testtools.version>
+        <nexus.host>default</nexus.host>
     </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -80,6 +82,61 @@
         </profile>
     </profiles>
 
+
+    <repositories>
+        <repository>
+            <id>nexus</id>
+            <name>Nexus</name>
+            <url>${nexus.host}/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus</id>
+            <name>Nexus</name>
+            <url>${nexus.host}/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Nexus release repo</name>
+            <layout>default</layout>
+            <uniqueVersion>false</uniqueVersion>
+            <url>${nexus.host}/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Nexus snapshots repo</name>
+            <layout>default</layout>
+            <uniqueVersion>false</uniqueVersion>
+            <url>${nexus.host}/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <developers>
         <developer>
