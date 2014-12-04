@@ -16,6 +16,10 @@
 
     <name>Vert.X deploy maven plugin</name>
 
+    <properties>
+        <nexus.host>default</nexus.host>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -93,4 +97,22 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Release repo</name>
+            <layout>default</layout>
+            <uniqueVersion>false</uniqueVersion>
+            <url>${nexus.host}/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Snapshots repo</name>
+            <layout>default</layout>
+            <uniqueVersion>false</uniqueVersion>
+            <url>${nexus.host}/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
