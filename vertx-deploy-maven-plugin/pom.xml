@@ -98,27 +98,29 @@
         </plugins>
     </build>
 
-    <distributionManagement>
+    <repositories>
         <repository>
             <id>nexus</id>
-            <name>Release repo</name>
+            <name>Nexus</name>
+            <url>${nexus.host}/content/groups/public/</url>
             <layout>default</layout>
-            <uniqueVersion>false</uniqueVersion>
-            <url>${nexus.host}/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
         </repository>
-        <snapshotRepository>
-            <id>nexus</id>
-            <name>Snapshots repo</name>
-            <layout>default</layout>
-            <uniqueVersion>false</uniqueVersion>
-            <url>${nexus.host}/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>nexus</id>
-            <name>Plugin repo</name>
+            <name>Nexus</name>
             <url>${nexus.host}/content/groups/public/</url>
             <layout>default</layout>
             <releases>
@@ -133,5 +135,22 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Nexus release repo</name>
+            <layout>default</layout>
+            <uniqueVersion>false</uniqueVersion>
+            <url>${nexus.host}/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Nexus snapshots repo</name>
+            <layout>default</layout>
+            <uniqueVersion>false</uniqueVersion>
+            <url>${nexus.host}/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>
