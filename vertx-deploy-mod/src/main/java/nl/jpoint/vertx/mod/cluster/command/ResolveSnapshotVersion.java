@@ -47,7 +47,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
         }
 
         credsProvider.setCredentials(
-                new AuthScope(config.getString("http.authUri"), secure ? 443 : 80),
+                new AuthScope(config.getString("http.authUri"),-1),
                 new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 
         boolean resolved = false;
@@ -75,10 +75,11 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
     }
 
     private String retrieveAndParseMetadata(ModuleRequest request, CloseableHttpClient httpclient, String repoUri) {
+        LOG.error("{}/{}",repoUri, request.getMetadataLocation());
         HttpGet getMetadata = new HttpGet(repoUri + "/" + request.getMetadataLocation());
         try (CloseableHttpResponse response = httpclient.execute(getMetadata)) {
             if (response.getStatusLine().getStatusCode() != HttpResponseStatus.OK.code()) {
-                LOG.error("[{} - {}]: No metadata found for module {} with error code {}.", logId, request.getId(), request.getModuleId(), response.getStatusLine().getStatusCode());
+                LOG.error("[{} - {}]: No metadata found for module {} with error code {} with request {}", logId, request.getId(), request.getModuleId(), response.getStatusLine().getStatusCode(), getMetadata.getURI());
                 return null;
             }
             byte[] metadata = EntityUtils.toByteArray(response.getEntity());
