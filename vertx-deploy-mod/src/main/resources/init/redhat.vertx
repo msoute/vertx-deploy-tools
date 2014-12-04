@@ -1,0 +1,133 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          nginx
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts vert.x modules
+# Description:       starts vert.x modules using start-stop-daemon
+### END INIT INFO
+
+. /etc/default/vertx
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=$VERTX_HOME/bin/vertx
+VERTICLE=$2
+SERVICENAME=$( echo $2 | cut -d '~' -f 1,2)
+INSTANCES=$3
+DAEMON_OPTS=" -instances 2 -cluster $"
+PIDDIR=/var/run/vertx
+PIDFILE=$PIDDIR/$VERTICLE.pid
+
+set -e
+
+. /lib/lsb/init-functions
+
+. /etc/rc.d/init.d/functions
+
+if [ ! -d "$PIDDIR" ]; then
+  mkdir $PIDDIR
+  chown $VERTX_USER:$VERTX_USER $PIDDIR
+fi
+
+if [ ! -d /var/log/vertx ]; then
+    mkdir /var/log/vertx
+    chown $VERTX_USER:$VERTX_USER /var/log/vertx
+fi
+
+if [ ! -d /var/run/vertx ]; then
+    mkdir /var/run/vertx
+    chown $VERTX_USER:$VERTX_USER /var/run/vertx
+fi
+
+create_pid () {
+  touch $PIDFILE
+  pid=`pgrep -f $1`
+  echo $pid >> $PIDFILE
+}
+
+start_modules () {
+     for i in $( ls $VERTX_HOME/mods ); do
+        VERTICLE=$i
+        PIDFILE=$PIDDIR/$VERTICLE.pid
+        SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
+        start_module $PIDFILE
+     done
+}
+
+stop_modules () {
+    for i in $( ls $VERTX_HOME/mods ); do
+        VERTICLE=$i
+        PIDFILE=$PIDDIR/$VERTICLE.pid
+        SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
+        stop_module $PIDFILE
+    done
+}
+
+
+start_module () {
+
+    if [ -f $1 ]; then
+		PID=$(cat $1)
+        log_failure_msg "Module $VERTICLE allready running on pid $PID."
+		exit 2
+	fi
+
+	LIST=$(ls -l $VERTX_HOME/mods|grep $SERVICENAME |wc -l)
+	if [ "$LIST" -gt "0" ]; then
+		OTHER=$(ls $VERTX_HOME/mods | grep $SERVICENAME)
+		if [ $OTHER != $VERTICLE ]; then
+			log_failure_msg "Other version of service allready running, remove it first : $OTHER"
+			exit 3
+		fi
+	fi
+	log_success_msg "Starting $VERTICLE."
+	su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON runmod $VERTICLE $DAEMON_OPTS &"
+	create_pid $VERTICLE
+    log_success_msg
+}
+
+stop_module () {
+    log_success_msg "Stopping $VERTICLE"
+    if [ -f $1 ]; then
+        PID=$(cat $1)
+        killproc -p $PIDFILE
+        if [ -f $PIDFILE ]; then
+          rm $1
+         fi
+    fi
+}
+
+install_module () {
+    su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON install $VERTICLE &"
+}
+
+uninstall_module () {
+    su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON uninstall $VERTICLE &"
+}
+
+
+case "$1" in
+    install)
+        install_module
+        ;;
+    remove)
+        uninstall_module
+        ;;
+    start)
+        start_modules
+        ;;
+    stop)
+        stop_modules
+        ;;
+    restart)
+        stop_modules
+        start_modules
+        ;;
+	*)
+		log_daemon_msg "Usage: $NAME {start|stop|restart|install_module|uninstall_module}"
+		log_end_msg 0
+		;;
+esac
