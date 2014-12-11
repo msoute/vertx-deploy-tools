@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.utils;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
 
@@ -25,6 +26,8 @@ public class AwsUtil {
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final String AWS_SIGN_ALGORITHM = "AWS4-HMAC-SHA256";
     private static final String UTF_8 = "UTF-8";
+    private static final String GET = "GET";
+    private static final String POST = "POST";
     private final String awsAccessKey;
     private final String awsSecretAccessKey;
 
@@ -34,10 +37,29 @@ public class AwsUtil {
         this.awsSecretAccessKey = awsSecretAccessKey;
     }
 
+    HttpGet createSignedGet(String targetHost, Map<String, String> queryParameters, Map<String, String> signedHeaders, String date, String service, String region, String action) throws AwsException {
+        HttpGet awsGet = null;
+        try {
+            String canonicalRequest = this.createCanonicalRequest(GET, createURLEncodedCanonicalQueryString(queryParameters), signedHeaders, "");
+            String signString = this.createSignString(date, region, service, canonicalRequest);
+            String signature = this.createSignature(date, region, service, signString);
+            String authorization = this.createAuthorizationHeaderValue(date, region, service, signedHeaders, signature);
+
+            awsGet = new HttpGet("https://" + targetHost + "/?"+createQueryString(queryParameters));
+
+            awsGet.addHeader("X-Amz-Date", date);
+            awsGet.addHeader("Authorization", authorization);
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+            throw new AwsException(e);
+        }
+        return awsGet;
+    }
+
     HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region, String action) throws AwsException {
         HttpPost awsPost = null;
         try {
-            String canonicalRequest = this.createCanonicalRequest(signedHeaders, payload);
+            String canonicalRequest = this.createCanonicalRequest(POST, null, signedHeaders, payload);
             String signString = this.createSignString(date, region, service, canonicalRequest);
             String signature = this.createSignature(date, region, service, signString);
             String authorization = this.createAuthorizationHeaderValue(date, region, service, signedHeaders, signature);
@@ -45,7 +67,7 @@ public class AwsUtil {
             awsPost = new HttpPost("https://" + targetHost);
             awsPost.addHeader("Host", targetHost);
             awsPost.addHeader("X-Amz-Date", date);
-            awsPost.addHeader("X-Amz-Target","OpsWorks_20130218."+ action);
+            awsPost.addHeader("X-Amz-Target", "OpsWorks_20130218." + action);
             awsPost.addHeader("Authorization", authorization);
             awsPost.addHeader("Content-Type", "application/x-amz-json-1.1");
 
@@ -80,14 +102,18 @@ public class AwsUtil {
         return AWS_SIGN_ALGORITHM + EOL + date + EOL + toShortDate(date) + "/" + region + "/" + service + "/" + "aws4_request" + EOL + hash(canonicalRequest);
     }
 
-    private String createCanonicalRequest(Map<String, String> headers, String payload) {
+    private String createCanonicalRequest(String method, String canonicalQueryString, Map<String, String> headers, String payload) {
 
         SortedMap<String, String> sortedHeaders = toSortedMap(headers);
 
         StringBuilder signedHeaderString = new StringBuilder();
-        StringBuilder builder = new StringBuilder("POST").append(EOL)
-                .append("/").append(EOL)
-                .append("").append(EOL);
+        StringBuilder builder = new StringBuilder(method).append(EOL)
+                .append("/").append(EOL);
+        if (GET.equals(method) && canonicalQueryString != null && !canonicalQueryString.isEmpty()) {
+            builder.append(canonicalQueryString).append(EOL);
+        } else {
+            builder.append("").append(EOL);
+        }
         Iterator<String> it = sortedHeaders.keySet().iterator();
 
         while (it.hasNext()) {
@@ -110,8 +136,12 @@ public class AwsUtil {
 
         }
         builder.append("").append(EOL)
-                .append(signedHeaderString.toString()).append(EOL)
-                .append(hash(payload));
+                .append(signedHeaderString.toString()).append(EOL);
+        if (payload != null) {
+            builder.append(hash(payload));
+        } else {
+            builder.append("");
+        }
         return builder.toString();
     }
 
@@ -169,5 +199,49 @@ public class AwsUtil {
 
         return signedHeadersString.toString();
     }
+
+    // Works for now
+    private String createURLEncodedCanonicalQueryString(Map<String, String> queryParameters) throws AwsException {
+
+        List<String> keyList = new ArrayList<>();
+        keyList.addAll(queryParameters.keySet());
+
+        // Sort list
+        Collections.sort(keyList);
+        StringBuilder queryStringBuilder = new StringBuilder();
+        Iterator<String> queryIt = keyList.iterator();
+        while (queryIt.hasNext()) {
+            String key = queryIt.next();
+
+            queryStringBuilder.append(key).append("=").append(queryParameters.get(key));
+            if (queryIt.hasNext()) {
+                queryStringBuilder.append("&");
+            }
+
+        }
+        return queryStringBuilder.toString();
+    }
+
+    private String createQueryString(Map<String, String> queryParameters) throws AwsException {
+
+        List<String> keyList = new ArrayList<>();
+        keyList.addAll(queryParameters.keySet());
+
+        // Sort list
+        Collections.sort(keyList);
+        StringBuilder queryStringBuilder = new StringBuilder();
+        Iterator<String> queryIt = keyList.iterator();
+        while (queryIt.hasNext()) {
+            String key = queryIt.next();
+
+            queryStringBuilder.append(key).append("=").append(queryParameters.get(key));
+            if (queryIt.hasNext()) {
+                queryStringBuilder.append("&");
+            }
+
+        }
+        return queryStringBuilder.toString();
+    }
+
 
 }

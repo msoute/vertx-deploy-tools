@@ -20,6 +20,8 @@ public class AwsOpsWorksUtil {
     private final static String AWS_OPSWORKS_SERVICE = "opsworks";
     private final String targetHost = AWS_OPSWORKS_SERVICE + "." + "us-east-1" + ".amazonaws.com";
 
+
+
     private final AwsUtil awsUtil;
     protected final SimpleDateFormat compressedIso8601DateFormat =
             new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
@@ -33,8 +35,6 @@ public class AwsOpsWorksUtil {
         String date = compressedIso8601DateFormat.format(new Date());
 
         StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\"" + instanceId + "\"}");
-
-        //StringBuilder payloadBuilder = new StringBuilder("{\"InstanceId\":\""+instanceId+"\",\"StackId\":\""+stackId+"\"}");
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
