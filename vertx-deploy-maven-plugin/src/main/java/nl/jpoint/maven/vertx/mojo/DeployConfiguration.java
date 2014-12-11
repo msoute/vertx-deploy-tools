@@ -30,6 +30,16 @@ public class DeployConfiguration {
 
     private boolean restart = false;
     private boolean opsWorks = false;
+    private boolean autoScaling = true;
+    private String autoScalingGroupId;
+
+    public String getAutoScalingGroupId() {
+        return autoScalingGroupId;
+    }
+
+    public boolean isAutoScaling() {
+        return autoScaling;
+    }
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;

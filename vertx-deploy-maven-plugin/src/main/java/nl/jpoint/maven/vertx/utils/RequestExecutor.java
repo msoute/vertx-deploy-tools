@@ -165,25 +165,13 @@ public class RequestExecutor {
     public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest, Settings settings) throws MojoExecutionException, MojoFailureException {
 
         if (activeConfiguration.getOpsWorks() && activeConfiguration.getOpsWorksStackId() != null) {
-            log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
-            activeConfiguration.getHosts().clear();
-            if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
-                throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
-            }
-            Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
-            AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
-            List<String> hosts;
-            try {
-                hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getOpsWorksLayerId(), activeConfiguration.getAwsPrivateIp(), log);
-                for (String opsHost : hosts) {
-                    log.info("Adding host from opsworks response : " + opsHost);
-                    activeConfiguration.getHosts().add("http://"+opsHost+":6789");
-                }
-            } catch (AwsException e) {
-                throw new MojoFailureException(e.getMessage());
-            }
+            getHostsOpsWorks(activeConfiguration, settings);
         }
 
+        if (activeConfiguration.isAutoScaling() && activeConfiguration.getAutoScalingGroupId() != null) {
+            getHostsForAutoScalingGroup(activeConfiguration, settings);
+        }
+        
         for (String host : activeConfiguration.getHosts()) {
 
             log.info("Deploying to host : " + host);
@@ -203,6 +191,50 @@ public class RequestExecutor {
                 this.executeAwsRequest(post, host);
             }
 
+        }
+    }
+
+    private void getHostsForAutoScalingGroup(DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
+        log.info("retrieving list of hosts for auto scaling group with id : " + activeConfiguration.getOpsWorksStackId());
+        activeConfiguration.getHosts().clear();
+        if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
+            throw new MojoFailureException("No server config for auto scaling group id : " + activeConfiguration.getOpsWorksStackId());
+        }
+        Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
+        AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(server.getUsername(), server.getPassword());
+        AwsEc2Util awsEc2Util = new AwsEc2Util(server.getUsername(), server.getPassword());
+        List<String> instanceIds;
+        List<String> hosts;
+        try {
+            instanceIds = awsAutoScalingUtil.listInstancesInGroup(activeConfiguration.getAutoScalingGroupId(), log);
+            hosts = awsEc2Util.describeInstance(instanceIds, log);
+
+            for (String opsHost : hosts) {
+                log.info("Adding host from opsworks response : " + opsHost);
+                activeConfiguration.getHosts().add("http://"+opsHost+":6789");
+            }
+        } catch (AwsException e) {
+            throw new MojoFailureException(e.getMessage());
+        }
+    }
+
+    private void getHostsOpsWorks(DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
+        log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
+        activeConfiguration.getHosts().clear();
+        if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
+            throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
+        }
+        Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
+        AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
+        List<String> hosts;
+        try {
+            hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getOpsWorksLayerId(), activeConfiguration.getAwsPrivateIp(), log);
+            for (String opsHost : hosts) {
+                log.info("Adding host from opsworks response : " + opsHost);
+                activeConfiguration.getHosts().add("http://"+opsHost+":6789");
+            }
+        } catch (AwsException e) {
+            throw new MojoFailureException(e.getMessage());
         }
     }
 
