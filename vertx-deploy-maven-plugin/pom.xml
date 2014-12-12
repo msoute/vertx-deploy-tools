@@ -15,7 +15,7 @@
     <packaging>maven-plugin</packaging>
 
     <name>Vert.X deploy maven plugin</name>
-
+    <description>Maven plugin to create deploy requests for a project.</description>
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>

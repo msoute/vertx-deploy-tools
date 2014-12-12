@@ -13,7 +13,8 @@
     <artifactId>vertx-deploy-mod</artifactId>
     <version>1.0.1-SNAPSHOT</version>
 
-    <name>Vert.X deploy module</name>
+    <name>Vert.x deploy module</name>
+    <description>Vert.x deploy module.</description>
 
     <properties>
         <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
