@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.fail;
-
+@Ignore
 public class ClusterManagerModuleTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModuleTest.class);
