@@ -102,7 +102,7 @@ public class ClusterManagerModuleTest {
 
         List<DeployModuleRequest> moduleRequests = new ArrayList<>(1);
         moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils","mongo-connector","1.0.1-SNAPSHOT",1, false));
-        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, false);
+        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, false, false);
 
         String postData = writer.writeValueAsString(request);
         ByteArrayInputStream bos = new ByteArrayInputStream(postData.getBytes());
@@ -126,6 +126,7 @@ public class ClusterManagerModuleTest {
                 .putString("group_id", "nl.malmberg.edubase.utils")
                 .putString("artifact_id", "mongo-connector")
                 .putString("version", "1.3.0-SNAPSHOT")
+                .putBoolean("restart", true)
                 .putNumber("instances", 1);
     }
 

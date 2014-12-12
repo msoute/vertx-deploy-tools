@@ -90,27 +90,9 @@
                 <artifactId>vertx-maven-plugin</artifactId>
                 <version>2.0.7-final</version>
                 <configuration>
-                    <modsDir>/tmp</modsDir>
-                    <configFile>src/main/resources/config.json</configFile>
+                    <configFile>src/test/runner/config.json</configFile>
                     <instances>1</instances>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>nl.jpoint.vertx-deploy-tools</groupId>
-                        <artifactId>vertx-deploy-mod</artifactId>
-                        <version>1.0.1-SNAPSHOT</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                        <version>1.7.5</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-classic</artifactId>
-                        <version>1.0.13</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
