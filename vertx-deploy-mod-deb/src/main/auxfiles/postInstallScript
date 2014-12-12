@@ -41,6 +41,13 @@ then
    mkdir /var/www
 fi
 
+if [ ! -d /var/vertx/sites ]
+then
+    mkdir -p /var/vertx/sites
+fi
+
+
+
 # Copy extra libs
 cp $bundledjardir/*.jar /opt/vert.x/lib
 
@@ -58,6 +65,7 @@ chown -R $VERTX_USER:$VERTX_USER /var/log/vertx
 chown -R $VERTX_USER:$VERTX_USER /etc/vertx
 
 chown -R $VERTX_USER:$VERTX_USER /var/www
+chown -R $VERTX_USER:$VERTX_USER /var/vertx/sites
 
 chmod 0440 /etc/sudoers.d/vertx
 
