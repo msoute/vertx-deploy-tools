@@ -28,6 +28,7 @@ public class DeployModuleService implements DeployService {
         this.vertx = vertx;
         this.config = config;
         this.platformManager = PlatformLocator.factory.createPlatformManager();
+
         this.modRoot = new File(config.getString("mod.root"));
         this.installedModules = this.vertx.sharedData().getMap("installed_modules");
     }
@@ -82,7 +83,7 @@ public class DeployModuleService implements DeployService {
             }
 
             // Install the new module.
-            InstallModule installCommand = new InstallModule();
+            InstallModule installCommand = new InstallModule(platformManager, config);
             JsonObject installResult = installCommand.execute(deployRequest);
 
             // Respond failed if install did not complete.
@@ -108,8 +109,15 @@ public class DeployModuleService implements DeployService {
     private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {
 
         if (!modRoot.exists()) {
-            LOG.error("[{} - {}]: Module root {} Does not exist.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), modRoot);
-            return ModuleVersion.ERROR;
+            LOG.error("[{} - {}]: Module root {} Does not exist, trying to create.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), modRoot);
+            boolean result = modRoot.mkdirs();
+            if (!result) {
+                LOG.error("[{} - {}]: Failed to create module root {}.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), modRoot);
+                return ModuleVersion.ERROR;
+            } else {
+                LOG.info("[{} - {}]: Created module root {}.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), modRoot);
+            }
+
         }
 
         for (String mod : modRoot.list(new ModuleFileNameFilter(deployRequest))) {
