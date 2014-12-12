@@ -5,12 +5,12 @@
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
     <artifactId>vertx-deploy-maven-plugin</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <name>Vert.X deploy maven plugin</name>
