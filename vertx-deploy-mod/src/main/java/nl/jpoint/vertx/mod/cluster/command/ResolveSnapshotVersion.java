@@ -68,7 +68,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
                 }
             }
         } catch (IOException e) {
-            LOG.error("[{} - {}]: Error downloading artifact {}.", logId, request.getId(), request.getArtifactId());
+            LOG.error("[{} - {}]: IO Exception while downloading artifact {}. Reason '{}'.", logId, request.getId(), request.getArtifactId(), e.getMessage());
         }
         return new JsonObject().putBoolean("success", resolved).putString("version", realSnapshotVersion);
 
