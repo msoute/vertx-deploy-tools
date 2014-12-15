@@ -89,7 +89,7 @@ public class DownloadArtifact implements Command<ModuleRequest> {
                     LOG.error("[{} - {}]: HttpClient Error [{}] -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
                 }
             } catch (IOException e) {
-                LOG.error("[{} - {}]: Error downloading artifact {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getArtifactId());
+                LOG.error("[{} - {}]: IOException while Error downloading artifact {}. Reason '{}'", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getArtifactId(), e.getMessage());
             }
         }
         return new JsonObject().putBoolean("success", downloaded);
