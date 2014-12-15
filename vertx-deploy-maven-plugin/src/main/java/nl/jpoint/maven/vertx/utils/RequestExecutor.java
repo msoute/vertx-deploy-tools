@@ -197,8 +197,8 @@ public class RequestExecutor {
     private void getHostsForAutoScalingGroup(DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
         log.info("retrieving list of hosts for auto scaling group with id : " + activeConfiguration.getOpsWorksStackId());
         activeConfiguration.getHosts().clear();
-        if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
-            throw new MojoFailureException("No server config for auto scaling group id : " + activeConfiguration.getOpsWorksStackId());
+        if (settings.getServer(activeConfiguration.getAutoScalingGroupId())== null) {
+            throw new MojoFailureException("No server config for auto scaling group id : " + activeConfiguration.getAutoScalingGroupId());
         }
         Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
         AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(server.getUsername(), server.getPassword());
