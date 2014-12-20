@@ -83,7 +83,7 @@ public class DeployModuleService implements DeployService {
             }
 
             // Install the new module.
-            InstallModule installCommand = new InstallModule(platformManager, config);
+            InstallModule installCommand = new InstallModule();
             JsonObject installResult = installCommand.execute(deployRequest);
 
             // Respond failed if install did not complete.
