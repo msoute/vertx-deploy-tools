@@ -75,8 +75,8 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
                 }
 
-                for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
-                    deployOk = moduleDeployService.deploy(moduleRequest);
+                for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
+                    deployOk = artifactDeployService.deploy(artifactRequest);
 
                     if (!deployOk) {
                         respondFailed(request);
@@ -84,10 +84,9 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     }
                 }
 
-
-                if (deployOk || deployRequest.getModules().size() == 0) {
-                    for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
-                        deployOk = artifactDeployService.deploy(artifactRequest);
+                if (deployOk || deployRequest.getArtifacts().size() == 0) {
+                    for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
+                        deployOk = moduleDeployService.deploy(moduleRequest);
 
                         if (!deployOk) {
                             respondFailed(request);
