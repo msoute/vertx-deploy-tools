@@ -60,7 +60,6 @@ public class DeployModuleService implements DeployService {
         }
 
         if (!moduleInstalled.equals(ModuleVersion.INSTALLED)) {
-
             // Respond OK if the deployment is async.
             if (deployRequest.isAsync()) {
                 return true;
@@ -79,6 +78,9 @@ public class DeployModuleService implements DeployService {
 
                 UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
                 undeployCommand.execute(deployRequest);
+
+                //after undeploying remove previous installed version from cache
+                installedModules.remove(deployRequest.getMavenArtifactId());
 
             }
 
@@ -125,7 +127,7 @@ public class DeployModuleService implements DeployService {
                 LOG.info("[{} - {}]: Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
                 return ModuleVersion.INSTALLED;
             } else {
-                if (deployRequest.getSnapshotVersion().equals(installedModules.get(deployRequest.getMavenArtifactId()))) {
+                if (deployRequest.isSnapshot() && deployRequest.getSnapshotVersion().equals(installedModules.get(deployRequest.getMavenArtifactId()))) {
                     LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
                     return ModuleVersion.INSTALLED;
                 }

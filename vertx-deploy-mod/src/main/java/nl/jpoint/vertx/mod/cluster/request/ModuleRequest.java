@@ -71,7 +71,7 @@ public abstract class ModuleRequest {
     }
 
     public String getSnapshotVersion() {
-        return (snapshotVersion != null) ? snapshotVersion : version;
+        return snapshotVersion;
     }
 
     public void setSnapshotVersion(String snapshotVersion) {
