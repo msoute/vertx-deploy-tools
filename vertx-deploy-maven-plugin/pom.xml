@@ -13,7 +13,7 @@
     <version>1.0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
-    <name>Vert.X deploy maven plugin</name>
+    <name>Vert.x deploy maven plugin</name>
     <description>Maven plugin to create deploy requests for a project.</description>
     <dependencies>
         <dependency>

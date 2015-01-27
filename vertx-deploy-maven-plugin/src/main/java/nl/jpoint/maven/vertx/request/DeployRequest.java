@@ -17,14 +17,17 @@ public class DeployRequest {
 
     private final List<Request> modules;
     private final List<Request> artifacts;
+    private final List<Request> configs;
+
     @JsonProperty("aws")
     private final boolean aws;
     @JsonProperty("restart")
     private final boolean restart;
 
-    public DeployRequest(List<Request> modules, List<Request> artifacts, boolean aws, boolean restart) {
+    public DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean aws, boolean restart) {
         this.modules = modules;
         this.artifacts = artifacts;
+        this.configs = configs;
         this.aws = aws;
         this.restart = restart;
     }
@@ -35,6 +38,10 @@ public class DeployRequest {
 
     public List<Request> getArtifacts() {
         return new ArrayList<>(artifacts);
+    }
+
+    public List<Request> getConfigs() {
+        return new ArrayList<>(configs);
     }
 
     public String toJson() {
