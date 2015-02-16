@@ -208,7 +208,9 @@ public class RequestExecutor {
         try {
             instanceIds = awsAutoScalingUtil.listInstancesInGroup(activeConfiguration.getAutoScalingGroupId(), log);
             hosts = awsEc2Util.describeInstance(instanceIds, log);
-
+            if (hosts.size() == 0 ) {
+                throw new MojoFailureException("No hosts found in autoscaling group " + activeConfiguration.getAutoScalingGroupId());
+            }
             for (String opsHost : hosts) {
                 log.info("Adding host from opsworks response : " + opsHost);
                 activeConfiguration.getHosts().add("http://"+opsHost+":6789");
@@ -216,6 +218,7 @@ public class RequestExecutor {
         } catch (AwsException e) {
             throw new MojoFailureException(e.getMessage());
         }
+
     }
 
     private void getHostsOpsWorks(DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
