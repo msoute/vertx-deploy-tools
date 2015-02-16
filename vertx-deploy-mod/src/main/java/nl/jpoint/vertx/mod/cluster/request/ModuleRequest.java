@@ -55,7 +55,8 @@ public abstract class ModuleRequest {
                 .append("/")
                 .append(getVersion())
                 .append("/")
-                .append(getArtifactId()).append("-");
+                .append(getArtifactId()).append("-")
+                .append(getVersion());
 
         if (snapshotVersion != null) {
             builder.append(getSnapshotVersion());

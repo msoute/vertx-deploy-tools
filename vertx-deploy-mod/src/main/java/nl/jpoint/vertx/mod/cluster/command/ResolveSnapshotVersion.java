@@ -51,7 +51,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
                 new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 
         boolean resolved = false;
-        String realSnapshotVersion = null;
+        String realSnapshotVersion = request.isSnapshot() ? request.getVersion() : null;
 
         Iterator<String> it = repoList.iterator();
         try (CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {

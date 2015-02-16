@@ -1,6 +1,0 @@
-VERTX_HOME=/opt/vert.x/
-
-VERTX_USER=vertx
-
-
-VERTX_DEPLOY_MOD_VERSION=${project.version}

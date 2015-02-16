@@ -23,6 +23,8 @@
     <modules>
         <module>vertx-deploy-mod</module>
         <module>vertx-deploy-maven-plugin</module>
+        <module>vertx-deploy-test</module>
+        <module>vertx-deploy-test-module</module>
     </modules>
 
     <scm>
@@ -33,7 +35,7 @@
   </scm>
 
     <properties>
-        <vertx.platform.version>2.1.1</vertx.platform.version>
+        <vertx.platform.version>2.1.5</vertx.platform.version>
         <vertx.testtools.version>2.0.2-final</vertx.testtools.version>
         <nexus.host>default</nexus.host>
     </properties>

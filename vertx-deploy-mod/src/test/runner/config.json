@@ -1,8 +1,10 @@
 {
-    "vertx.home": "/tmp/vertx",
-    "mod.root": "/tmp/vertx/mods/",
-    "artifact.repo": "/tmp/vertx/repo/",
+    "vertx.home": "/opt/vertx",
+    "mod.root": "/opt/vertx/mods/",
+    "artifact.repo": "/tmp/",
     "http.authUser": "",
     "http.authPass": "",
-    "http.authUri": ""
+    "http.authUri": "",
+    "deploy.internal" : true,
+    "module.pid.dir" : ""
 }

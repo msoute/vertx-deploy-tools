@@ -1,8 +1,0 @@
-{
-    "vertx.home":"/opt/vert.x",
-    "mod.root": "/opt/vert.x/mods/",
-    "artifact.repo": "/opt/vert.x/repo/",
-    "http.authUser": "",
-    "http.authPass": "",
-    "http.authUri": ""
-}
