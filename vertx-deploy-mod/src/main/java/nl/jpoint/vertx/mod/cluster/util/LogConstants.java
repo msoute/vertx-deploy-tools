@@ -6,4 +6,5 @@ public class LogConstants {
     public final static String DEPLOY_REQUEST = "DeployRequest";
     public final static String DEPLOY_SITE_REQUEST = "DeploySiteRequest";
     public static final String AWS_ELB_REQUEST = "ConfigureAwsElb";
+    public static final String AWS_AS_REQUEST = "ConfigureAwsAutoScaling";
 }

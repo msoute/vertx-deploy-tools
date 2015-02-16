@@ -1,9 +1,10 @@
-package nl.jpoint.vertx.mod.cluster.command;
+package nl.jpoint.vertx.mod.cluster.aws.state;
 
 import nl.jpoint.vertx.mod.cluster.aws.AwsElbUtil;
 import nl.jpoint.vertx.mod.cluster.aws.AwsException;
 import nl.jpoint.vertx.mod.cluster.aws.AwsState;
-import nl.jpoint.vertx.mod.cluster.handler.internal.AwsRegistrationStatusPollingHandler;
+import nl.jpoint.vertx.mod.cluster.command.Command;
+import nl.jpoint.vertx.mod.cluster.handler.internal.AwsElbRegistrationStatusPollingHandler;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -13,12 +14,12 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
 
-public class AwsRegisterInstance implements Command<DeployRequest> {
-    private static final Logger LOG = LoggerFactory.getLogger(AwsRegisterInstance.class);
+public class AwsElbRegisterInstance implements Command<DeployRequest> {
+    private static final Logger LOG = LoggerFactory.getLogger(AwsElbRegisterInstance.class);
     private final Vertx vertx;
     private final AwsElbUtil awsElbUtil;
 
-    public AwsRegisterInstance(Vertx vertx, AwsElbUtil awsElbUtil) {
+    protected AwsElbRegisterInstance(Vertx vertx, AwsElbUtil awsElbUtil) {
         this.vertx = vertx;
         this.awsElbUtil = awsElbUtil;
     }
@@ -34,7 +35,7 @@ public class AwsRegisterInstance implements Command<DeployRequest> {
 
             awsElbUtil.registerInstanceWithLoadbalancer();
             LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-            vertx.setPeriodic(30000L, new AwsRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.INSERVICE));
+            vertx.setPeriodic(30000L, new AwsElbRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.INSERVICE));
 
             return new JsonObject().putBoolean("success", true);
 

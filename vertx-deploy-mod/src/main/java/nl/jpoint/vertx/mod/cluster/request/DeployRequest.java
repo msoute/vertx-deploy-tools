@@ -12,8 +12,11 @@ public class DeployRequest {
     private final UUID id = UUID.randomUUID();
     private final List<DeployModuleRequest> modules;
     private final List<DeployArtifactRequest> artifacts;
-    @JsonProperty("aws")
     private final boolean aws;
+    private final boolean autoscaling;
+    private final String autoScalingGroup;
+    private final String instanceId;
+
     private final boolean restart;
     private DeployState state;
 
@@ -21,10 +24,16 @@ public class DeployRequest {
     public DeployRequest(@JsonProperty("modules") List<DeployModuleRequest> modules,
                          @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts,
                          @JsonProperty("aws") boolean aws,
+                         @JsonProperty("autoscaling") boolean autoscaling,
+                         @JsonProperty("as_group_id") String autoScalingGroup,
+                         @JsonProperty("instance_id") String instanceId,
                          @JsonProperty("restart") boolean restart) {
         this.modules = modules;
         this.artifacts = artifacts;
         this.aws = aws;
+        this.autoscaling = autoscaling;
+        this.autoScalingGroup = autoScalingGroup;
+        this.instanceId = instanceId;
         this.restart = restart;
     }
 
@@ -40,8 +49,19 @@ public class DeployRequest {
         return id;
     }
 
+    public String getAutoScalingGroup() {
+        return autoScalingGroup;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
     public boolean withAws() {
         return aws;
+    }
+    public boolean withAutoscaling() {
+        return aws && autoscaling;
     }
 
     public boolean withRestart() {

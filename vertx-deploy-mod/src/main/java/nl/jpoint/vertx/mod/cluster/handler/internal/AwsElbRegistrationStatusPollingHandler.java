@@ -11,19 +11,16 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
+public class AwsElbRegistrationStatusPollingHandler implements Handler<Long> {
 
-public class AwsRegistrationStatusPollingHandler implements Handler<Long> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AwsRegistrationStatusPollingHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AwsElbRegistrationStatusPollingHandler.class);
     private final DeployRequest request;
     private final AwsElbUtil elbUtil;
     private final Vertx vertx;
     private final AwsState state;
-    AtomicInteger count = new AtomicInteger(0);
 
-    public AwsRegistrationStatusPollingHandler(DeployRequest request, AwsElbUtil elbUtil, Vertx vertx, AwsState state) {
+    public AwsElbRegistrationStatusPollingHandler(DeployRequest request, AwsElbUtil elbUtil, Vertx vertx, AwsState state) {
         this.request = request;
         this.elbUtil = elbUtil;
         this.vertx = vertx;

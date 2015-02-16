@@ -30,11 +30,23 @@ public class AwsElbUtil {
     private final String instanceId;
 
     public AwsElbUtil(String accessKey, String secretAccessKey, String region, String loadbalancer, String instanceId) {
+        this(new AwsUtil(accessKey, secretAccessKey), region, loadbalancer, instanceId);
+    }
+
+    public AwsElbUtil(AwsUtil awsUtil, String region, String loadbalancer, String instanceId) {
         this.region = region;
         this.loadbalancer = loadbalancer;
         this.instanceId = instanceId;
 
-        this.awsUtil = new AwsUtil(accessKey, secretAccessKey);
+        this.awsUtil = awsUtil;
+        this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
+
+    public AwsElbUtil(AwsContext context, String region) {
+        this.region = region;
+        this.loadbalancer = null;
+        this.instanceId = null;
+        this.awsUtil = context.getAwsUtil();
         this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
@@ -60,18 +72,22 @@ public class AwsElbUtil {
         return AwsState.valueOf(AwsXpathUtil.instanceState(result, forInstanceId()).toUpperCase());
     }
 
+    public AwsState getInstanceState(final String instanceId, final String loadbalancer) throws AwsException {
+        byte[] result = this.executeGetInstanceState(loadbalancer);
+        return AwsState.valueOf(AwsXpathUtil.instanceState(result, instanceId).toUpperCase());
+    }
+
     private byte[] executeGetInstanceState() throws AwsException {
+        return executeGetInstanceState(forLoadbalancer());
+    }
+
+    private byte[] executeGetInstanceState(final String loadbalancer) throws AwsException {
         String targetHost = AWS_ELB_SERVICE + "." + region + ".amazonaws.com";
         String date = compressedIso8601DateFormat.format(new Date());
 
-        StringBuilder payloadBuilder = new StringBuilder(AWS_ACTION).append(EQUALSSIGN)
-                .append("DescribeInstanceHealth").append("&")
-                .append("LoadBalancerName").append(EQUALSSIGN).append(loadbalancer).append("&")
-                .append("Version").append(EQUALSSIGN).append(SERVICE_VERSION);
-
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
-        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_ELB_SERVICE, region);
+        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, AWS_ACTION + EQUALSSIGN + "DescribeInstanceHealth" + "&" + "LoadBalancerName" + EQUALSSIGN + loadbalancer + "&" + "Version" + EQUALSSIGN + SERVICE_VERSION, AWS_ELB_SERVICE, region);
 
         return this.executeRequest(awsPost);
     }

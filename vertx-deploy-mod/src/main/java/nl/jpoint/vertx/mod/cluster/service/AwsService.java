@@ -1,10 +1,11 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
-import nl.jpoint.vertx.mod.cluster.aws.AwsElbUtil;
-import nl.jpoint.vertx.mod.cluster.command.AwsDeRegisterInstance;
-import nl.jpoint.vertx.mod.cluster.command.AwsRegisterInstance;
+import nl.jpoint.vertx.mod.cluster.aws.state.AwsDeRegisterFactory;
+import nl.jpoint.vertx.mod.cluster.aws.state.AwsRegisterFactory;
+import nl.jpoint.vertx.mod.cluster.command.Command;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployState;
+import nl.jpoint.vertx.mod.cluster.aws.AwsContext;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,8 @@ public class AwsService {
     private static final Logger LOG = LoggerFactory.getLogger(AwsService.class);
     private final Vertx vertx;
     private final JsonObject config;
-    private final AwsElbUtil awsElbUtil;
+    /*private final AwsElbUtil awsElbUtil;*/
+    private AwsContext awsContext;
 
     private final Map<String, DeployRequest> runningRequests = new HashMap<>();
 
@@ -26,8 +28,7 @@ public class AwsService {
         this.vertx = vertx;
         this.config = config;
 
-        awsElbUtil = new AwsElbUtil(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"),
-                config.getString("aws.elb.region"), config.getString("aws.elb.loadbalancer"), config.getString("aws.elb.instanceid"));
+        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("aws.elb.region") );
     }
 
     public boolean registerRequest(DeployRequest deployRequest ) {
@@ -49,7 +50,8 @@ public class AwsService {
 
         runningRequests.get(buildId).setState(DeployState.WAITING_FOR_DEREGISTER);
 
-        AwsDeRegisterInstance deRegisterCommand = new AwsDeRegisterInstance(vertx, awsElbUtil);
+        Command<DeployRequest> deRegisterCommand = AwsDeRegisterFactory.getInstance(awsContext, runningRequests.get(buildId), config, vertx);
+
         JsonObject deRegisterResult = deRegisterCommand.execute(runningRequests.get(buildId));
         if (!deRegisterResult.getBoolean("success")) {
             runningRequests.remove(buildId);
@@ -65,7 +67,8 @@ public class AwsService {
             LOG.error("[{} - {}]: Request not registered.", LogConstants.AWS_ELB_REQUEST, buildId);
             return false;
         }
-        AwsRegisterInstance registerCommand = new AwsRegisterInstance(vertx, awsElbUtil);
+
+        Command<DeployRequest> registerCommand = AwsRegisterFactory.getInstance(awsContext, runningRequests.get(buildId), config, vertx);
         registerCommand.execute(runningRequests.get(buildId));
         return false;
     }
