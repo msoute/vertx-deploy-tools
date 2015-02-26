@@ -13,7 +13,7 @@ public class AwsDeRegisterFactory {
              final AwsElbUtil awsElbUtil = new AwsElbUtil(context.getAwsUtil(),
                context.getRegion(), config.getString("aws.elb.loadbalancer"), config.getString("aws.elb.instanceid"));
             return new AwsElbDeRegisterInstance(vertx, awsElbUtil);
-        } else if (deployRequest.withElb() && deployRequest.withAutoScaling()) {
+        } else if (deployRequest.withElb() || deployRequest.withAutoScaling()) {
             return new AwsAsDeRegisterInstance(vertx, context);
         }
         return null;

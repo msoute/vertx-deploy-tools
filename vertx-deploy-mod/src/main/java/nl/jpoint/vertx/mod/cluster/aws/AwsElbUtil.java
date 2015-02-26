@@ -1,7 +1,6 @@
 package nl.jpoint.vertx.mod.cluster.aws;
 
 
-import nl.jpoint.vertx.mod.cluster.util.AwsXpathUtil;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;

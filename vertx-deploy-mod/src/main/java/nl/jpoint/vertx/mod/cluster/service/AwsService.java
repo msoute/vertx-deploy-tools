@@ -28,7 +28,7 @@ public class AwsService {
         this.vertx = vertx;
         this.config = config;
 
-        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("aws.elb.region") );
+        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("eu-west-1") );
     }
 
     public boolean registerRequest(DeployRequest deployRequest ) {
