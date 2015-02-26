@@ -27,9 +27,8 @@ public class RequestExecutor {
     private final long timeout;
 
     public RequestExecutor(Log log) {
-
         this.log = log;
-        timeout = System.currentTimeMillis() + 60 * 100000;
+        timeout = System.currentTimeMillis() + 180000;
     }
 
     private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException, MojoFailureException {
