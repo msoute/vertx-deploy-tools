@@ -63,6 +63,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .withRestart(activeConfiguration.doRestart())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
+            getLog().info("Sending deploy request to host with public IP " + instance.getPublicIp());
             executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()));
         }
 
