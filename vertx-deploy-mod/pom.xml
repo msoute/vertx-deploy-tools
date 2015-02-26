@@ -19,7 +19,6 @@
         <mods.directory>target/mods</mods.directory>
     </properties>
 
-
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>
