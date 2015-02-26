@@ -8,11 +8,11 @@ import java.util.List;
 
 public class AwsAutoScalingUtilTest {
 
-    private final static String ACCESS_KEY = "";
-    private final static String SECRET_ACCESS_KEY = "";
-    private final static String AS_GROUP_ID = "";
-    private final static String INSTANCE_ID = "";
-    private final static String ELB = "";
+    private final static String ACCESS_KEY = "ak";
+    private final static String SECRET_ACCESS_KEY = "sak";
+    private final static String AS_GROUP_ID = "gid";
+    private final static String INSTANCE_ID = "iid";
+    private final static String ELB = "elb";
 
     AwsAutoScalingUtil util = new AwsAutoScalingUtil(ACCESS_KEY, SECRET_ACCESS_KEY);
     AwsElbUtil elbUtil = new AwsElbUtil(ACCESS_KEY, SECRET_ACCESS_KEY, "eu-west-1", ELB, INSTANCE_ID);
