@@ -43,10 +43,14 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
     private void deployWithAutoScaling(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
         if (activeConfiguration.getAutoScalingGroupId() == null) {
-            throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no autoScalingGroupId set");
+            throw new MojoExecutionException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no autoScalingGroupId set");
         }
         final RequestExecutor executor = new RequestExecutor(getLog());
         List<Ec2Instance> instances = AwsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration, settings);
+
+        if (instances.isEmpty()) {
+            throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
+        }
 
         for (Ec2Instance instance : instances) {
             DeployRequest deployRequest = new DeployRequest.Builder()

@@ -8,6 +8,7 @@ import nl.jpoint.vertx.mod.cluster.request.DeployState;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
 import nl.jpoint.vertx.mod.cluster.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
+import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
@@ -38,6 +39,8 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             awsService.failBuild(deployId);
             return;
         }
+
+        LOG.info("[{} - {}]: Handle internal deploy request with state {}", LogConstants.DEPLOY_REQUEST, deployId, state);
         switch (state) {
             case STANDBY:
             case NOTREGISTERED:

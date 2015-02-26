@@ -51,6 +51,7 @@ public class ClusterManagerModule extends Verticle {
                 LOG.error("{}: No match for request {}", LogConstants.CLUSTER_MANAGER, event.absoluteURI());
                 event.response().setStatusCode(HttpResponseStatus.FORBIDDEN.code());
                 event.response().end();
+                event.response().close();
             }
         });
 

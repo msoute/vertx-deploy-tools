@@ -9,6 +9,7 @@ import org.apache.maven.settings.Settings;
 import java.util.List;
 
 public class AwsDeployUtils {
+
     public static List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
         activeConfiguration.getHosts().clear();

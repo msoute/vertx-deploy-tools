@@ -63,6 +63,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
             if (loadbalancers == null) {
                 try {
                     loadbalancers = asUtil.listLoadBalancers(request.getAutoScalingGroup());
+
                 } catch (AwsException e) {
                     LOG.error("[{} - {}]: Error executing list elb in auto scaling group request", LogConstants.AWS_AS_REQUEST, request.getId(), e.getMessage());
                 }
@@ -70,7 +71,8 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
 
             for (String loadbalancer : loadbalancers) {
                 try {
-                    AwsState currentElbState = elbUtil.getInstanceState();
+                    LOG.info("[{} - {}]: Cheking Instance {} state on elb {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), loadbalancer);
+                    AwsState currentElbState = elbUtil.getInstanceState(request.getInstanceId(), loadbalancer);
                     LOG.info("[{} - {}]: Instance {} on elb {} in state {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), loadbalancer, currentElbState.name());
                     if (!AwsState.INSERVICE.equals(currentElbState)) {
                         return false;

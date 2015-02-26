@@ -32,6 +32,9 @@ public class AwsAutoScalingUtilTest {
     @Test
     public void testListLoadBalancersInGroup() throws AwsException {
         List<String> result = util.listLoadBalancers(AS_GROUP_ID);
+        AwsState state = elbUtil.getInstanceState("i-66c35182","tst-edutest-malmberg-nl");
+        System.out.println(state.name());
+
         Assert.assertEquals(1, result.size());
         System.out.println(result.get(0));
 
