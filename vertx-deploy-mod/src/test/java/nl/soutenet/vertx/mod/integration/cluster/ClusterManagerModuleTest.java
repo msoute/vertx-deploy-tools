@@ -35,6 +35,7 @@ public class ClusterManagerModuleTest {
     private static final String POST_URI_MODULE = "http://localhost:6789/deploy/module";
 
     @Test
+    @Ignore
     public void testInvalidDeployModuleCommand() {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpPost post = new HttpPost(POST_URI);
@@ -48,6 +49,7 @@ public class ClusterManagerModuleTest {
     }
 
     @Test
+    @Ignore
     public void testDeployModuleCommand() {
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -71,6 +73,7 @@ public class ClusterManagerModuleTest {
     }
 
     @Test
+    @Ignore
     public void testDeploySiteModuleCommand() {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpPost post = new HttpPost(POST_URI_SITE);
@@ -94,6 +97,7 @@ public class ClusterManagerModuleTest {
     }
 
     @Test
+    @Ignore
     public void testDeployAWSCommand() throws JsonProcessingException {
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
