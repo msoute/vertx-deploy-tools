@@ -22,7 +22,6 @@ import java.io.IOException;
 
 public class RestDeployHandler implements Handler<HttpServerRequest> {
 
-    private final ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
     private final DeployService moduleDeployService;
     private final DeployService artifactDeployService;
     private final AwsService awsService;
@@ -40,6 +39,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
         request.bodyHandler(new Handler<Buffer>() {
             @Override
             public void handle(Buffer event) {
+                ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
 
                 DeployRequest deployRequest;
 

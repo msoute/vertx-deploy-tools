@@ -2,5 +2,5 @@
     "main": "nl.jpoint.vertx.mod.cluster.ClusterManagerModule",
     "system": true,
     "worker": true,
-    "multi-threaded" : true
+    "multi-threaded" : false
 }
