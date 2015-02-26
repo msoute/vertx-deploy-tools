@@ -23,6 +23,8 @@ public class ClusterManagerModule extends Verticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClusterManagerModule.class);
 
+    private boolean initiated = false;
+
     @Override
     public void start() {
         MDC.put("service", Constants.SERVICE_ID);
@@ -45,17 +47,32 @@ public class ClusterManagerModule extends Verticle {
         matcher.post("/deploy/artifact*", new RestDeployArtifactHandler(deployArtifactService));
         matcher.get("/deploy/status/:id", new RestDeployAwsHandler(awsService));
 
+        matcher.get("/status", new Handler<HttpServerRequest>() {
+            @Override
+            public void handle(HttpServerRequest event) {
+                if (initiated) {
+                    event.response().setStatusCode(HttpResponseStatus.FORBIDDEN.code());
+                } else {
+                    event.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+                }
+                event.response().end();
+                event.response().close();
+            }
+        });
+
         matcher.noMatch(new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest event) {
                 LOG.error("{}: No match for request {}", LogConstants.CLUSTER_MANAGER, event.absoluteURI());
                 event.response().setStatusCode(HttpResponseStatus.FORBIDDEN.code());
                 event.response().end();
+                event.response().close();
             }
         });
 
         httpServer.requestHandler(matcher);
         httpServer.listen(6789);
+        initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
 
     }

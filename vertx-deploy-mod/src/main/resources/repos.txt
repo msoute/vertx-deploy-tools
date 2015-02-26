@@ -1,0 +1,2 @@
+mavenLocal:~/.m2/repository
+maven:https://build:Xo7Eez2v@build.edubase.malmberg.nl/nexus/content/groups/public/

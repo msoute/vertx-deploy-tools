@@ -13,12 +13,9 @@ import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +53,7 @@ public class RequestExecutor {
                 @Override
                 public void run() {
 
-                    HttpGet get = new HttpGet(postRequest.getURI().getScheme()+"://"+postRequest.getURI().getHost() +":"+postRequest.getURI().getPort()+ "/deploy/status/" + buildId);
+                    HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
                     try (CloseableHttpResponse response = httpClient.execute(get)) {
                         int code = response.getStatusLine().getStatusCode();
                         String state = response.getStatusLine().getReasonPhrase();
@@ -86,7 +83,9 @@ public class RequestExecutor {
                         }
 
                     } catch (IOException e) {
-                        if (status.get() != 200) {status.set(500);}
+                        if (status.get() != 200) {
+                            status.set(500);
+                        }
                         waitFor.decrementAndGet();
                     }
                 }
@@ -162,92 +161,40 @@ public class RequestExecutor {
         }
     }
 
-    public void executeDeployRequests(DeployConfiguration activeConfiguration, DeployRequest deployRequest, Settings settings) throws MojoExecutionException, MojoFailureException {
 
-        if (activeConfiguration.getOpsWorks() && activeConfiguration.getOpsWorksStackId() != null) {
-            getHostsOpsWorks(activeConfiguration, settings);
-        }
-
-        if (activeConfiguration.isAutoScaling() && activeConfiguration.getAutoScalingGroupId() != null) {
-            getHostsForAutoScalingGroup(activeConfiguration, settings);
-        }
-        
-        for (String host : activeConfiguration.getHosts()) {
-
-            log.info("Deploying to host : " + host);
-
-            HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
-            ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson().getBytes());
-            BasicHttpEntity entity = new BasicHttpEntity();
-            entity.setContent(bos);
-            entity.setContentLength(deployRequest.toJson().getBytes().length);
-            post.setEntity(entity);
-
-
-
-            if (!activeConfiguration.getAws()) {
-                this.executeRequest(post);
-            } else {
-                this.executeAwsRequest(post, host);
-            }
-
-        }
+    public void executeAwsDeployRequest(DeployRequest deployRequest, String host) throws MojoFailureException, MojoExecutionException {
+        executeRequest(deployRequest, host, true);
     }
 
-    private void getHostsForAutoScalingGroup(DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
-        log.info("retrieving list of hosts for auto scaling group with id : " + activeConfiguration.getOpsWorksStackId());
-        activeConfiguration.getHosts().clear();
-        if (settings.getServer(activeConfiguration.getAutoScalingGroupId())== null) {
-            throw new MojoFailureException("No server config for auto scaling group id : " + activeConfiguration.getAutoScalingGroupId());
-        }
-        Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
-        AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(server.getUsername(), server.getPassword());
-        AwsEc2Util awsEc2Util = new AwsEc2Util(server.getUsername(), server.getPassword());
-        List<String> instanceIds;
-        List<String> hosts;
-        try {
-            instanceIds = awsAutoScalingUtil.listInstancesInGroup(activeConfiguration.getAutoScalingGroupId(), log);
-            hosts = awsEc2Util.describeInstance(instanceIds, log);
-            if (hosts.size() == 0 ) {
-                throw new MojoFailureException("No hosts found in autoscaling group " + activeConfiguration.getAutoScalingGroupId());
-            }
-            for (String opsHost : hosts) {
-                log.info("Adding host from opsworks response : " + opsHost);
-                activeConfiguration.getHosts().add("http://"+opsHost+":6789");
-            }
-        } catch (AwsException e) {
-            throw new MojoFailureException(e.getMessage());
-        }
-
+    public void executeDeployRequest(DeployRequest deployRequest, String host) throws MojoFailureException, MojoExecutionException {
+        executeRequest(deployRequest, host, false);
     }
 
-    private void getHostsOpsWorks(DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
-        log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
-        activeConfiguration.getHosts().clear();
-        if (settings.getServer(activeConfiguration.getOpsWorksStackId())== null) {
-            throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
-        }
-        Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
-        AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
-        List<String> hosts;
-        try {
-            hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getOpsWorksLayerId(), activeConfiguration.getAwsPrivateIp(), log);
-            for (String opsHost : hosts) {
-                log.info("Adding host from opsworks response : " + opsHost);
-                activeConfiguration.getHosts().add("http://"+opsHost+":6789");
-            }
-        } catch (AwsException e) {
-            throw new MojoFailureException(e.getMessage());
+    private void executeRequest(DeployRequest deployRequest, String host, boolean withAws) throws MojoExecutionException, MojoFailureException {
+        log.info("Deploying to host : " + host);
+        HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
+        ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson(false).getBytes());
+        BasicHttpEntity entity = new BasicHttpEntity();
+        entity.setContent(bos);
+        entity.setContentLength(deployRequest.toJson(false).getBytes().length);
+        post.setEntity(entity);
+
+        if (!withAws) {
+            this.executeRequest(post);
+        } else {
+            this.executeAwsRequest(post, host);
         }
     }
 
     private String createDeployUri(String host) {
         if (!host.startsWith("http://")) {
-            host = "http://"+host;
+            host = "http://" + host;
         }
         if (!host.endsWith(":6789")) {
-            host = host+":6789";
+            host = host + ":6789";
         }
         return host;
     }
+
+
 }

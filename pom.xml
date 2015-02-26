@@ -5,7 +5,7 @@
 
     <groupId>nl.jpoint</groupId>
     <artifactId>vertx-deploy-tools</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vert.x module for deploying of other Vert.x Modules with support for AWS based infrastructure.
@@ -18,7 +18,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <name>Vert.X deploy tools</name>
+    <name>Vert.x deploy tools</name>
 
     <modules>
         <module>vertx-deploy-mod</module>

@@ -61,7 +61,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 boolean deployOk = false;
 
 
-                if (deployRequest.withAws()) {
+                if (deployRequest.withElb()) {
                     if (awsService.registerRequest(deployRequest)) {
                         respondContinue(request, deployRequest.getId().toString());
                         awsService.deRegisterInstance(deployRequest.getId().toString());

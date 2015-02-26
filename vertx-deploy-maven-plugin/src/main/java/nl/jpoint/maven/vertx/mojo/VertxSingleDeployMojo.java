@@ -31,15 +31,22 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
         final DeployUtils utils = new DeployUtils(getLog(), project);
         final RequestExecutor executor = new RequestExecutor(getLog());
 
-        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER, doRestart);
+        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
 
-        DeployRequest deployRequest = new DeployRequest(deployModuleRequests, deployArtifactRequests, deployConfigRequests, false, doRestart);
+        DeployRequest deployRequest = new DeployRequest.Builder()
+                .withModules(deployModuleRequests)
+                .withArtifacts(deployArtifactRequests)
+                .withConfigs(deployConfigRequests)
+                .withRestart(doRestart)
+                .withElb(false)
+                .build();
+
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '"+deployArtifactRequests.size()+"' artifacts and '"+deployModuleRequests.size()+"' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
-        executor.executeDeployRequests(activeConfiguration, deployRequest, settings);
+        executor.executeDeployRequest(deployRequest, remoteIp);
 
     }
 }
