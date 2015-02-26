@@ -9,11 +9,11 @@ import org.vertx.java.core.json.JsonObject;
 
 public class AwsDeRegisterFactory {
     public static Command<DeployRequest> getInstance(AwsContext context, DeployRequest deployRequest, JsonObject config, Vertx vertx) {
-        if (deployRequest.withAws() && !deployRequest.withAutoscaling()) {
+        if (deployRequest.withElb() && !deployRequest.withAutoScaling()) {
              final AwsElbUtil awsElbUtil = new AwsElbUtil(context.getAwsUtil(),
                context.getRegion(), config.getString("aws.elb.loadbalancer"), config.getString("aws.elb.instanceid"));
             return new AwsElbDeRegisterInstance(vertx, awsElbUtil);
-        } else if (deployRequest.withAws() && deployRequest.withAutoscaling()) {
+        } else if (deployRequest.withElb() && deployRequest.withAutoScaling()) {
             return new AwsAsDeRegisterInstance(vertx, context);
         }
         return null;

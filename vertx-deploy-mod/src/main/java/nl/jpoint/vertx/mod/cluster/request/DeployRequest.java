@@ -13,7 +13,7 @@ public class DeployRequest {
     private final List<DeployModuleRequest> modules;
     private final List<DeployArtifactRequest> artifacts;
     private final boolean aws;
-    private final boolean autoscaling;
+    private final boolean autoScaling;
     private final String autoScalingGroup;
     private final String instanceId;
 
@@ -23,15 +23,15 @@ public class DeployRequest {
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployModuleRequest> modules,
                          @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts,
-                         @JsonProperty("aws") boolean aws,
-                         @JsonProperty("autoscaling") boolean autoscaling,
+                         @JsonProperty("with_elb") boolean elb,
+                         @JsonProperty("with_as") boolean autoScaling,
                          @JsonProperty("as_group_id") String autoScalingGroup,
                          @JsonProperty("instance_id") String instanceId,
                          @JsonProperty("restart") boolean restart) {
         this.modules = modules;
         this.artifacts = artifacts;
-        this.aws = aws;
-        this.autoscaling = autoscaling;
+        this.aws = elb;
+        this.autoScaling = autoScaling;
         this.autoScalingGroup = autoScalingGroup;
         this.instanceId = instanceId;
         this.restart = restart;
@@ -57,11 +57,11 @@ public class DeployRequest {
         return instanceId;
     }
 
-    public boolean withAws() {
+    public boolean withElb() {
         return aws;
     }
-    public boolean withAutoscaling() {
-        return aws && autoscaling;
+    public boolean withAutoScaling() {
+        return aws && autoScaling;
     }
 
     public boolean withRestart() {

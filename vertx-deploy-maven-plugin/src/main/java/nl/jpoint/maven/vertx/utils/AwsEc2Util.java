@@ -24,7 +24,7 @@ public class AwsEc2Util {
         this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public List<String> describeInstance(List<String> instanceIds, Log log) throws AwsException {
+    public List<Ec2Instance> describeInstances(List<String> instanceIds, Log log) throws AwsException {
         String date = compressedIso8601DateFormat.format(new Date());
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
@@ -38,7 +38,7 @@ public class AwsEc2Util {
         HttpGet awsGet = awsUtil.createSignedGet(targetHost, requestParamerters, signedHeaders, date, AWS_EC2_SERVICE, "eu-west-1", "DescribeInstances");
 
         byte[] result = this.executeRequest(awsGet);
-        return AwsXpathUtil.listPrivateDNSInDescribeInstancesResponse(result);
+        return AwsXpathUtil.describeInstances(result);
     }
 
     private byte[] executeRequest(final HttpGet awsGet) throws AwsException {
