@@ -48,6 +48,9 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     respondFailed(request);
                     return;
                 }
+                byte[] eventBody = event.getBytes();
+                LOG.debug("{}: received postdata size  -> {} ", LogConstants.DEPLOY_REQUEST, eventBody.length);
+                LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, new String(eventBody));
                 try {
                     deployRequest = reader.readValue(event.getBytes());
                 } catch (IOException e) {

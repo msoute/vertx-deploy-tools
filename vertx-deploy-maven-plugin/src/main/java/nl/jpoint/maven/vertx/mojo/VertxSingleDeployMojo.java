@@ -45,7 +45,7 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '"+deployArtifactRequests.size()+"' artifacts and '"+deployModuleRequests.size()+"' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
-
+        getLog().debug("Sending request -> " + deployRequest.toJson(true));
         executor.executeDeployRequest(deployRequest, remoteIp);
 
     }
