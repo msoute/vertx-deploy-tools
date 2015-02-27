@@ -23,6 +23,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
     private final AwsElbUtil elbUtil;
     private final Vertx vertx;
     private final AwsState state;
+    private final long timeout;
 
     private List<String> loadbalancers = null;
 
@@ -31,8 +32,9 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
         this.asUtil = asUtil;
         this.elbUtil = elbUtil;
         this.vertx = vertx;
-
         this.state = state;
+
+        this.timeout = System.currentTimeMillis() + + 240000;
 
         LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), state);
     }
@@ -49,6 +51,11 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
             if (state.equals(currentState) && checkElbInService()) {
                 vertx.cancelTimer(timer);
                 vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", true)
+                        .putString("id", request.getId().toString())
+                        .putString("state", state.toString()));
+            } else if (System.currentTimeMillis() > timeout) {
+                vertx.cancelTimer(timer);
+                vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", false)
                         .putString("id", request.getId().toString())
                         .putString("state", state.toString()));
             }
