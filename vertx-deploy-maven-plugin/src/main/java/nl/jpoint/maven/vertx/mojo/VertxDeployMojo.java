@@ -70,8 +70,6 @@ class VertxDeployMojo extends AbstractDeployMojo {
     }
 
     private void deployWithOpsWorks(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
-        final RequestExecutor executor = new RequestExecutor(getLog());
-
         if (activeConfiguration.getOpsWorksStackId() == null) {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no opsWorksStackId set");
         }
@@ -87,6 +85,8 @@ class VertxDeployMojo extends AbstractDeployMojo {
                 .build();
 
         for (String host : activeConfiguration.getHosts()) {
+
+            final RequestExecutor executor = new RequestExecutor(getLog());
             executor.executeAwsDeployRequest(deployRequest, host);
         }
     }
