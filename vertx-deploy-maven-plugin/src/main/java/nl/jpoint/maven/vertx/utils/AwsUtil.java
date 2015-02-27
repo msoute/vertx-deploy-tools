@@ -56,7 +56,32 @@ public class AwsUtil {
         return awsGet;
     }
 
-    HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region, String action) throws AwsException {
+    HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region) throws AwsException {
+        HttpPost awsPost = null;
+        try {
+            String canonicalRequest = this.createCanonicalRequest(POST, null, signedHeaders, payload);
+            String signString = this.createSignString(date, region, service, canonicalRequest);
+            String signature = this.createSignature(date, region, service, signString);
+            String authorization = this.createAuthorizationHeaderValue(date, region, service, signedHeaders, signature);
+
+            awsPost = new HttpPost("https://" + targetHost);
+            awsPost.addHeader("Host", targetHost);
+            awsPost.addHeader("X-Amz-Date", date);
+            awsPost.addHeader("Authorization", authorization);
+            awsPost.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+
+            ByteArrayInputStream bos = new ByteArrayInputStream(payload.getBytes());
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContent(bos);
+            entity.setContentLength(payload.getBytes().length);
+            awsPost.setEntity(entity);
+        } catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+            throw new AwsException(e);
+        }
+        return awsPost;
+    }
+
+    HttpPost createSignedOpsWorksPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region, String action) throws AwsException {
         HttpPost awsPost = null;
         try {
             String canonicalRequest = this.createCanonicalRequest(POST, null, signedHeaders, payload);

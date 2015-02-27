@@ -16,6 +16,7 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +29,8 @@ public class RequestExecutor {
 
     public RequestExecutor(Log log) {
         this.log = log;
-        timeout = System.currentTimeMillis() + 180000;
+        timeout = System.currentTimeMillis() + 180000l;
+        log.info("Setting timeout to : " + new Date(timeout));
     }
 
     private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException, MojoFailureException {

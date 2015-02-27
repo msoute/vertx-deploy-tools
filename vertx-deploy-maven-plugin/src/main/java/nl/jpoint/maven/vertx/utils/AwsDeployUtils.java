@@ -10,32 +10,44 @@ import java.util.List;
 
 public class AwsDeployUtils {
 
-    public static List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
+    private final AwsAutoScalingUtil awsAutoScalingUtil;
+    private final AwsEc2Util awsEc2Util;
+    private final AwsOpsWorksUtil opsWorksUtil;
+    private final AwsElbUtil awsElbUtil;
+
+    public AwsDeployUtils(String serverId,  Settings settings) throws MojoFailureException {
+        if (settings.getServer(serverId) == null) {
+            throw new MojoFailureException("No server config for id : " +serverId);
+        }
+        Server server = settings.getServer(serverId);
+
+        awsAutoScalingUtil = new AwsAutoScalingUtil(server.getUsername(), server.getPassword());
+        awsEc2Util = new AwsEc2Util(server.getUsername(), server.getPassword());
+        opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
+        awsElbUtil = new AwsElbUtil(server.getUsername(), server.getPassword());
+    }
+
+    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
         activeConfiguration.getHosts().clear();
-        if (settings.getServer(activeConfiguration.getAutoScalingGroupId()) == null) {
-            throw new MojoFailureException("No server config for auto scaling group id : " + activeConfiguration.getAutoScalingGroupId());
-        }
-        Server server = settings.getServer(activeConfiguration.getAutoScalingGroupId());
-        AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(server.getUsername(), server.getPassword());
-        AwsEc2Util awsEc2Util = new AwsEc2Util(server.getUsername(), server.getPassword());
 
         try {
-            List<String> instanceIds = awsAutoScalingUtil.listInstancesInGroup(activeConfiguration.getAutoScalingGroupId(), log);
-            return awsEc2Util.describeInstances(instanceIds, log);
+            log.debug("describing Autoscaling group");
+            AutoScalingGroup autoScalingGroup = awsAutoScalingUtil.describeAutoScalingGroup(activeConfiguration.getAutoScalingGroupId(), log);
+            log.debug("describing instances in Autoscaling group");
+            List<Ec2Instance> instances = awsEc2Util.describeInstances(autoScalingGroup.getInstances(), activeConfiguration.getTag(), log);
+            log.debug("describing elb status");
+            return awsElbUtil.describeInstanceElbStatus(instances, autoScalingGroup.getElbs());
+
         } catch (AwsException e) {
             throw new MojoFailureException(e.getMessage());
         }
     }
 
-    public static void getHostsOpsWorks(Log log, DeployConfiguration activeConfiguration, Settings settings) throws MojoFailureException {
+    public void getHostsOpsWorks(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException {
         log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
         activeConfiguration.getHosts().clear();
-        if (settings.getServer(activeConfiguration.getOpsWorksStackId()) == null) {
-            throw new MojoFailureException("No server config for stack id : " + activeConfiguration.getOpsWorksStackId());
-        }
-        Server server = settings.getServer(activeConfiguration.getOpsWorksStackId());
-        AwsOpsWorksUtil opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
+
         List<String> hosts;
         try {
             hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getOpsWorksLayerId(), activeConfiguration.getAwsPrivateIp(), log);
@@ -47,6 +59,5 @@ public class AwsDeployUtils {
             throw new MojoFailureException(e.getMessage());
         }
     }
-
 
 }

@@ -4,6 +4,7 @@ public class Ec2Instance {
     private final String instanceId;
     private final String publicIp;
     private final String privateIp;
+    private AwsState state = AwsState.UNKNOWN;
 
     private Ec2Instance(final String instanceId, final String publicIp, final String privateIp) {
         this.instanceId = instanceId;
@@ -21,6 +22,16 @@ public class Ec2Instance {
 
     public String getPrivateIp() {
         return privateIp;
+    }
+
+    public AwsState getState() {
+        return state;
+    }
+
+    public void updateState(AwsState awsState) {
+        if (state.ordinal() < awsState.ordinal()) {
+            state = awsState;
+        }
     }
 
     public static class Builder {

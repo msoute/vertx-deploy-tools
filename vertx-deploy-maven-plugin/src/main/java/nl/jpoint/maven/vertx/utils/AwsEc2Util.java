@@ -24,7 +24,7 @@ public class AwsEc2Util {
         this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public List<Ec2Instance> describeInstances(List<String> instanceIds, Log log) throws AwsException {
+    public List<Ec2Instance> describeInstances(List<String> instanceIds, String tag,  Log log) throws AwsException {
         if (instanceIds == null || instanceIds.size() == 0) {
             return new ArrayList<>();
         }
@@ -42,7 +42,7 @@ public class AwsEc2Util {
 
         byte[] result = this.executeRequest(awsGet);
         log.debug("Describe instance result -> " + new String(result));
-        return AwsXpathUtil.describeInstances(result);
+        return AwsXpathUtil.describeInstances(result, tag, instanceIds);
     }
 
     private byte[] executeRequest(final HttpGet awsGet) throws AwsException {

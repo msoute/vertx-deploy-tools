@@ -1,5 +1,6 @@
 package nl.jpoint.maven.vertx.utils;
 
+import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,72 +24,53 @@ public class AwsXpathUtil {
     private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String AUTO_SCALING_GROUP_MEMBERS_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[LifecycleState=\"InService\"]/InstanceId";
+    private static final String AUTO_SCALING_GROUP_ELB_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/LoadBalancerNames/member";
     private static final String EC2_PRIVATE_DNS_LIST = "//DescribeInstancesResponse/reservationSet/item/instancesSet/item/privateDnsName";
     private static final String EC2_INSTANCE_LIST = "//DescribeInstancesResponse/reservationSet/item";
+    private static final String ELB_MEMBER_LIST = "//DescribeInstanceHealthResponse/DescribeInstanceHealthResult";
 
     public static List<String> listPrivateDNSInDescribeInstancesResponse(byte[] awsResponse) throws AwsException {
-        DocumentBuilderFactory builderFactory =
-                DocumentBuilderFactory.newInstance();
-
-        DocumentBuilder builder;
         List<String> instances = new ArrayList<>();
-
-        try {
-            builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
-
-            NodeList instanceNodes =  (NodeList)xPath.compile(EC2_PRIVATE_DNS_LIST).evaluate(document, XPathConstants.NODESET);
-
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
-                instances.add(instanceNodes.item(i).getTextContent());
-            }
-        } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
-            throw new AwsException(e);
+        NodeList instanceNodes = listNodes(awsResponse, EC2_PRIVATE_DNS_LIST);
+        for (int i = 0; i < instanceNodes.getLength(); i++) {
+            instances.add(instanceNodes.item(i).getTextContent());
         }
         return instances;
     }
     public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
-        DocumentBuilderFactory builderFactory =
-                DocumentBuilderFactory.newInstance();
-
-        DocumentBuilder builder;
-        List<String> instances = new ArrayList<>();
-
-        try {
-            builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
-
-            NodeList instanceNodes =  (NodeList)xPath.compile(AUTO_SCALING_GROUP_MEMBERS_LIST).evaluate(document, XPathConstants.NODESET);
-
-
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
-                instances.add(instanceNodes.item(i).getTextContent());
-            }
-        } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
-            throw new AwsException(e);
-        }
-        return instances;
+        return listStringItems(awsResponse, AUTO_SCALING_GROUP_MEMBERS_LIST);
     }
 
-    public static List<Ec2Instance> describeInstances(byte[] awsResponse) throws AwsException {
-        DocumentBuilderFactory builderFactory =
-                DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
+    public static List<String> listELBsInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
+        return listStringItems(awsResponse, AUTO_SCALING_GROUP_ELB_LIST);
+    }
+
+
+    public static void updateInstanceState(List<Ec2Instance> instances, byte[] awsResponse) throws AwsException {
+        Node node = getNode(awsResponse, "//DescribeInstanceHealthResponse/DescribeInstanceHealthResult/InstanceStates");
+        for (Ec2Instance instance : instances) {
+            instance.updateState(AwsState.valueOf(getElementValueAsString((Element) node, "member[InstanceId=\"" + instance.getInstanceId() + "\"]/State").toUpperCase()));
+        }
+
+    }
+
+
+    public static List<Ec2Instance> describeInstances(byte[] awsResponse, String expectedTag, List<String> instanceIds) throws AwsException {
         List<Ec2Instance> instances = new ArrayList<>();
-
-        try {
-            builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
-
-            NodeList instanceNodes =  (NodeList)xPath.compile(EC2_INSTANCE_LIST).evaluate(document, XPathConstants.NODESET);
-
+        NodeList instanceNodes = listNodes(awsResponse, EC2_INSTANCE_LIST);
             for  (int i = 0; i < instanceNodes.getLength();i++) {
-                instanceNodes.item(3);
-                Element element = (Element) instanceNodes.item(i);
-                String instanceId = (String) xPath.compile("instancesSet/item/instanceId").evaluate(element, XPathConstants.STRING);
-                String privateIp = (String) xPath.compile("instancesSet/item/privateIpAddress").evaluate(element, XPathConstants.STRING);
-                String publicIp = (String) xPath.compile("instancesSet/item/ipAddress").evaluate(element, XPathConstants.STRING);
-
+                String instanceId = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/instanceId");
+                String privateIp = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/privateIpAddress");
+                String publicIp = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/ipAddress");
+                if (expectedTag != null) {
+                    String tag = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/tagSet/item[key=\"Name\"]/value");
+                    if (!expectedTag.equals(tag)) {
+                        throw new AwsException("Expecting tag " + expectedTag + ", got tag.");
+                    }
+                }
+                if (!instanceIds.contains(instanceId)) {
+                    throw new AwsException("Expecting instanceId " + instanceId + " to be a member of requested instanceIds. It is not ! ");
+                }
                 instances.add(new Ec2Instance.Builder()
                         .withInstanceId(instanceId)
                         .withPrivateIp(privateIp)
@@ -96,9 +78,64 @@ public class AwsXpathUtil {
                         .build()
                 );
             }
-        } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
-            throw new AwsException(e);
-        }
+
         return instances;
     }
+
+
+    private static String getElementValueAsString(Element element, String xpath) throws AwsException {
+        try {
+            return (String) xPath.compile(xpath).evaluate(element, XPathConstants.STRING);
+        } catch (XPathExpressionException e) {
+            throw new AwsException(e);
+        }
+    }
+
+    private static List<String> listStringItems(byte[] awsResponse, String xpath) throws AwsException {
+        List<String> items = new ArrayList<>();
+        try {
+            Document document = getDocument(awsResponse);
+            NodeList instanceNodes = (NodeList) xPath.compile(xpath).evaluate(document, XPathConstants.NODESET);
+
+            for (int i = 0; i < instanceNodes.getLength(); i++) {
+                items.add(instanceNodes.item(i).getTextContent());
+            }
+        } catch (XPathExpressionException e) {
+            throw new AwsException(e);
+        }
+        return items;
+    }
+
+    private static NodeList listNodes(byte[] awsResponse, String xpath) throws AwsException {
+        try {
+            Document document = getDocument(awsResponse);
+            return (NodeList) xPath.compile(xpath).evaluate(document, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            throw new AwsException(e);
+        }
+
+    }
+
+    private static Document getDocument(byte[] awsResponse) throws AwsException {
+        DocumentBuilderFactory builderFactory =
+                DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder;
+        try {
+            builder = builderFactory.newDocumentBuilder();
+            return builder.parse(new ByteArrayInputStream(awsResponse));
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new AwsException(e);
+        }
+    }
+
+    private static Node getNode(byte[] awsResponse, String xpath) throws AwsException {
+        try {
+            Document document = getDocument(awsResponse);
+            return (Node) xPath.compile(xpath).evaluate(document, XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            throw new AwsException(e);
+        }
+
+    }
+
 }

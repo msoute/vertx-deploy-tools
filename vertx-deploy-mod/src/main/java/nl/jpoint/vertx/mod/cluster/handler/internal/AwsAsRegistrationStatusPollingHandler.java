@@ -54,6 +54,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
                         .putString("id", request.getId().toString())
                         .putString("state", state.toString()));
             } else if (System.currentTimeMillis() > timeout) {
+                LOG.error("[{} - {}]: Error executing de-register, timeout while waiting for instance to reach {} ", LogConstants.AWS_AS_REQUEST, request.getId(), state.name());
                 vertx.cancelTimer(timer);
                 vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", false)
                         .putString("id", request.getId().toString())

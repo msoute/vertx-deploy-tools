@@ -10,6 +10,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Mojo(name = "deploy")
@@ -23,7 +24,6 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
 
         final DeployUtils utils = new DeployUtils(getLog(), project);
-
 
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
@@ -45,14 +45,25 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (activeConfiguration.getAutoScalingGroupId() == null) {
             throw new MojoExecutionException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no autoScalingGroupId set");
         }
-        final RequestExecutor executor = new RequestExecutor(getLog());
-        List<Ec2Instance> instances = AwsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration, settings);
+        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(activeConfiguration.getAutoScalingGroupId(), settings);
+
+
+        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration);
+
+        instances.sort(new Comparator<Ec2Instance>() {
+            @Override
+            public int compare(Ec2Instance o1, Ec2Instance o2) {
+                return o1.getState().ordinal() - o2.getState().ordinal();
+            }
+        });
+
 
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
 
         for (Ec2Instance instance : instances) {
+            final RequestExecutor executor = new RequestExecutor(getLog());
             DeployRequest deployRequest = new DeployRequest.Builder()
                     .withModules(deployModuleRequests)
                     .withArtifacts(deployArtifactRequests)
@@ -63,7 +74,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .withRestart(activeConfiguration.doRestart())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
-            getLog().info("Sending deploy request to host with public IP " + instance.getPublicIp());
+            getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state "+ instance.getState().name() + " and public IP " + instance.getPublicIp());
             executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()));
         }
 
@@ -73,8 +84,8 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (activeConfiguration.getOpsWorksStackId() == null) {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no opsWorksStackId set");
         }
-
-        AwsDeployUtils.getHostsOpsWorks(getLog(), activeConfiguration, settings);
+        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(activeConfiguration.getOpsWorksStackId(), settings);
+        awsDeployUtils.getHostsOpsWorks(getLog(), activeConfiguration);
 
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)
@@ -92,7 +103,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
     }
 
     private void normalDeploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
-        final RequestExecutor executor = new RequestExecutor(getLog());
+
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)
@@ -101,7 +112,9 @@ class VertxDeployMojo extends AbstractDeployMojo {
                 .withRestart(activeConfiguration.doRestart())
                 .build();
 
+
         for (String host : activeConfiguration.getHosts()) {
+            final RequestExecutor executor = new RequestExecutor(getLog());
             executor.executeDeployRequest(deployRequest, host);
         }
     }

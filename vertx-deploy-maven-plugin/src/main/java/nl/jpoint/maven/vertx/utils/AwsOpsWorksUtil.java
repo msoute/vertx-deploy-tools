@@ -38,7 +38,7 @@ public class AwsOpsWorksUtil {
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
-        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeElasticIps");
+        HttpPost awsPost = awsUtil.createSignedOpsWorksPost(targetHost, signedHeaders, date, payloadBuilder.toString(), AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeElasticIps");
 
         byte[] result = this.executeRequest(awsPost);
         ObjectMapper mapper = new ObjectMapper();
@@ -74,7 +74,7 @@ public class AwsOpsWorksUtil {
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
 
-        HttpPost awsPost = awsUtil.createSignedPost(targetHost, signedHeaders, date, "{\"StackId\":\"" + stackId + "\"}", AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeInstances");
+        HttpPost awsPost = awsUtil.createSignedOpsWorksPost(targetHost, signedHeaders, date, "{\"StackId\":\"" + stackId + "\"}", AWS_OPSWORKS_SERVICE, "us-east-1", "DescribeInstances");
 
         byte[] result = this.executeRequest(awsPost);
 

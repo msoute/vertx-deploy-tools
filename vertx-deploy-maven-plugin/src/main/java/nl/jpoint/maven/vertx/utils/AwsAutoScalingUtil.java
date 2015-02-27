@@ -26,7 +26,7 @@ public class AwsAutoScalingUtil {
         this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public List<String> listInstancesInGroup(String groupId, Log log) throws AwsException {
+    public AutoScalingGroup describeAutoScalingGroup(String groupId, Log log) throws AwsException {
         String date = compressedIso8601DateFormat.format(new Date());
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
@@ -39,7 +39,12 @@ public class AwsAutoScalingUtil {
         HttpGet awsGet = awsUtil.createSignedGet(targetHost, requestParamerters, signedHeaders, date, AWS_AUTOSCALING_SERVICE, "eu-west-1", "DescribeAutoScalingGroups");
 
         byte[] result = this.executeRequest(awsGet);
-        return AwsXpathUtil.listInstancesInAutoscalingGroupResponse(result);
+
+        return new AutoScalingGroup.Builder()
+                .withInstances(AwsXpathUtil.listInstancesInAutoscalingGroupResponse(result))
+                .withElbs(AwsXpathUtil.listELBsInAutoscalingGroupResponse(result))
+                .build();
+
     }
 
     private byte[] executeRequest(final HttpGet awsGet) throws AwsException {

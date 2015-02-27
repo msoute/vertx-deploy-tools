@@ -14,6 +14,7 @@ public class DeployConfiguration {
 
     private String context;
     private boolean awsPrivateIp = false;
+    private String tag;
 
     public String getOpsWorksStackId() {
         return opsWorksStackId;
@@ -84,4 +85,9 @@ public class DeployConfiguration {
     public void setTestScope(boolean testScope) {
         this.testScope = testScope;
     }
+
+    public String getTag() {
+        return tag;
+    }
+
 }
