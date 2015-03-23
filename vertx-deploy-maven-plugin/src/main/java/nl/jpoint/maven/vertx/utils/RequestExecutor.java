@@ -33,7 +33,7 @@ public class RequestExecutor {
         log.info("Setting timeout to : " + new Date(timeout));
     }
 
-    private void executeAwsRequest(final HttpPost postRequest, final String host) throws MojoExecutionException, MojoFailureException {
+    private AwsState executeAwsRequest(final HttpPost postRequest, final boolean ignoreFailure) throws MojoExecutionException, MojoFailureException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String buildId;
             final AtomicInteger waitFor = new AtomicInteger(1);
@@ -100,11 +100,10 @@ public class RequestExecutor {
             exec.shutdown();
             log.info("awaiting termination of executor");
             exec.awaitTermination(30, TimeUnit.SECONDS);
-            if (status.get() != 200) {
+            if (status.get() != 200 && !ignoreFailure) {
                 throw new MojoFailureException("Error deploying module.");
             }
-
-
+            return status.get() == 200 ? AwsState.INSERVICE : AwsState.UNKNOWN;
         } catch (IOException e) {
             log.error("IOException ", e);
             throw new MojoExecutionException("Error deploying module.", e);
@@ -114,7 +113,7 @@ public class RequestExecutor {
         }
     }
 
-    private void executeRequest(HttpPost postRequest) throws MojoExecutionException {
+    private AwsState executeRequest(HttpPost postRequest) throws MojoExecutionException {
 
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
         exec.scheduleAtFixedRate(new Runnable() {
@@ -147,6 +146,7 @@ public class RequestExecutor {
                 exec.shutdown();
             }
         }
+        return AwsState.INSERVICE;
     }
 
     public void executeSingleDeployRequest(DeployConfiguration activeConfiguration, Request request) throws MojoExecutionException {
@@ -163,15 +163,15 @@ public class RequestExecutor {
     }
 
 
-    public void executeAwsDeployRequest(DeployRequest deployRequest, String host) throws MojoFailureException, MojoExecutionException {
-        executeRequest(deployRequest, host, true);
+    public AwsState executeAwsDeployRequest(DeployRequest deployRequest, String host, boolean ignoreFailure) throws MojoFailureException, MojoExecutionException {
+        return executeRequest(deployRequest, host, true, ignoreFailure);
     }
 
     public void executeDeployRequest(DeployRequest deployRequest, String host) throws MojoFailureException, MojoExecutionException {
-        executeRequest(deployRequest, host, false);
+        executeRequest(deployRequest, host, false, false);
     }
 
-    private void executeRequest(DeployRequest deployRequest, String host, boolean withAws) throws MojoExecutionException, MojoFailureException {
+    private AwsState executeRequest(DeployRequest deployRequest, String host, boolean withAws, boolean ignoreFailure) throws MojoExecutionException, MojoFailureException {
         log.info("Deploying to host : " + host);
         HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
         ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson(false).getBytes());
@@ -181,9 +181,9 @@ public class RequestExecutor {
         post.setEntity(entity);
 
         if (!withAws) {
-            this.executeRequest(post);
+            return this.executeRequest(post);
         } else {
-            this.executeAwsRequest(post, host);
+            return this.executeAwsRequest(post, ignoreFailure);
         }
     }
 

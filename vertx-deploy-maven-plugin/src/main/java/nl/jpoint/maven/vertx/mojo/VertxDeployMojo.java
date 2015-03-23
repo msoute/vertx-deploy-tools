@@ -2,10 +2,7 @@ package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.utils.AwsDeployUtils;
-import nl.jpoint.maven.vertx.utils.DeployUtils;
-import nl.jpoint.maven.vertx.utils.Ec2Instance;
-import nl.jpoint.maven.vertx.utils.RequestExecutor;
+import nl.jpoint.maven.vertx.utils.*;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -35,9 +32,9 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (activeConfiguration.isAutoScaling()) {
             deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else if (activeConfiguration.isOpsworks()) {
-            deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests );
+            deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else {
-            normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests );
+            normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         }
     }
 
@@ -57,13 +54,16 @@ class VertxDeployMojo extends AbstractDeployMojo {
             }
         });
 
-
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
 
         for (Ec2Instance instance : instances) {
             final RequestExecutor executor = new RequestExecutor(getLog());
+            boolean awsGroupIsInService = isInService(instances);
+            getLog().info("Auto scaling group inService :  " +awsGroupIsInService);
+            boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
+            getLog().info("Ignoring failure for instance " + instance.getInstanceId() + " : " + ignoreFailure);
             DeployRequest deployRequest = new DeployRequest.Builder()
                     .withModules(deployModuleRequests)
                     .withArtifacts(deployArtifactRequests)
@@ -74,10 +74,35 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .withRestart(activeConfiguration.doRestart())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
-            getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state "+ instance.getState().name() + " and public IP " + instance.getPublicIp());
-            executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()));
+            getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
+            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), ignoreFailure );
+            getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
+            instance.updateState(newState);
         }
 
+    }
+
+    private int countInServiceInstances(List<Ec2Instance> instances) {
+        int i = 0;
+        for (Ec2Instance instance : instances) {
+            if (instance.getState().equals(AwsState.INSERVICE)) {
+                i++;
+            }
+        }
+        return i;
+    }
+
+    private boolean ignoreFailure(boolean groupInService, Ec2Instance ec2Instance, int inServiceInstances) {
+        return groupInService && ec2Instance.getState().equals(AwsState.OUTOFSERVICE) && inServiceInstances > 1;
+    }
+
+    private boolean isInService(List<Ec2Instance> instances) {
+        for (Ec2Instance instance : instances) {
+            if (instance.getState().equals(AwsState.INSERVICE)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void deployWithOpsWorks(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
@@ -98,7 +123,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         for (String host : activeConfiguration.getHosts()) {
 
             final RequestExecutor executor = new RequestExecutor(getLog());
-            executor.executeAwsDeployRequest(deployRequest, host);
+            executor.executeAwsDeployRequest(deployRequest, host, false);
         }
     }
 
