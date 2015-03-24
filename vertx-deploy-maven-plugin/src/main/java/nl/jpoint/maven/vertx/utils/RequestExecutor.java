@@ -209,6 +209,11 @@ public class RequestExecutor {
             instanceIds = awsAutoScalingUtil.listInstancesInGroup(activeConfiguration.getAutoScalingGroupId(), log);
             hosts = awsEc2Util.describeInstance(instanceIds, log);
 
+            if (hosts.isEmpty()) {
+                log.error("No hosts in AS group with id : " + activeConfiguration.getAutoScalingGroupId());
+                throw new MojoFailureException("No hosts in AS group with id : " + activeConfiguration.getAutoScalingGroupId());
+            }
+
             for (String opsHost : hosts) {
                 log.info("Adding host from opsworks response : " + opsHost);
                 activeConfiguration.getHosts().add("http://"+opsHost+":6789");

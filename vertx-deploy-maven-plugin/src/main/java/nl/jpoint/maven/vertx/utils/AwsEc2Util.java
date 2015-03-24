@@ -25,6 +25,9 @@ public class AwsEc2Util {
     }
 
     public List<String> describeInstance(List<String> instanceIds, Log log) throws AwsException {
+        if (instanceIds == null || instanceIds.isEmpty()) {
+            return new ArrayList<>();
+        }
         String date = compressedIso8601DateFormat.format(new Date());
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
