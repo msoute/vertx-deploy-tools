@@ -41,8 +41,12 @@ class VertxDeployMojo extends AbstractDeployMojo {
     private void deployWithAutoScaling(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
         if (activeConfiguration.getAutoScalingGroupId() == null) {
             throw new MojoExecutionException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no autoScalingGroupId set");
+
         }
-        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(activeConfiguration.getAutoScalingGroupId(), settings);
+        if (credentialsId == null) {
+            throw new MojoExecutionException("credentialsId is not set");
+        }
+        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
 
 
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration);
@@ -109,7 +113,12 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (activeConfiguration.getOpsWorksStackId() == null) {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no opsWorksStackId set");
         }
-        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(activeConfiguration.getOpsWorksStackId(), settings);
+
+        if (credentialsId == null) {
+            throw new MojoExecutionException("credentialsId is not set");
+        }
+
+        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
         awsDeployUtils.getHostsOpsWorks(getLog(), activeConfiguration);
 
         DeployRequest deployRequest = new DeployRequest.Builder()
