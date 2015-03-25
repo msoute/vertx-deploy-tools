@@ -2,6 +2,7 @@ package nl.jpoint.vertx.mod.cluster.service;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.command.*;
+import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
@@ -16,7 +17,7 @@ import org.vertx.java.platform.PlatformManager;
 
 import java.io.File;
 
-public class DeployModuleService implements DeployService {
+public class DeployModuleService implements DeployService<DeployModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployModuleService.class);
     private final Vertx vertx;
     private final JsonObject config;
@@ -33,7 +34,7 @@ public class DeployModuleService implements DeployService {
         this.installedModules = this.vertx.sharedData().getMap("installed_modules");
     }
 
-    public boolean deploy(final ModuleRequest deployRequest) {
+    public boolean deploy(final DeployModuleRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
             Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);

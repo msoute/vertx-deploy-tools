@@ -12,7 +12,7 @@
     <artifactId>vertx-deploy-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
 
-    <name>Vert.x deploy maven plugin</name>
+    <name>Vert.x deploy tools : Maven plugin</name>
     <description>Maven plugin to create deploy requests for a project.</description>
     <dependencies>
         <dependency>

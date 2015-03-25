@@ -38,7 +38,7 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)
-                .withConfigs(deployConfigRequests)
+                .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
                 .withRestart(doRestart)
                 .withElb(false)
                 .build();

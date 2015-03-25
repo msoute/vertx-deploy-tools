@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeployConfigRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
@@ -22,16 +23,21 @@ import java.io.IOException;
 
 public class RestDeployHandler implements Handler<HttpServerRequest> {
 
-    private final DeployService moduleDeployService;
-    private final DeployService artifactDeployService;
+    private final DeployService<DeployModuleRequest> moduleDeployService;
+    private final DeployService<DeployArtifactRequest> artifactDeployService;
+    private final DeployService<DeployConfigRequest> configDeployService;
     private final AwsService awsService;
 
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployHandler(final DeployService moduleDeployService, final DeployService artifactDeployService, AwsService awsService) {
+    public RestDeployHandler(final DeployService<DeployModuleRequest> moduleDeployService,
+                             final DeployService<DeployArtifactRequest> artifactDeployService,
+                             final DeployService<DeployConfigRequest> configDeployService,
+                             final AwsService awsService) {
         MDC.put("service", Constants.SERVICE_ID);
         this.moduleDeployService = moduleDeployService;
         this.artifactDeployService = artifactDeployService;
+        this.configDeployService = configDeployService;
         this.awsService = awsService;
     }
     @Override
@@ -78,12 +84,21 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
                 }
 
-                for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
-                    deployOk = artifactDeployService.deploy(artifactRequest);
-
+                for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
+                    deployOk = configDeployService.deploy(configRequest);
                     if (!deployOk) {
                         respondFailed(request);
                         return;
+                    }
+                }
+
+                if (deployOk || deployRequest.getConfigs().isEmpty()) {
+                    for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
+                        deployOk = artifactDeployService.deploy(artifactRequest);
+                        if (!deployOk) {
+                            respondFailed(request);
+                            return;
+                        }
                     }
                 }
 

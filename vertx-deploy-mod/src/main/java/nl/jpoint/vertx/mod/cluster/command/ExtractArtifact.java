@@ -33,13 +33,13 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
             Path path = zipFs.getPath(ARTIFACT_CONTEXT);
 
-            final Path basePath = Paths.get(ArtifactContextUtil.getBaseLocation(Files.readAllBytes(path)));
+            ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(Files.readAllBytes(path));
+            final Path basePath = Paths.get(artifactContextUtil.getBaseLocation());
 
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
             if (!basePath.getParent().toFile().exists() || !basePath.getParent().toFile().canWrite()) {
                 LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toString());
                 LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
-                //return new JsonObject().putBoolean("success", false);
             }
 
             if (basePath.toFile().exists()) {

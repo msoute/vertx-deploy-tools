@@ -4,6 +4,7 @@ import nl.jpoint.vertx.mod.cluster.command.Command;
 import nl.jpoint.vertx.mod.cluster.command.DownloadArtifact;
 import nl.jpoint.vertx.mod.cluster.command.ExtractArtifact;
 import nl.jpoint.vertx.mod.cluster.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
-public class DeployArtifactService implements DeployService {
+public class DeployArtifactService implements DeployService<DeployArtifactRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployArtifactService.class);
 
     private final Vertx vertx;
@@ -26,7 +27,7 @@ public class DeployArtifactService implements DeployService {
     }
 
     @Override
-    public boolean deploy(ModuleRequest deployRequest) {
+    public boolean deploy(DeployArtifactRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
             Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_SITE_REQUEST);

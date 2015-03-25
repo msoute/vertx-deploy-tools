@@ -14,6 +14,8 @@ public class DeployConfiguration {
 
     private String context;
     private boolean awsPrivateIp = false;
+
+    private boolean deployConfig = false;
     private String tag;
 
     public String getOpsWorksStackId() {
@@ -88,6 +90,10 @@ public class DeployConfiguration {
 
     public String getTag() {
         return tag;
+    }
+
+    public boolean isDeployConfig() {
+        return deployConfig;
     }
 
 }

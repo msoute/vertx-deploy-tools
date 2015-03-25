@@ -8,6 +8,7 @@ import nl.jpoint.vertx.mod.cluster.handler.RestDeployModuleHandler;
 import nl.jpoint.vertx.mod.cluster.handler.servicebus.DeployHandler;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
 import nl.jpoint.vertx.mod.cluster.service.DeployArtifactService;
+import nl.jpoint.vertx.mod.cluster.service.DeployConfigService;
 import nl.jpoint.vertx.mod.cluster.service.DeployModuleService;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
@@ -33,8 +34,9 @@ public class ClusterManagerModule extends Verticle {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");
         }
-        DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
-        DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
+        final DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
+        final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
+        final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), container.config());
         AwsService awsService = new AwsService(getVertx(), container.config());
 
         vertx.eventBus().registerLocalHandler("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService));
@@ -42,7 +44,7 @@ public class ClusterManagerModule extends Verticle {
         HttpServer httpServer = getVertx().createHttpServer();
         RouteMatcher matcher = new RouteMatcher();
 
-        matcher.post("/deploy/deploy*", new RestDeployHandler(deployModuleService, deployArtifactService, awsService));
+        matcher.post("/deploy/deploy*", new RestDeployHandler(deployModuleService, deployArtifactService, deployConfigService, awsService));
         matcher.post("/deploy/module*", new RestDeployModuleHandler(deployModuleService));
         matcher.post("/deploy/artifact*", new RestDeployArtifactHandler(deployArtifactService));
         matcher.get("/deploy/status/:id", new RestDeployAwsHandler(awsService));
