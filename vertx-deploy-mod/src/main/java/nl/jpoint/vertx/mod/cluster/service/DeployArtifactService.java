@@ -50,7 +50,7 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         if (!downloadResult.getBoolean("success")) {
             return false;
         }
-        ExtractArtifact extractSite = new ExtractArtifact(vertx, config);
+        ExtractArtifact extractSite = new ExtractArtifact(vertx, config, true);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
         if (deployRequest.getSnapshotVersion() != null) {

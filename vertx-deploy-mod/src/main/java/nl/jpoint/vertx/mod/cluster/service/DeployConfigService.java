@@ -41,7 +41,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
         if (!downloadResult.getBoolean("success")) {
             return false;
         }
-        ExtractArtifact extractConfig = new ExtractArtifact(vertx, config);
+        ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, false);
         JsonObject extractResult = extractConfig.execute(deployRequest);
 
         return extractResult.getBoolean("success");

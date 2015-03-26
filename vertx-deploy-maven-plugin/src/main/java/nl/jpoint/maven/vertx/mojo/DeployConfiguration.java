@@ -96,4 +96,7 @@ public class DeployConfiguration {
         return deployConfig;
     }
 
+    public void setWithConfig(Boolean withConfig) {
+        this.deployConfig = withConfig;
+    }
 }

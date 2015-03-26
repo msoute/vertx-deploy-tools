@@ -13,8 +13,8 @@ public class DeployModuleRequest extends ModuleRequest {
     @JsonCreator
     public DeployModuleRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
                                 @JsonProperty("version") final String version, @JsonProperty("instances") final int instances,
-                                @JsonProperty("restart") final boolean restart) {
-        super(groupId, artifactId, version);
+                                @JsonProperty("restart") final boolean restart, @JsonProperty("type") final String type) {
+        super(groupId, artifactId, version, type);
         this.instances = instances;
         this.restart = restart;
     }

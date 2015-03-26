@@ -17,8 +17,11 @@ public class DeployRequest {
     private static final ObjectWriter writer = new ObjectMapper().writer();
     private static final String ENDPOINT = "/deploy/deploy";
 
+    @JsonProperty
     private final List<Request> modules;
+    @JsonProperty
     private final List<Request> artifacts;
+    @JsonProperty
     private final List<Request> configs;
 
     @JsonProperty("with_elb")
@@ -41,18 +44,6 @@ public class DeployRequest {
         this.instanceId = instanceId;
         this.asGroupId = asGroupId;
         autoScaling = (asGroupId != null);
-    }
-
-    public List<Request> getModules() {
-        return new ArrayList<>(modules);
-    }
-
-    public List<Request> getArtifacts() {
-        return new ArrayList<>(artifacts);
-    }
-
-    public List<Request> getConfigs() {
-        return new ArrayList<>(configs);
     }
 
     public String toJson(boolean pretty) {

@@ -30,7 +30,7 @@ public class DeployUtils {
     public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency : createDeployListByClassifier(activeConfiguration, siteClassifier)) {
-            deployModuleRequests.add(new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), activeConfiguration.getContext()));
+            deployModuleRequests.add(new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(),  activeConfiguration.getContext()));
         }
         return deployModuleRequests;
     }
@@ -38,7 +38,7 @@ public class DeployUtils {
     public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency : createDeployListByClassifier(activeConfiguration, classifier)) {
-            deployModuleRequests.add(new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), 4, activeConfiguration.doRestart()));
+            deployModuleRequests.add(new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), 4, activeConfiguration.doRestart()));
         }
         return deployModuleRequests;
     }
@@ -46,7 +46,7 @@ public class DeployUtils {
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency : createDeployListByType(activeConfiguration, type)) {
-            deployModuleRequests.add(new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier()));
+            deployModuleRequests.add(new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType()));
         }
         return deployModuleRequests;
     }

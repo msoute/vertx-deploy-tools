@@ -18,12 +18,15 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
     private String remoteIp;
     @Parameter(property = "deploy.stubbed", defaultValue = "true")
     private Boolean stubbed;
+    @Parameter(property = "deploy.withConfig", defaultValue = "false")
+    private Boolean withConfig;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         DeployConfiguration configuration = new DeployConfiguration();
         configuration.getHosts().add(remoteIp);
         configuration.setTestScope(stubbed);
+        configuration.setWithConfig(withConfig);
 
         boolean doRestart = true;
 

@@ -9,18 +9,20 @@ public abstract class ModuleRequest {
     private final String artifactId;
     private final String version;
     private final String classifier;
+    private final String type;
 
     private String snapshotVersion = null;
 
-    ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier) {
+    ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier, final String type) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.classifier = classifier;
+        this.type = type != null ? type : "zip";
     }
 
-    ModuleRequest(final String groupId, final String artifactId, final String version) {
-        this(groupId, artifactId, version, null);
+    ModuleRequest(final String groupId, final String artifactId, final String version, final String type) {
+        this(groupId, artifactId, version, null, type);
     }
 
     public String getGroupId() {
@@ -55,6 +57,12 @@ public abstract class ModuleRequest {
                 .append("/")
                 .append(getVersion())
                 .append("/")
+                .append(getFileName());
+        return builder.toString();
+    }
+
+    public String getFileName() {
+        StringBuilder builder = new StringBuilder()
                 .append(getArtifactId()).append("-");
 
         if (snapshotVersion != null) {
@@ -66,8 +74,11 @@ public abstract class ModuleRequest {
             builder.append("-")
                     .append(classifier);
         }
-        builder.append(".zip");
+        builder.append(".");
+        builder.append(type);
+
         return builder.toString();
+
     }
 
     public String getSnapshotVersion() {
@@ -89,6 +100,10 @@ public abstract class ModuleRequest {
     public String getMetadataLocation() {
         return getGroupId().replaceAll("\\.", "/") + "/" + getArtifactId() + "/" + getVersion() + "/" + "maven-metadata.xml";
 
+    }
+
+    public String getType() {
+        return type;
     }
 
     public abstract boolean restart();

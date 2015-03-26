@@ -65,7 +65,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     return;
                 }
 
-                LOG.info("[{} - {}]: Received deploy request with {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModules().size(), deployRequest.getArtifacts().size());
+                LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getConfigs().size(), deployRequest.getModules().size(), deployRequest.getArtifacts().size());
 
                 boolean deployOk = false;
 
