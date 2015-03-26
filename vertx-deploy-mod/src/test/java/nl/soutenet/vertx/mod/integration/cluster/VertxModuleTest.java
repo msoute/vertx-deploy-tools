@@ -10,6 +10,7 @@ import org.vertx.testtools.TestVerticle;
 import org.vertx.testtools.VertxAssert;
 
 import static org.vertx.testtools.VertxAssert.fail;
+import static org.vertx.testtools.VertxAssert.testComplete;
 
 public class VertxModuleTest extends TestVerticle {
 
@@ -27,7 +28,6 @@ public class VertxModuleTest extends TestVerticle {
                 startResult.setResult(null);
             }
         };
-///home/marcel/Java/Projects/vertx-deploy-tools/vertx-deploy-mod/src/test/resources
 
         JsonObject config = new JsonObject();
         config.putString("aws.auth.access.key", "1");
@@ -35,17 +35,13 @@ public class VertxModuleTest extends TestVerticle {
         config.putString("vertx.home", "src/test/resources/vertx");
         config.putString("mod.root", "/tmp/vertx/mods/");
         config.putString("artifact.repo", "/tmp/");
-        config.putString("http.authUser", "edubase-build");
-        config.putString("http.authPass", "aZV1zvdGZ1wXzeDajlRM");
-        config.putString("http.authUri", "nexus.build.edubase.malmberg.nl");
 
         container.deployVerticle(ClusterManagerModule.class.getName(), config, handler);
     }
 
     @Test
     public void testInitialize() throws Exception {
-
-        //testComplete();
+        testComplete();
     }
 
 
