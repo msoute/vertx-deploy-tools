@@ -1,16 +1,17 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
-import nl.jpoint.vertx.mod.cluster.command.Command;
-import nl.jpoint.vertx.mod.cluster.command.DownloadArtifact;
-import nl.jpoint.vertx.mod.cluster.command.ExtractArtifact;
-import nl.jpoint.vertx.mod.cluster.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.cluster.Constants;
+import nl.jpoint.vertx.mod.cluster.command.*;
 import nl.jpoint.vertx.mod.cluster.request.DeployConfigRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
+
+import java.nio.file.Paths;
 
 public class DeployConfigService implements DeployService<DeployConfigRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployArtifactService.class);
@@ -35,14 +36,32 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             }
         }
 
-        DownloadArtifact command = new DownloadArtifact(config);
-        JsonObject downloadResult = command.execute(deployRequest);
+        DownloadArtifact downloadArtifact = new DownloadArtifact(config);
+        JsonObject downloadResult = downloadArtifact.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
             return false;
         }
-        ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, false);
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
+        ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false);
         JsonObject extractResult = extractConfig.execute(deployRequest);
+
+        if (artifactContextUtil.getTestCommand() != null && !artifactContextUtil.getTestCommand().isEmpty()) {
+            RunConsoleCommand consoleCommand = new RunConsoleCommand(deployRequest.getId().toString());
+            JsonObject testResult = consoleCommand.execute(artifactContextUtil.getTestCommand());
+            if (!testResult.getBoolean(Constants.COMMAND_STATUS)) {
+                LOG.info("ERROR");
+                return false;
+            }
+        }
+
+        if (artifactContextUtil.getRestartCommand() != null && !artifactContextUtil.getRestartCommand().isEmpty()) {
+            RunConsoleCommand consoleCommand = new RunConsoleCommand(deployRequest.getId().toString());
+            JsonObject restartResult = consoleCommand.execute(artifactContextUtil.getRestartCommand());
+            if (!restartResult.getBoolean(Constants.COMMAND_STATUS)) {
+                return false;
+            }
+        }
 
         return extractResult.getBoolean("success");
     }

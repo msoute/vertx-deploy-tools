@@ -22,12 +22,16 @@ public class RunConsoleCommand implements Command<String> {
 
     @Override
     public JsonObject execute(String command) {
+
         Process consoleCommand;
         final JsonObject result = new JsonObject();
         result.putBoolean(Constants.COMMAND_STATUS, false);
+        if (command == null || command.isEmpty()) {
+            LOG.error("[{} - {}]: Failed to run empty command.", LogConstants.CONSOLE_COMMAND, deployId);
+            return result;
+        }
 
-
-        LOG.info("[{} - {}]: Running console command {}", LogConstants.CONSOLE_COMMAND, deployId, command);
+        LOG.info("[{} - {}]: Running console command '{}'", LogConstants.CONSOLE_COMMAND, deployId, command);
 
         try {
             consoleCommand = Runtime.getRuntime().exec(command);
@@ -46,7 +50,8 @@ public class RunConsoleCommand implements Command<String> {
                     LOG.error("[{} - {}]: {}", LogConstants.CONSOLE_COMMAND, deployId, errorLine);
                 }
             }
-            result.putBoolean(Constants.COMMAND_STATUS, true);
+            LOG.info("[{} - {}]: result for  console command '{}' is {}", LogConstants.CONSOLE_COMMAND, deployId, command, exitValue);
+            result.putBoolean(Constants.COMMAND_STATUS, exitValue == 0);
         } catch (IOException | InterruptedException e) {
             LOG.error("[{} - {}]: Failed to run command {} with error {}", LogConstants.CONSOLE_COMMAND, deployId, command, e);
             return result;

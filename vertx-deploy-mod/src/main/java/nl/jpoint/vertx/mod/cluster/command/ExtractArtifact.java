@@ -17,26 +17,24 @@ import java.util.HashMap;
 
 public class ExtractArtifact implements Command<ModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractArtifact.class);
-    private static final String ARTIFACT_CONTEXT = "artifact_context.xml";
+
     private final Vertx vertx;
     private final JsonObject config;
+    private final Path basePath;
     private final boolean deleteBase;
 
-    public ExtractArtifact(Vertx vertx, JsonObject config, boolean deleteBase) {
+    public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath,  boolean deleteBase) {
         this.vertx = vertx;
         this.config = config;
+        this.basePath = basePath;
         this.deleteBase = deleteBase;
+
     }
 
     @Override
     public JsonObject execute(ModuleRequest request) {
 
         try (FileSystem zipFs = this.getFileSystem(config.getString("artifact.repo") + "/" + request.getFileName())) {
-
-            Path path = zipFs.getPath(ARTIFACT_CONTEXT);
-
-            ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(Files.readAllBytes(path));
-            final Path basePath = Paths.get(artifactContextUtil.getBaseLocation());
 
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
             if (deleteBase) {
@@ -58,7 +56,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
         return new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (ARTIFACT_CONTEXT.equals(file.getFileName().toString())) {
+                if (ArtifactContextUtil.ARTIFACT_CONTEXT.equals(file.getFileName().toString())) {
                     return FileVisitResult.CONTINUE;
                 }
                 final Path unpackFile = Paths.get(basePath.toString(), file.toString());
@@ -94,4 +92,5 @@ public class ExtractArtifact implements Command<ModuleRequest> {
         URI uri = URI.create("jar:file:" + path.toUri().getPath());
         return FileSystems.newFileSystem(uri, new HashMap<String, String>());
     }
+
 }

@@ -1,17 +1,17 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
-import nl.jpoint.vertx.mod.cluster.command.Command;
-import nl.jpoint.vertx.mod.cluster.command.DownloadArtifact;
-import nl.jpoint.vertx.mod.cluster.command.ExtractArtifact;
-import nl.jpoint.vertx.mod.cluster.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.cluster.command.*;
 import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
+
+import java.nio.file.Paths;
 
 public class DeployArtifactService implements DeployService<DeployArtifactRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployArtifactService.class);
@@ -44,13 +44,15 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
             return true;
         }
 
-        DownloadArtifact command = new DownloadArtifact(config);
-        JsonObject downloadResult = command.execute(deployRequest);
+        DownloadArtifact downloadArtifactCommand = new DownloadArtifact(config);
+        JsonObject downloadResult = downloadArtifactCommand.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
             return false;
         }
-        ExtractArtifact extractSite = new ExtractArtifact(vertx, config, true);
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
+
+        ExtractArtifact extractSite = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), true);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
         if (deployRequest.getSnapshotVersion() != null) {
