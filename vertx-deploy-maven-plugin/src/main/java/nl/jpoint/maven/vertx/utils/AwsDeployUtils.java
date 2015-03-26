@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.utils;
 
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
@@ -27,13 +28,16 @@ public class AwsDeployUtils {
         awsElbUtil = new AwsElbUtil(server.getUsername(), server.getPassword());
     }
 
-    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException {
+    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException, MojoExecutionException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
         activeConfiguration.getHosts().clear();
 
         try {
             log.debug("describing Autoscaling group");
             AutoScalingGroup autoScalingGroup = awsAutoScalingUtil.describeAutoScalingGroup(activeConfiguration.getAutoScalingGroupId(), log);
+            if (!autoScalingGroup.deployable()) {
+                throw new MojoExecutionException("Autoscaling group is not in a deployable state.");
+            }
             log.debug("describing instances in Autoscaling group");
             List<Ec2Instance> instances = awsEc2Util.describeInstances(autoScalingGroup.getInstances(), activeConfiguration.getTag(), log);
             log.debug("describing elb status");

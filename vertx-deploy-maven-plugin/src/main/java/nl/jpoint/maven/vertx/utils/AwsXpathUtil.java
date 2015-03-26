@@ -1,6 +1,5 @@
 package nl.jpoint.maven.vertx.utils;
 
-import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -24,6 +23,9 @@ public class AwsXpathUtil {
     private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String AUTO_SCALING_GROUP_MEMBERS_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[LifecycleState=\"InService\"]/InstanceId";
+    private static final String AUTO_SCALING_GROUP_MIN_INSTACES = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/MinSize";
+    private static final String AUTO_SCALING_GROUP_MAX_INSTACES = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/MaxSize";
+    private static final String AUTO_SCALING_GROUP_DESIRED_CAPACITY = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/DesiredCapacity";
     private static final String AUTO_SCALING_GROUP_ELB_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/LoadBalancerNames/member";
     private static final String EC2_PRIVATE_DNS_LIST = "//DescribeInstancesResponse/reservationSet/item/instancesSet/item/privateDnsName";
     private static final String EC2_INSTANCE_LIST = "//DescribeInstancesResponse/reservationSet/item";
@@ -37,12 +39,24 @@ public class AwsXpathUtil {
         }
         return instances;
     }
+
     public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
         return listStringItems(awsResponse, AUTO_SCALING_GROUP_MEMBERS_LIST);
     }
 
     public static List<String> listELBsInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
         return listStringItems(awsResponse, AUTO_SCALING_GROUP_ELB_LIST);
+    }
+
+    public static int listMinimalInstancesInAutoscalingGroupResponse(byte[] result) throws AwsException {
+        return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_MIN_INSTACES));
+    }
+    public static int listDesiredCapacityInAutoscalingGroupResponse(byte[] result) throws AwsException {
+        return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_DESIRED_CAPACITY));
+    }
+
+    public static int listMaximumInstancesInAutoscalingGroupResponse(byte[] result) throws AwsException {
+        return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_MAX_INSTACES));
     }
 
 
@@ -58,26 +72,26 @@ public class AwsXpathUtil {
     public static List<Ec2Instance> describeInstances(byte[] awsResponse, String expectedTag, List<String> instanceIds) throws AwsException {
         List<Ec2Instance> instances = new ArrayList<>();
         NodeList instanceNodes = listNodes(awsResponse, EC2_INSTANCE_LIST);
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
-                String instanceId = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/instanceId");
-                String privateIp = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/privateIpAddress");
-                String publicIp = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/ipAddress");
-                if (expectedTag != null) {
-                    String tag = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/tagSet/item[key=\"Name\"]/value");
-                    if (!expectedTag.equals(tag)) {
-                        throw new AwsException("Expecting tag " + expectedTag + ", got tag.");
-                    }
+        for (int i = 0; i < instanceNodes.getLength(); i++) {
+            String instanceId = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/instanceId");
+            String privateIp = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/privateIpAddress");
+            String publicIp = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/ipAddress");
+            if (expectedTag != null) {
+                String tag = getElementValueAsString((Element) instanceNodes.item(i), "instancesSet/item/tagSet/item[key=\"Name\"]/value");
+                if (!expectedTag.equals(tag)) {
+                    throw new AwsException("Expecting tag " + expectedTag + ", got tag.");
                 }
-                if (!instanceIds.contains(instanceId)) {
-                    throw new AwsException("Expecting instanceId " + instanceId + " to be a member of requested instanceIds. It is not ! ");
-                }
-                instances.add(new Ec2Instance.Builder()
-                        .withInstanceId(instanceId)
-                        .withPrivateIp(privateIp)
-                        .withPublicIp(publicIp)
-                        .build()
-                );
             }
+            if (!instanceIds.contains(instanceId)) {
+                throw new AwsException("Expecting instanceId " + instanceId + " to be a member of requested instanceIds. It is not ! ");
+            }
+            instances.add(new Ec2Instance.Builder()
+                            .withInstanceId(instanceId)
+                            .withPrivateIp(privateIp)
+                            .withPublicIp(publicIp)
+                            .build()
+            );
+        }
 
         return instances;
     }
@@ -86,6 +100,15 @@ public class AwsXpathUtil {
     private static String getElementValueAsString(Element element, String xpath) throws AwsException {
         try {
             return (String) xPath.compile(xpath).evaluate(element, XPathConstants.STRING);
+        } catch (XPathExpressionException e) {
+            throw new AwsException(e);
+        }
+    }
+
+    private static String listStringItem(byte[] awsResponse, String xpath) throws AwsException {
+        try {
+            Document document = getDocument(awsResponse);
+            return (String) xPath.compile(xpath).evaluate(document, XPathConstants.STRING);
         } catch (XPathExpressionException e) {
             throw new AwsException(e);
         }
@@ -137,5 +160,6 @@ public class AwsXpathUtil {
         }
 
     }
+
 
 }

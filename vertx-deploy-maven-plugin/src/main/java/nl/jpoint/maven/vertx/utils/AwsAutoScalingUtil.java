@@ -43,6 +43,9 @@ public class AwsAutoScalingUtil {
         return new AutoScalingGroup.Builder()
                 .withInstances(AwsXpathUtil.listInstancesInAutoscalingGroupResponse(result))
                 .withElbs(AwsXpathUtil.listELBsInAutoscalingGroupResponse(result))
+                .withMaxInstances(AwsXpathUtil.listMaximumInstancesInAutoscalingGroupResponse(result))
+                .withMinInstances(AwsXpathUtil.listMinimalInstancesInAutoscalingGroupResponse(result))
+                .withDesiredCapacity(AwsXpathUtil.listDesiredCapacityInAutoscalingGroupResponse(result))
                 .build();
 
     }
