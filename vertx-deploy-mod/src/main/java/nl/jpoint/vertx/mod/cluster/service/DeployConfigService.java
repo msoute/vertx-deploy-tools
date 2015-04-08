@@ -28,7 +28,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
     public boolean deploy(DeployConfigRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
-            Command<ModuleRequest> resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_SITE_REQUEST);
+            Command<ModuleRequest> resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_CONFIG_REQUEST);
             JsonObject result = resolveVersion.execute(deployRequest);
 
             if (result.getBoolean("success")) {
@@ -43,7 +43,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             return false;
         }
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
-        ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false);
+        ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false, LogConstants.DEPLOY_CONFIG_REQUEST);
         JsonObject extractResult = extractConfig.execute(deployRequest);
 
         if (artifactContextUtil.getTestCommand() != null && !artifactContextUtil.getTestCommand().isEmpty()) {

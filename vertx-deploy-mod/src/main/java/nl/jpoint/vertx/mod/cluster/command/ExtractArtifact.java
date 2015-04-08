@@ -22,13 +22,15 @@ public class ExtractArtifact implements Command<ModuleRequest> {
     private final JsonObject config;
     private final Path basePath;
     private final boolean deleteBase;
+    private final String logConstant;
 
-    public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath,  boolean deleteBase) {
+    public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath, boolean deleteBase, String logConstant) {
         this.vertx = vertx;
         this.config = config;
         this.basePath = basePath;
         this.deleteBase = deleteBase;
 
+        this.logConstant = logConstant;
     }
 
     @Override
@@ -36,7 +38,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
         try (FileSystem zipFs = this.getFileSystem(config.getString("artifact.repo") + "/" + request.getFileName())) {
 
-            LOG.info("[{} - {}]: Extracting artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
+            LOG.info("[{} - {}]: Extracting artifact {} to {}.", logConstant, request.getId(), request.getModuleId(), basePath);
             if (deleteBase) {
                 removeBasePath(request, basePath);
             }
@@ -46,7 +48,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
             Files.walkFileTree(zipRoot, CopyingFileVisitor(basePath));
             LOG.info("[{} - {}]: Extracted artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
         } catch (IOException | InvalidPathException e) {
-            LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), e.getMessage());
+            LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
             return new JsonObject().putBoolean("success", false);
         }
         return new JsonObject().putBoolean("success", true);
@@ -77,12 +79,12 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
     private void removeBasePath(ModuleRequest request, Path basePath) {
         if (!basePath.getParent().toFile().exists() || !basePath.getParent().toFile().canWrite()) {
-            LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toString());
-            LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
+            LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", logConstant, request.getId(), request.getModuleId(), basePath.getParent().toString());
+            LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", logConstant, request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
         }
 
         if (basePath.toFile().exists()) {
-            LOG.info("[{} - {}]: Removing base path -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), basePath.toAbsolutePath());
+            LOG.info("[{} - {}]: Removing base path -> {}.", logConstant, request.getId(), basePath.toAbsolutePath());
             vertx.fileSystem().deleteSync(basePath.toString(), true);
         }
     }

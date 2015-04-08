@@ -52,7 +52,7 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         }
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
 
-        ExtractArtifact extractSite = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), true);
+        ExtractArtifact extractSite = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), true, LogConstants.DEPLOY_SITE_REQUEST);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
         if (deployRequest.getSnapshotVersion() != null) {

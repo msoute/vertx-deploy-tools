@@ -33,7 +33,7 @@ public class RunModule implements Command<ModuleRequest> {
             int exitValue = runProcess.exitValue();
             if (exitValue == 0) {
                 success = true;
-                LOG.info("[{} - {}]: {} - Started module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
+                LOG.info("[{} - {}]: Started module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
             }
 
             if (exitValue != 0) {
