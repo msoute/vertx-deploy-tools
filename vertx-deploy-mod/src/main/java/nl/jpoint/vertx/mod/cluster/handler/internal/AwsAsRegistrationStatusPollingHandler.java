@@ -79,7 +79,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
 
             for (String loadbalancer : loadbalancers) {
                 try {
-                    LOG.info("[{} - {}]: Cheking Instance {} state on elb {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), loadbalancer);
+                    LOG.info("[{} - {}]: Checking Instance {} state on elb {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), loadbalancer);
                     AwsState currentElbState = elbUtil.getInstanceState(request.getInstanceId(), loadbalancer);
                     LOG.info("[{} - {}]: Instance {} on elb {} in state {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), loadbalancer, currentElbState.name());
                     if (!AwsState.INSERVICE.equals(currentElbState)) {

@@ -39,7 +39,7 @@ public class ClusterManagerModule extends Verticle {
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), container.config());
         AwsService awsService = new AwsService(getVertx(), container.config());
 
-        vertx.eventBus().registerLocalHandler("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService));
+        vertx.eventBus().registerLocalHandler("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService, deployConfigService));
 
         HttpServer httpServer = getVertx().createHttpServer();
         RouteMatcher matcher = new RouteMatcher();

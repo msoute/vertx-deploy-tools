@@ -29,7 +29,7 @@ public class RequestExecutor {
 
     public RequestExecutor(Log log) {
         this.log = log;
-        timeout = System.currentTimeMillis() + 180000l;
+        timeout = System.currentTimeMillis() + (60000l * 11l);
         log.info("Setting timeout to : " + new Date(timeout));
     }
 
