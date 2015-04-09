@@ -88,15 +88,17 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
                 }
 
-                for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
-                    deployOk = configDeployService.deploy(configRequest);
-                    if (!deployOk) {
-                        respondFailed(request);
-                        return;
+                if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
+                    for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
+                        deployOk = configDeployService.deploy(configRequest);
+                        if (!deployOk) {
+                            respondFailed(request);
+                            return;
+                        }
                     }
                 }
 
-                if (deployOk || deployRequest.getConfigs().isEmpty()) {
+                if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
                     for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                         deployOk = artifactDeployService.deploy(artifactRequest);
                         if (!deployOk) {
@@ -106,10 +108,9 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     }
                 }
 
-                if (deployOk || deployRequest.getArtifacts().size() == 0) {
+                if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
                     for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                         deployOk = moduleDeployService.deploy(moduleRequest);
-
                         if (!deployOk) {
                             respondFailed(request);
                             return;
