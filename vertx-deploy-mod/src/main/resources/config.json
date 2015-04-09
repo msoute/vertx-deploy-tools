@@ -3,6 +3,6 @@
     "mod.root": "/tmp",
     "artifact.repo": "/tmp",
     "http.authUser": "build",
-    "http.authPass": "Xo7Eez2v",
-    "http.authUri": "build.edubase.malmberg.nl"
+    "http.authPass": "",
+    "http.authUri": ""
 }
