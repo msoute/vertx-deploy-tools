@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RequestExecutor {
@@ -114,7 +115,6 @@ public class RequestExecutor {
     }
 
     private AwsState executeRequest(HttpPost postRequest) throws MojoExecutionException {
-
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
         exec.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -125,6 +125,7 @@ public class RequestExecutor {
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
+                exec.awaitTermination(10, TimeUnit.MINUTES);
                 exec.shutdown();
                 log.info("DeployModuleCommand : Post response status code -> " + response.getStatusLine().getStatusCode());
 
@@ -135,6 +136,9 @@ public class RequestExecutor {
             } catch (IOException e) {
                 log.error("testDeployModuleCommand ", e);
                 throw new MojoExecutionException("Error deploying module.", e);
+            } catch (InterruptedException e) {
+                log.error("Timeout while waiting for deploy request.");
+                throw new MojoExecutionException("Timeout while waiting for deploy request.");
             }
 
         } catch (IOException e) {
