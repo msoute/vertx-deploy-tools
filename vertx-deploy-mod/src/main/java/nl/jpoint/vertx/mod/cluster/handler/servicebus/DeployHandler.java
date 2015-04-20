@@ -68,28 +68,33 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             deployModuleService.stopContainer(deployId);
         }
 
-        for (DeployConfigRequest configRequests : deployRequest.getConfigs()) {
-            deployOk = deployConfigService.deploy(configRequests);
-            if (!deployOk) {
-                awsService.failBuild(deployId);
-                return;
+        if (deployRequest.getConfigs() != null) {
+            for (DeployConfigRequest configRequests : deployRequest.getConfigs()) {
+                deployOk = deployConfigService.deploy(configRequests);
+                if (!deployOk) {
+                    awsService.failBuild(deployId);
+                    return;
+                }
             }
         }
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployId);
 
-        for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
-            deployOk = deployArtifactService.deploy(artifactRequest);
+        if (deployRequest.getArtifacts() != null) {
+            for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
+                deployOk = deployArtifactService.deploy(artifactRequest);
 
-            if (!deployOk) {
-                awsService.failBuild(deployId);
-                return;
+                if (!deployOk) {
+                    awsService.failBuild(deployId);
+                    return;
+                }
             }
         }
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_MODULES, deployId);
 
-        if (deployOk) {
+
+        if (deployOk && deployRequest.getConfigs() != null) {
             for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                 deployOk = deployModuleService.deploy(moduleRequest);
 
