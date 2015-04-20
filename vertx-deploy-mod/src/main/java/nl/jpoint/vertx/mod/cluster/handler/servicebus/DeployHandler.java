@@ -93,8 +93,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_MODULES, deployId);
 
-
-        if (deployOk && deployRequest.getConfigs() != null) {
+        if (deployOk && deployRequest.getModules() != null) {
             for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                 deployOk = deployModuleService.deploy(moduleRequest);
 
