@@ -3,6 +3,7 @@ package nl.jpoint.maven.vertx.utils;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -17,6 +18,8 @@ import org.apache.maven.plugin.logging.Log;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +33,7 @@ public class RequestExecutor {
 
     public RequestExecutor(Log log) {
         this.log = log;
-        timeout = System.currentTimeMillis() + (60000l * 11l);
+        timeout = System.currentTimeMillis() + (60000L * 11L);
         log.info("Setting timeout to : " + new Date(timeout));
     }
 
@@ -114,7 +117,7 @@ public class RequestExecutor {
         }
     }
 
-    private AwsState executeRequest(HttpPost postRequest) throws MojoExecutionException {
+    private AwsState executeRequest(final HttpPost postRequest) throws MojoExecutionException {
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
         exec.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -124,11 +127,19 @@ public class RequestExecutor {
         }, 5, 5, TimeUnit.SECONDS);
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                public void run() {
+                    postRequest.abort();
+                }
+            }, timeout);
             try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
-                exec.awaitTermination(10, TimeUnit.MINUTES);
                 exec.shutdown();
                 log.info("DeployModuleCommand : Post response status code -> " + response.getStatusLine().getStatusCode());
-
+                if (postRequest.isAborted()) {
+                    log.error("Timeout while waiting for deploy request, aborting request");
+                    throw new MojoExecutionException("Timeout while waiting for deploy request, aborting request");
+                }
                 if (response.getStatusLine().getStatusCode() != 200) {
                     log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
                     throw new MojoExecutionException("Error deploying module. ");
@@ -136,11 +147,7 @@ public class RequestExecutor {
             } catch (IOException e) {
                 log.error("testDeployModuleCommand ", e);
                 throw new MojoExecutionException("Error deploying module.", e);
-            } catch (InterruptedException e) {
-                log.error("Timeout while waiting for deploy request.");
-                throw new MojoExecutionException("Timeout while waiting for deploy request.");
             }
-
         } catch (IOException e) {
             log.error("testDeployModuleCommand ", e);
             throw new MojoExecutionException("Error deploying module.", e);
