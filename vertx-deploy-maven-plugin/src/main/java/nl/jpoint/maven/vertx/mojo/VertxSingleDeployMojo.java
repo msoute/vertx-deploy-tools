@@ -32,7 +32,7 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
 
         super.activeConfiguration = configuration;
         final DeployUtils utils = new DeployUtils(getLog(), project);
-        final RequestExecutor executor = new RequestExecutor(getLog());
+        final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
 
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);

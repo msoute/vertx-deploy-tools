@@ -63,7 +63,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
 
         for (Ec2Instance instance : instances) {
-            final RequestExecutor executor = new RequestExecutor(getLog());
+            final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
             boolean awsGroupIsInService = isInService(instances);
             getLog().info("Auto scaling group inService :  " +awsGroupIsInService);
             boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
@@ -131,7 +131,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
         for (String host : activeConfiguration.getHosts()) {
 
-            final RequestExecutor executor = new RequestExecutor(getLog());
+            final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
             executor.executeAwsDeployRequest(deployRequest, host, false);
         }
     }
@@ -148,7 +148,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
 
         for (String host : activeConfiguration.getHosts()) {
-            final RequestExecutor executor = new RequestExecutor(getLog());
+            final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
             executor.executeDeployRequest(deployRequest, host);
         }
     }

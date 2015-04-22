@@ -26,6 +26,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     private String activeTarget;
     @Parameter(defaultValue = "false", property = "deploy.testScope")
     protected Boolean testScope;
+    @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
+    protected Integer requestTimeout;
     @Parameter
     protected String credentialsId;
 

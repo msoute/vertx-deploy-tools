@@ -31,9 +31,9 @@ public class RequestExecutor {
     private final Log log;
     private final long timeout;
 
-    public RequestExecutor(Log log) {
+    public RequestExecutor(Log log, Integer requestTimeout) {
         this.log = log;
-        timeout = System.currentTimeMillis() + (60000L * 11L);
+        timeout = System.currentTimeMillis() + (60000L * requestTimeout);
         log.info("Setting timeout to : " + new Date(timeout));
     }
 
