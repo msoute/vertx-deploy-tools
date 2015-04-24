@@ -79,7 +79,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
-            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), ignoreFailure );
+            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure );
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
         }
@@ -132,7 +132,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         for (String host : activeConfiguration.getHosts()) {
 
             final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
-            executor.executeAwsDeployRequest(deployRequest, host, false);
+            executor.executeAwsDeployRequest(deployRequest, host, activeConfiguration.withElb(), false);
         }
     }
 

@@ -174,8 +174,8 @@ public class RequestExecutor {
     }
 
 
-    public AwsState executeAwsDeployRequest(DeployRequest deployRequest, String host, boolean ignoreFailure) throws MojoFailureException, MojoExecutionException {
-        return executeRequest(deployRequest, host, true, ignoreFailure);
+    public AwsState executeAwsDeployRequest(DeployRequest deployRequest, String host, boolean withElb, boolean ignoreFailure) throws MojoFailureException, MojoExecutionException {
+        return executeRequest(deployRequest, host, withElb, ignoreFailure);
     }
 
     public void executeDeployRequest(DeployRequest deployRequest, String host) throws MojoFailureException, MojoExecutionException {
