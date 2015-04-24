@@ -68,7 +68,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             deployModuleService.stopContainer(deployId);
         }
 
-        if (deployRequest.getConfigs() != null) {
+        if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
             for (DeployConfigRequest configRequests : deployRequest.getConfigs()) {
                 deployOk = deployConfigService.deploy(configRequests);
                 if (!deployOk) {
@@ -80,7 +80,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployId);
 
-        if (deployRequest.getArtifacts() != null) {
+        if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
             for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                 deployOk = deployArtifactService.deploy(artifactRequest);
 
@@ -93,7 +93,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_MODULES, deployId);
 
-        if (deployOk && deployRequest.getModules() != null) {
+        if (deployOk && deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
             for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                 deployOk = deployModuleService.deploy(moduleRequest);
 
