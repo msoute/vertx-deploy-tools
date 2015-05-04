@@ -17,8 +17,7 @@ import java.util.*;
 
 public class AwsUtil {
 
-
-    private static final List<String> ignoreUpperCase = new ArrayList<>(Arrays.asList("x-amz-date"));
+    private static final List<String> ignoreUpperCase = new ArrayList<>(Collections.singletonList("x-amz-date"));
     private static final String EOL = "\n";
     private static final String COLON = ":";
     private static final String SEMICOLON = ";";
@@ -38,7 +37,7 @@ public class AwsUtil {
     }
 
     HttpGet createSignedGet(String targetHost, Map<String, String> queryParameters, Map<String, String> signedHeaders, String date, String service, String region, String action) throws AwsException {
-        HttpGet awsGet = null;
+        HttpGet awsGet;
         try {
             String canonicalRequest = this.createCanonicalRequest(GET, createURLEncodedCanonicalQueryString(queryParameters), signedHeaders, "");
             String signString = this.createSignString(date, region, service, canonicalRequest);
@@ -57,7 +56,7 @@ public class AwsUtil {
     }
 
     HttpPost createSignedPost(String targetHost, Map<String, String> signedHeaders, String date, String payload, String service, String region) throws AwsException {
-        HttpPost awsPost = null;
+        HttpPost awsPost;
         try {
             String canonicalRequest = this.createCanonicalRequest(POST, null, signedHeaders, payload);
             String signString = this.createSignString(date, region, service, canonicalRequest);
@@ -67,10 +66,10 @@ public class AwsUtil {
             awsPost = new HttpPost("https://" + targetHost);
             awsPost.addHeader("Host", targetHost);
             awsPost.addHeader("X-Amz-Date", date);
-           // awsPost.addHeader("X-Amz-Target", "OpsWorks_20130218." + action);
+            // awsPost.addHeader("X-Amz-Target", "OpsWorks_20130218." + action);
             awsPost.addHeader("Authorization", authorization);
             awsPost.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
-         //   awsPost.addHeader("Content-Type", "application/x-amz-json-1.1");
+            //   awsPost.addHeader("Content-Type", "application/x-amz-json-1.1");
 
             ByteArrayInputStream bos = new ByteArrayInputStream(payload.getBytes());
             BasicHttpEntity entity = new BasicHttpEntity();

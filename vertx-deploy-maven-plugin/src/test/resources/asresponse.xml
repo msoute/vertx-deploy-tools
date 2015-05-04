@@ -22,8 +22,10 @@
                 <VPCZoneIdentifier/>
                 <HealthCheckGracePeriod>120</HealthCheckGracePeriod>
                 <DefaultCooldown>300</DefaultCooldown>
-                <AutoScalingGroupARN>arn:aws:autoscaling:us-east-1:803981987763:autoScalingGroup:ca861182-c8f9-4ca7-b1eb-cd35505f5ebb
-                    :autoScalingGroupName/my-test-asg-lbs</AutoScalingGroupARN>
+                <AutoScalingGroupARN>
+                    arn:aws:autoscaling:us-east-1:803981987763:autoScalingGroup:ca861182-c8f9-4ca7-b1eb-cd35505f5ebb
+                    :autoScalingGroupName/my-test-asg-lbs
+                </AutoScalingGroupARN>
                 <TerminationPolicies>
                     <member>Default</member>
                 </TerminationPolicies>

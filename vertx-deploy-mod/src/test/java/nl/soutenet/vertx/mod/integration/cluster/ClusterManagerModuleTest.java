@@ -4,7 +4,6 @@ package nl.soutenet.vertx.mod.integration.cluster;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import junit.framework.Assert;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -12,6 +11,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.fail;
+
 @Ignore
 public class ClusterManagerModuleTest {
 
@@ -106,8 +107,8 @@ public class ClusterManagerModuleTest {
         final ObjectWriter writer = new ObjectMapper().writer();
 
         List<DeployModuleRequest> moduleRequests = new ArrayList<>(1);
-        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils","mongo-connector","1.0.1-SNAPSHOT",1, false, "zip"));
-        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false, false, null,null,false);
+        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils", "mongo-connector", "1.0.1-SNAPSHOT", 1, false, "zip"));
+        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false, false, null, null, false);
 
         String postData = writer.writeValueAsString(request);
         ByteArrayInputStream bos = new ByteArrayInputStream(postData.getBytes());

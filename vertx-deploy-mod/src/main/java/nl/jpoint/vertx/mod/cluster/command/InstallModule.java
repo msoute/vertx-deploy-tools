@@ -69,7 +69,7 @@ public class InstallModule implements Command<ModuleRequest> {
 
     private void deployWithInit(final ModuleRequest request) {
         try {
-            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "install", request.getModuleId() });
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "install", request.getModuleId()});
             runProcess.waitFor();
 
             int exitValue = runProcess.exitValue();

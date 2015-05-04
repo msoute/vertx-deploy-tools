@@ -13,7 +13,7 @@ public class AwsRegisterFactory {
             final AwsElbUtil awsElbUtil = new AwsElbUtil(context.getAwsUtil(),
                     context.getRegion(), config.getString("aws.elb.loadbalancer"), config.getString("aws.elb.instanceid"));
             return new AwsElbRegisterInstance(vertx, awsElbUtil);
-        }  else if (deployRequest.withElb() && deployRequest.withAutoScaling()) {
+        } else if (deployRequest.withElb() && deployRequest.withAutoScaling()) {
             return new AwsAsRegisterInstance(vertx, context);
         }
         return null;

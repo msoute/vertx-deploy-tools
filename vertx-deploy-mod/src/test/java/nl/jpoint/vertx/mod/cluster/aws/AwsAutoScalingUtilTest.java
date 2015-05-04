@@ -10,11 +10,14 @@ public class AwsAutoScalingUtilTest {
 
     private final static String ACCESS_KEY = "ak";
     private final static String SECRET_ACCESS_KEY = "sak";
+    private final static String AWS_REGION = "eu-west-1";
     private final static String AS_GROUP_ID = "gid";
     private final static String INSTANCE_ID = "iid";
     private final static String ELB = "elb";
 
-    AwsAutoScalingUtil util = new AwsAutoScalingUtil(ACCESS_KEY, SECRET_ACCESS_KEY);
+    private final AwsContext context = AwsContext.build(ACCESS_KEY, SECRET_ACCESS_KEY, AWS_REGION);
+
+    AwsAutoScalingUtil util = new AwsAutoScalingUtil(context);
     AwsElbUtil elbUtil = new AwsElbUtil(ACCESS_KEY, SECRET_ACCESS_KEY, "eu-west-1", ELB, INSTANCE_ID);
 
 
@@ -43,20 +46,20 @@ public class AwsAutoScalingUtilTest {
     @Test
     @Ignore
     public void testFetchInstanceState() throws AwsException {
-        AwsState result = util.getInstanceState(INSTANCE_ID,AS_GROUP_ID);
+        AwsState result = util.getInstanceState(INSTANCE_ID, AS_GROUP_ID);
         Assert.assertEquals(AwsState.INSERVICE, result);
     }
 
     @Test
     @Ignore
-    public void testEnterStandby() throws  AwsException {
-        util.enterStandby(INSTANCE_ID,AS_GROUP_ID);
+    public void testEnterStandby() throws AwsException {
+        util.enterStandby(INSTANCE_ID, AS_GROUP_ID);
     }
 
     @Test
     @Ignore
-    public void testExitStandby() throws  AwsException {
-        util.exitStandby(INSTANCE_ID,AS_GROUP_ID);
+    public void testExitStandby() throws AwsException {
+        util.exitStandby(INSTANCE_ID, AS_GROUP_ID);
     }
 
 

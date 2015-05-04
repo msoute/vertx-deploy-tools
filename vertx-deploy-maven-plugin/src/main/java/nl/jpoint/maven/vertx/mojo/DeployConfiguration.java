@@ -44,7 +44,10 @@ public class DeployConfiguration {
     public boolean isAutoScaling() {
         return autoScaling;
     }
-    public boolean isOpsworks() { return opsWorks;}
+
+    public boolean isOpsworks() {
+        return opsWorks;
+    }
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -74,7 +77,9 @@ public class DeployConfiguration {
         return this.elb;
     }
 
-    public boolean doRestart() { return restart; }
+    public boolean doRestart() {
+        return restart;
+    }
 
     public boolean getAwsPrivateIp() {
         return this.awsPrivateIp;

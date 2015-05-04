@@ -41,7 +41,7 @@ public class AwsElbRegistrationStatusPollingHandler implements Handler<Long> {
                         .putString("state", state.toString()));
             }
         } catch (AwsException e) {
-            LOG.error("[{} - {}]: Error executing de-register", LogConstants.AWS_ELB_REQUEST, request.getId(),e.getMessage());
+            LOG.error("[{} - {}]: Error executing de-register", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage());
         }
 
     }

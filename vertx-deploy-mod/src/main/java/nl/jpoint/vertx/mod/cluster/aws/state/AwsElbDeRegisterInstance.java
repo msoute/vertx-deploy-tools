@@ -24,6 +24,7 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
 
         this.awsElbUtil = awsElbUtil;
     }
+
     @Override
     public JsonObject execute(DeployRequest request) {
 

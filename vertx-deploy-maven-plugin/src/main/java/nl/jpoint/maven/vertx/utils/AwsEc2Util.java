@@ -24,7 +24,7 @@ public class AwsEc2Util {
         this.compressedIso8601DateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public List<Ec2Instance> describeInstances(List<String> instanceIds, String tag,  Log log) throws AwsException {
+    public List<Ec2Instance> describeInstances(List<String> instanceIds, String tag, Log log) throws AwsException {
         if (instanceIds == null || instanceIds.size() == 0) {
             return new ArrayList<>();
         }
@@ -33,7 +33,7 @@ public class AwsEc2Util {
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
         Map<String, String> requestParamerters = new HashMap<>();
         for (int i = 0; i < instanceIds.size(); i++) {
-            requestParamerters.put("InstanceId."+i, instanceIds.get(i));
+            requestParamerters.put("InstanceId." + i, instanceIds.get(i));
         }
         requestParamerters.put("Version", "2014-10-01");
         requestParamerters.put("Action", "DescribeInstances");

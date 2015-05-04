@@ -1,6 +1,5 @@
 package nl.jpoint.vertx.mod.cluster.command;
 
-import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import nl.jpoint.vertx.mod.cluster.util.ModuleFileNameFilter;
@@ -10,7 +9,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
-import java.io.IOException;
 
 public class UndeployModule implements Command<ModuleRequest> {
 

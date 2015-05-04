@@ -1,11 +1,11 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
+import nl.jpoint.vertx.mod.cluster.aws.AwsContext;
 import nl.jpoint.vertx.mod.cluster.aws.state.AwsDeRegisterFactory;
 import nl.jpoint.vertx.mod.cluster.aws.state.AwsRegisterFactory;
 import nl.jpoint.vertx.mod.cluster.command.Command;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployState;
-import nl.jpoint.vertx.mod.cluster.aws.AwsContext;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +28,10 @@ public class AwsService {
         this.vertx = vertx;
         this.config = config;
 
-        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("eu-west-1") );
+        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("eu-west-1"));
     }
 
-    public boolean registerRequest(DeployRequest deployRequest ) {
+    public boolean registerRequest(DeployRequest deployRequest) {
         if (runningRequests.containsKey(deployRequest.getId().toString())) {
             LOG.error("[{} - {}]: Request already registered.", LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
             return false;

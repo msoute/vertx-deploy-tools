@@ -15,7 +15,7 @@ public class DeployModuleRequest extends Request {
     @JsonProperty
     private final boolean restart;
 
-    public DeployModuleRequest(String group_id, String artifact_id, String version, String type,  int instances, boolean restart) {
+    public DeployModuleRequest(String group_id, String artifact_id, String version, String type, int instances, boolean restart) {
         super(group_id, artifact_id, version, null, type);
         this.instances = instances;
         this.restart = restart;

@@ -89,7 +89,7 @@ public class ProcessUtils {
 
     public static void writePid(String moduleId) {
         List<Integer> pids = findPidsForModule(moduleId, null, null);
-        File pidFile = new File(moduleId.substring(0, moduleId.lastIndexOf('~'))+".pid");
+        File pidFile = new File(moduleId.substring(0, moduleId.lastIndexOf('~')) + ".pid");
         try {
             if (pidFile.createNewFile()) {
                 FileWriter wrt = new FileWriter(pidFile);

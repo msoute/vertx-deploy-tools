@@ -23,7 +23,7 @@ public class AwsAutoScalingUtil {
 
     @Deprecated
     public AwsAutoScalingUtil(final String accessKey, final String secretAccessKey) {
-       this(AwsContext.build(accessKey, secretAccessKey, DEFAULT_REGION));
+        this(AwsContext.build(accessKey, secretAccessKey, DEFAULT_REGION));
     }
 
     public AwsAutoScalingUtil(final AwsContext context) {

@@ -14,7 +14,7 @@ class VertxDeployModuleMojo extends AbstractDeployMojo {
         final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
 
         setActiveDeployConfig();
-        DeployModuleRequest request = new DeployModuleRequest(project.getGroupId(),project.getArtifactId(),project.getVersion(), project.getArtifact().getType(), 4, activeConfiguration.doRestart());
+        DeployModuleRequest request = new DeployModuleRequest(project.getGroupId(), project.getArtifactId(), project.getVersion(), project.getArtifact().getType(), 4, activeConfiguration.doRestart());
         executor.executeSingleDeployRequest(activeConfiguration, request);
     }
 }

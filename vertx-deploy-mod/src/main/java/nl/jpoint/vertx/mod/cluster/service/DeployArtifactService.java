@@ -1,8 +1,10 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
-import nl.jpoint.vertx.mod.cluster.command.*;
+import nl.jpoint.vertx.mod.cluster.command.Command;
+import nl.jpoint.vertx.mod.cluster.command.DownloadArtifact;
+import nl.jpoint.vertx.mod.cluster.command.ExtractArtifact;
+import nl.jpoint.vertx.mod.cluster.command.ResolveSnapshotVersion;
 import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
-import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;

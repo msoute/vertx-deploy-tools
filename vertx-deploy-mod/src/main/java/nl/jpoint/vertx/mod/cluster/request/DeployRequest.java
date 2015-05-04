@@ -67,6 +67,7 @@ public class DeployRequest {
     public boolean withElb() {
         return elb;
     }
+
     public boolean withAutoScaling() {
         return elb && autoScaling;
     }

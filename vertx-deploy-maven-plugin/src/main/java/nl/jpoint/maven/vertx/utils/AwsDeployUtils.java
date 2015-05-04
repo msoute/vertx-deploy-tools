@@ -16,9 +16,9 @@ public class AwsDeployUtils {
     private final AwsOpsWorksUtil opsWorksUtil;
     private final AwsElbUtil awsElbUtil;
 
-    public AwsDeployUtils(String serverId,  Settings settings) throws MojoFailureException {
+    public AwsDeployUtils(String serverId, Settings settings) throws MojoFailureException {
         if (settings.getServer(serverId) == null) {
-            throw new MojoFailureException("No server config for id : " +serverId);
+            throw new MojoFailureException("No server config for id : " + serverId);
         }
         Server server = settings.getServer(serverId);
 

@@ -79,7 +79,7 @@ public class ClusterManagerModule extends Verticle {
     }
 
     public boolean isLocal() {
-        return getContainer().config().containsField("deploy.internal") &&getContainer().config().getBoolean("deploy.internal");
+        return getContainer().config().containsField("deploy.internal") && getContainer().config().getBoolean("deploy.internal");
 
     }
 }

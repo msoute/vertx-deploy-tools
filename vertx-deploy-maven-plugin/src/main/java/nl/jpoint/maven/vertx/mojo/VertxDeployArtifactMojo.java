@@ -16,7 +16,7 @@ class VertxDeployArtifactMojo extends AbstractDeployMojo {
         setActiveDeployConfig();
 
         DeployArtifactRequest request = new DeployArtifactRequest(project.getArtifact().getGroupId(),
-                project.getArtifact().getArtifactId(),project.getArtifact().getVersion(),
+                project.getArtifact().getArtifactId(), project.getArtifact().getVersion(),
                 project.getArtifact().getClassifier(), project.getArtifact().getType(), activeConfiguration.getContext());
 
         executor.executeSingleDeployRequest(activeConfiguration, request);

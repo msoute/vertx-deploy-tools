@@ -28,8 +28,6 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
         configuration.setTestScope(stubbed);
         configuration.setWithConfig(withConfig);
 
-        boolean doRestart = true;
-
         super.activeConfiguration = configuration;
         final DeployUtils utils = new DeployUtils(getLog(), project);
         final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
@@ -42,11 +40,11 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)
                 .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
-                .withRestart(doRestart)
+                .withRestart(true)
                 .withElb(false)
                 .build();
 
-        getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '"+deployArtifactRequests.size()+"' artifacts and '"+deployModuleRequests.size()+"' modules");
+        getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
         getLog().debug("Sending request -> " + deployRequest.toJson(true));
         executor.executeDeployRequest(deployRequest, remoteIp);
