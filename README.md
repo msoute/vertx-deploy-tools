@@ -6,7 +6,8 @@ vertx-deploy-mod
 Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
 # Changelog
-
+## 1.2-SNAPSHOT
+### Add local run support.
 ## 1.1.12
 ### Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
 

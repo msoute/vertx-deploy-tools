@@ -10,10 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.PlatformManager;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO : Vertx homedir should be configurable.
@@ -34,7 +33,6 @@ public class RunModule implements Command<ModuleRequest> {
     @Override
     public JsonObject execute(final ModuleRequest request) {
         LOG.info("[{} - {}]: Running module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
-        boolean success = false;
 
         if (startWithInit) {
             startWithInit(request);
