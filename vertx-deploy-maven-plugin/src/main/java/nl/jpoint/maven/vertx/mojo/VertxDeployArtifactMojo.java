@@ -11,13 +11,13 @@ class VertxDeployArtifactMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final RequestExecutor executor = new RequestExecutor(getLog());
+        final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
 
         setActiveDeployConfig();
 
         DeployArtifactRequest request = new DeployArtifactRequest(project.getArtifact().getGroupId(),
                 project.getArtifact().getArtifactId(),project.getArtifact().getVersion(),
-                project.getArtifact().getClassifier(), activeConfiguration.getContext());
+                project.getArtifact().getClassifier(), project.getArtifact().getType(), activeConfiguration.getContext());
 
         executor.executeSingleDeployRequest(activeConfiguration, request);
     }

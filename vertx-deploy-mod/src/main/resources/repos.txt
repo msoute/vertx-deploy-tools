@@ -1,0 +1,1 @@
+mavenLocal:~/.m2/repository

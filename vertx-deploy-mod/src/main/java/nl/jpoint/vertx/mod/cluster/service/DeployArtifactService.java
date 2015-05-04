@@ -1,10 +1,9 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
-import nl.jpoint.vertx.mod.cluster.command.Command;
-import nl.jpoint.vertx.mod.cluster.command.DownloadArtifact;
-import nl.jpoint.vertx.mod.cluster.command.ExtractArtifact;
-import nl.jpoint.vertx.mod.cluster.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.cluster.command.*;
+import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
+import nl.jpoint.vertx.mod.cluster.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
-public class DeployArtifactService implements DeployService {
+import java.nio.file.Paths;
+
+public class DeployArtifactService implements DeployService<DeployArtifactRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployArtifactService.class);
 
     private final Vertx vertx;
@@ -26,7 +27,7 @@ public class DeployArtifactService implements DeployService {
     }
 
     @Override
-    public boolean deploy(ModuleRequest deployRequest) {
+    public boolean deploy(DeployArtifactRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
             Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_SITE_REQUEST);
@@ -43,13 +44,15 @@ public class DeployArtifactService implements DeployService {
             return true;
         }
 
-        DownloadArtifact command = new DownloadArtifact(config);
-        JsonObject downloadResult = command.execute(deployRequest);
+        DownloadArtifact downloadArtifactCommand = new DownloadArtifact(config);
+        JsonObject downloadResult = downloadArtifactCommand.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
             return false;
         }
-        ExtractArtifact extractSite = new ExtractArtifact(vertx, config);
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
+
+        ExtractArtifact extractSite = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), true, LogConstants.DEPLOY_SITE_REQUEST);
         JsonObject extractResult = extractSite.execute(deployRequest);
 
         if (deployRequest.getSnapshotVersion() != null) {

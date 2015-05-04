@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.jpoint.vertx.mod.cluster.Constants;
 import nl.jpoint.vertx.mod.cluster.request.DeployArtifactRequest;
+import nl.jpoint.vertx.mod.cluster.request.DeployConfigRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.DeployRequest;
 import nl.jpoint.vertx.mod.cluster.service.AwsService;
@@ -22,17 +23,21 @@ import java.io.IOException;
 
 public class RestDeployHandler implements Handler<HttpServerRequest> {
 
-    private final ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
-    private final DeployService moduleDeployService;
-    private final DeployService artifactDeployService;
+    private final DeployService<DeployModuleRequest> moduleDeployService;
+    private final DeployService<DeployArtifactRequest> artifactDeployService;
+    private final DeployService<DeployConfigRequest> configDeployService;
     private final AwsService awsService;
 
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployHandler(final DeployService moduleDeployService, final DeployService artifactDeployService, AwsService awsService) {
+    public RestDeployHandler(final DeployService<DeployModuleRequest> moduleDeployService,
+                             final DeployService<DeployArtifactRequest> artifactDeployService,
+                             final DeployService<DeployConfigRequest> configDeployService,
+                             final AwsService awsService) {
         MDC.put("service", Constants.SERVICE_ID);
         this.moduleDeployService = moduleDeployService;
         this.artifactDeployService = artifactDeployService;
+        this.configDeployService = configDeployService;
         this.awsService = awsService;
     }
     @Override
@@ -40,6 +45,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
         request.bodyHandler(new Handler<Buffer>() {
             @Override
             public void handle(Buffer event) {
+                ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
 
                 DeployRequest deployRequest;
 
@@ -48,6 +54,9 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     respondFailed(request);
                     return;
                 }
+                byte[] eventBody = event.getBytes();
+                LOG.debug("{}: received postdata size  -> {} ", LogConstants.DEPLOY_REQUEST, eventBody.length);
+                LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, new String(eventBody));
                 try {
                     deployRequest = reader.readValue(event.getBytes());
                 } catch (IOException e) {
@@ -56,12 +65,16 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     return;
                 }
 
-                LOG.info("[{} - {}]: Received deploy request with {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModules().size(), deployRequest.getArtifacts().size());
+                LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
+                        deployRequest.getId().toString(),
+                        deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,
+                        deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
+                        deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
 
                 boolean deployOk = false;
 
 
-                if (deployRequest.withAws()) {
+                if (deployRequest.withElb()) {
                     if (awsService.registerRequest(deployRequest)) {
                         respondContinue(request, deployRequest.getId().toString());
                         awsService.deRegisterInstance(deployRequest.getId().toString());
@@ -75,19 +88,29 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
                 }
 
-                for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
-                    deployOk = artifactDeployService.deploy(artifactRequest);
-
-                    if (!deployOk) {
-                        respondFailed(request);
-                        return;
+                if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
+                    for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
+                        deployOk = configDeployService.deploy(configRequest);
+                        if (!deployOk) {
+                            respondFailed(request);
+                            return;
+                        }
                     }
                 }
 
-                if (deployOk || deployRequest.getArtifacts().size() == 0) {
+                if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
+                    for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
+                        deployOk = artifactDeployService.deploy(artifactRequest);
+                        if (!deployOk) {
+                            respondFailed(request);
+                            return;
+                        }
+                    }
+                }
+
+                if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
                     for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                         deployOk = moduleDeployService.deploy(moduleRequest);
-
                         if (!deployOk) {
                             respondFailed(request);
                             return;

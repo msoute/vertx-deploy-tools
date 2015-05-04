@@ -5,21 +5,19 @@
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.1.14-SNAPSHOT</version>
     </parent>
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
     <artifactId>vertx-deploy-mod</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
 
-    <name>Vert.x deploy module</name>
+    <name>Vert.x deploy tools : Vert.x Module </name>
     <description>Vert.x deploy module.</description>
 
     <properties>
         <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
         <mods.directory>/opt/vertx/mods</mods.directory>
     </properties>
-
 
     <dependencies>
         <dependency>
@@ -79,6 +77,43 @@
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
             <version>1.7.5</version>
+        </dependency>
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>testtools</artifactId>
+            <version>2.0.3-final</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-testframework</artifactId>
+            <version>2.0.0-final</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -11,20 +11,32 @@ import java.util.UUID;
 public class DeployRequest {
     private final UUID id = UUID.randomUUID();
     private final List<DeployModuleRequest> modules;
+    private final List<DeployConfigRequest> configs;
     private final List<DeployArtifactRequest> artifacts;
-    @JsonProperty("aws")
-    private final boolean aws;
+    private final boolean elb;
+    private final boolean autoScaling;
+    private final String autoScalingGroup;
+
+    private final String instanceId;
     private final boolean restart;
     private DeployState state;
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployModuleRequest> modules,
                          @JsonProperty("artifacts") List<DeployArtifactRequest> artifacts,
-                         @JsonProperty("aws") boolean aws,
+                         @JsonProperty("configs") List<DeployConfigRequest> configs,
+                         @JsonProperty("with_elb") boolean elb,
+                         @JsonProperty("with_as") boolean autoScaling,
+                         @JsonProperty("as_group_id") String autoScalingGroup,
+                         @JsonProperty("instance_id") String instanceId,
                          @JsonProperty("restart") boolean restart) {
         this.modules = modules;
         this.artifacts = artifacts;
-        this.aws = aws;
+        this.configs = configs;
+        this.elb = elb;
+        this.autoScaling = autoScaling;
+        this.autoScalingGroup = autoScalingGroup;
+        this.instanceId = instanceId;
         this.restart = restart;
     }
 
@@ -36,12 +48,27 @@ public class DeployRequest {
         return modules;
     }
 
+    public List<DeployConfigRequest> getConfigs() {
+        return configs;
+    }
+
     public UUID getId() {
         return id;
     }
 
-    public boolean withAws() {
-        return aws;
+    public String getAutoScalingGroup() {
+        return autoScalingGroup;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public boolean withElb() {
+        return elb;
+    }
+    public boolean withAutoScaling() {
+        return elb && autoScaling;
     }
 
     public boolean withRestart() {

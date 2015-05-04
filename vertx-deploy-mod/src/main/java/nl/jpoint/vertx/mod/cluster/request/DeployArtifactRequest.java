@@ -12,8 +12,8 @@ public class DeployArtifactRequest extends ModuleRequest {
     @JsonCreator
     private DeployArtifactRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
                                   @JsonProperty("version") final String version, @JsonProperty("classifier") final String classifier,
-                                  @JsonProperty("context") final String context) {
-        super(groupId, artifactId, version, classifier);
+                                  @JsonProperty("context") final String context, @JsonProperty("type") final String type) {
+        super(groupId, artifactId, version, classifier, type);
         this.context = context;
     }
 

@@ -34,6 +34,7 @@ public class RunModule implements Command<ModuleRequest> {
     @Override
     public JsonObject execute(final ModuleRequest request) {
         LOG.info("[{} - {}]: Running module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        boolean success = false;
 
         if (startWithInit) {
             startWithInit(request);
@@ -63,28 +64,19 @@ public class RunModule implements Command<ModuleRequest> {
         try {
             final Process runProcess = Runtime.getRuntime().exec(new String[]{"/etc/init.d/vertx", "start-module", request.getModuleId(), String.valueOf(((DeployModuleRequest) request).getInstances())});
 
-            runProcess.waitFor();
+            runProcess.waitFor(1, TimeUnit.MINUTES);
 
             int exitValue = runProcess.exitValue();
             if (exitValue == 0) {
                 success = true;
-            }
-
-            BufferedReader output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
-            String outputLine;
-            while ((outputLine = output.readLine()) != null) {
-                LOG.info("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
+                LOG.info("[{} - {}]: Started module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
             }
 
             if (exitValue != 0) {
-                BufferedReader errorOut = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()));
-                String errorLine;
-                while ((errorLine = errorOut.readLine()) != null) {
-                    LOG.error("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), errorLine);
-                }
+                LOG.info("[{} - {}]: {} - Error Starting module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
             }
         } catch (IOException | InterruptedException e) {
-            LOG.error("[{} - {}]: Failed to initialize module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
+            LOG.error("[{} - {}]: Failed to initialize module {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         }
     }
 }

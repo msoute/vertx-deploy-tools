@@ -78,11 +78,11 @@ public class DownloadArtifact implements Command<ModuleRequest> {
             try (CloseableHttpResponse response = httpclient.execute(get)) {
 
                 if (response.getStatusLine().getStatusCode() == HttpResponseStatus.OK.code()) {
-                    OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(config.getString("artifact.repo") + request.getModuleId() + ".zip")));
+                    OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(config.getString("artifact.repo") + request.getFileName())));
                     response.getEntity().writeTo(fos);
                     response.close();
                     fos.close();
-                    LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), config.getString("artifact.repo") + request.getModuleId() + ".zip");
+                    LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), config.getString("artifact.repo") + request.getModuleId() + "." + request.getType());
                     downloaded = true;
                 } else {
                     LOG.error("[{} - {}]: Error downloading artifact {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId());

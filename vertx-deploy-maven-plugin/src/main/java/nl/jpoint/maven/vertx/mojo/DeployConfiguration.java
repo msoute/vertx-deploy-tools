@@ -15,6 +15,9 @@ public class DeployConfiguration {
     private String context;
     private boolean awsPrivateIp = false;
 
+    private boolean deployConfig = false;
+    private String tag;
+
     public String getOpsWorksStackId() {
         return opsWorksStackId;
     }
@@ -26,11 +29,12 @@ public class DeployConfiguration {
 
     private boolean deploySnapshots = true;
     private boolean testScope = false;
-    private boolean aws = false;
-
     private boolean restart = false;
+
     private boolean opsWorks = false;
-    private boolean autoScaling = true;
+    private boolean autoScaling = false;
+    private boolean elb = false;
+
     private String autoScalingGroupId;
 
     public String getAutoScalingGroupId() {
@@ -40,6 +44,7 @@ public class DeployConfiguration {
     public boolean isAutoScaling() {
         return autoScaling;
     }
+    public boolean isOpsworks() { return opsWorks;}
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -65,12 +70,8 @@ public class DeployConfiguration {
         return context;
     }
 
-    public boolean getAws() {
-        return this.aws;
-    }
-
-    public boolean getOpsWorks() {
-        return this.opsWorks;
+    public boolean withElb() {
+        return this.elb;
     }
 
     public boolean doRestart() { return restart; }
@@ -85,5 +86,17 @@ public class DeployConfiguration {
 
     public void setTestScope(boolean testScope) {
         this.testScope = testScope;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public boolean isDeployConfig() {
+        return deployConfig;
+    }
+
+    public void setWithConfig(Boolean withConfig) {
+        this.deployConfig = withConfig;
     }
 }
