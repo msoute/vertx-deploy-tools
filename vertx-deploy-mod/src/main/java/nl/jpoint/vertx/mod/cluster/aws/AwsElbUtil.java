@@ -65,7 +65,7 @@ public class AwsElbUtil {
         List<String> members = AwsXpathUtil.listInstances(result);
         return members.contains(instanceId);
     }
-    
+
     public AwsState getInstanceState() throws AwsException {
         byte[] result = this.executeGetInstanceState();
         return AwsState.valueOf(AwsXpathUtil.instanceState(result, forInstanceId()).toUpperCase());

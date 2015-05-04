@@ -37,8 +37,7 @@ public class ClusterManagerModule extends Verticle {
         final DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), container.config());
-        AwsService awsService = new AwsService(getVertx(), container.config());
-
+        final AwsService awsService = (this.isLocal()) ? null : new AwsService(getVertx(), container.config());
         vertx.eventBus().registerLocalHandler("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService, deployConfigService));
 
         HttpServer httpServer = getVertx().createHttpServer();
@@ -76,6 +75,11 @@ public class ClusterManagerModule extends Verticle {
         httpServer.listen(6789);
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
+
+    }
+
+    public boolean isLocal() {
+        return getContainer().config().containsField("deploy.internal") && getContainer().config().getBoolean("deploy.internal");
 
     }
 }

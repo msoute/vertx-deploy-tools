@@ -21,7 +21,6 @@ public class AwsOpsWorksUtil {
     private final String targetHost = AWS_OPSWORKS_SERVICE + "." + "us-east-1" + ".amazonaws.com";
 
 
-
     private final AwsUtil awsUtil;
     protected final SimpleDateFormat compressedIso8601DateFormat =
             new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
@@ -43,7 +42,7 @@ public class AwsOpsWorksUtil {
         byte[] result = this.executeRequest(awsPost);
         ObjectMapper mapper = new ObjectMapper();
         JsonFactory factory = mapper.getFactory();
-        JsonParser parser = null;
+        JsonParser parser;
         try {
             parser = factory.createParser(result);
             JsonNode describeResult = mapper.readValue(parser, JsonNode.class);

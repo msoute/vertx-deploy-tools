@@ -40,6 +40,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
         this.configDeployService = configDeployService;
         this.awsService = awsService;
     }
+
     @Override
     public void handle(final HttpServerRequest request) {
         request.bodyHandler(new Handler<Buffer>() {
@@ -71,14 +72,14 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                         deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
                         deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
 
-                boolean deployOk = false;
+                boolean deployOk;
 
 
                 if (deployRequest.withElb()) {
                     if (awsService.registerRequest(deployRequest)) {
                         respondContinue(request, deployRequest.getId().toString());
                         awsService.deRegisterInstance(deployRequest.getId().toString());
-                    }   else {
+                    } else {
                         respondFailed(request);
                     }
                     return;

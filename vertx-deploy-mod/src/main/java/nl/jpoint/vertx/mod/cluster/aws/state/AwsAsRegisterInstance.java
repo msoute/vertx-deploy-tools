@@ -23,7 +23,7 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
     protected AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext) {
         this.vertx = vertx;
         this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
-        this.awsElbUtil = new AwsElbUtil(awsContext,"eu-west-1");
+        this.awsElbUtil = new AwsElbUtil(awsContext, "eu-west-1");
     }
 
     @Override
@@ -34,7 +34,7 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
         }
 
         LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
-        vertx.setPeriodic(10000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil,awsElbUtil, vertx, AwsState.INSERVICE));
+        vertx.setPeriodic(10000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, awsElbUtil, vertx, AwsState.INSERVICE));
 
         return new JsonObject().putBoolean("success", true);
     }

@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
 
 public class AwsXpathUtilTest {
 

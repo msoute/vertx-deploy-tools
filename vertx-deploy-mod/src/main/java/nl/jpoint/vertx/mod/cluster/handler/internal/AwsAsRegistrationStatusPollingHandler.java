@@ -34,7 +34,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
         this.vertx = vertx;
         this.state = state;
 
-        this.timeout = System.currentTimeMillis() + + 240000;
+        this.timeout = System.currentTimeMillis() + +240000;
 
         LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), state);
     }

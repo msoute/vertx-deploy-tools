@@ -30,7 +30,7 @@ public class DeployUtils {
     public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
         List<Request> deployModuleRequests = new ArrayList<>();
         for (Dependency dependency : createDeployListByClassifier(activeConfiguration, siteClassifier)) {
-            deployModuleRequests.add(new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(),  activeConfiguration.getContext()));
+            deployModuleRequests.add(new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(), activeConfiguration.getContext()));
         }
         return deployModuleRequests;
     }
@@ -60,7 +60,7 @@ public class DeployUtils {
         Iterator<Dependency> it = dependencies.iterator();
 
         if (!activeConfiguration.isTestScope()) {
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 Dependency dependency = it.next();
                 if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
                     log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
@@ -92,7 +92,7 @@ public class DeployUtils {
         Iterator<Dependency> it = dependencies.iterator();
 
         if (!activeConfiguration.isTestScope()) {
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 Dependency dependency = it.next();
                 if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
                     log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());

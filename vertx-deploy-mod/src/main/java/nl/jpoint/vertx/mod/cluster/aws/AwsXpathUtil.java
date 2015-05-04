@@ -22,7 +22,7 @@ public class AwsXpathUtil {
     private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String MEMBERS_LIST = "//member/InstanceId";
-    private static final String INSTANCE_STATE ="//member[InstanceId=\"INSTANCE_ID\"]/State/text()";
+    private static final String INSTANCE_STATE = "//member[InstanceId=\"INSTANCE_ID\"]/State/text()";
 
     private static final String AUTO_SCALING_GROUP_MEMBERS_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[LifecycleState=\"InService\"]/InstanceId";
     private static final String AUTO_SCALING_GROUP_ELB_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/LoadBalancerNames";
@@ -39,13 +39,13 @@ public class AwsXpathUtil {
 
         try {
             builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
+            Document document = builder.parse(new ByteArrayInputStream(awsResponse));
 
-            NodeList instanceNodes =  (NodeList)xPath.compile(EC2_PRIVATE_DNS_LIST).evaluate(document, XPathConstants.NODESET);
+            NodeList instanceNodes = (NodeList) xPath.compile(EC2_PRIVATE_DNS_LIST).evaluate(document, XPathConstants.NODESET);
 
 
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
-                Node node =instanceNodes.item(i);
+            for (int i = 0; i < instanceNodes.getLength(); i++) {
+                Node node = instanceNodes.item(i);
                 instances.add(instanceNodes.item(i).getTextContent());
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
@@ -53,6 +53,7 @@ public class AwsXpathUtil {
         }
         return instances;
     }
+
     public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
 
         DocumentBuilderFactory builderFactory =
@@ -62,11 +63,11 @@ public class AwsXpathUtil {
 
         try {
             builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
+            Document document = builder.parse(new ByteArrayInputStream(awsResponse));
 
-            NodeList instanceNodes =  (NodeList)xPath.compile(AUTO_SCALING_GROUP_MEMBERS_LIST).evaluate(document, XPathConstants.NODESET);
+            NodeList instanceNodes = (NodeList) xPath.compile(AUTO_SCALING_GROUP_MEMBERS_LIST).evaluate(document, XPathConstants.NODESET);
 
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
+            for (int i = 0; i < instanceNodes.getLength(); i++) {
                 instances.add(instanceNodes.item(i).getTextContent().trim());
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
@@ -85,7 +86,7 @@ public class AwsXpathUtil {
 
         try {
             builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
+            Document document = builder.parse(new ByteArrayInputStream(awsResponse));
 
             instanceState = (String) xPath.compile(AUTO_SCALING_GROUP_INSTANCE_STATE.replace("${id}", instanceId)).evaluate(document, XPathConstants.STRING);
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
@@ -102,11 +103,11 @@ public class AwsXpathUtil {
 
         try {
             builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
+            Document document = builder.parse(new ByteArrayInputStream(awsResponse));
 
-            NodeList instanceNodes =  (NodeList)xPath.compile(AUTO_SCALING_GROUP_ELB_LIST).evaluate(document, XPathConstants.NODESET);
+            NodeList instanceNodes = (NodeList) xPath.compile(AUTO_SCALING_GROUP_ELB_LIST).evaluate(document, XPathConstants.NODESET);
 
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
+            for (int i = 0; i < instanceNodes.getLength(); i++) {
                 elbList.add(instanceNodes.item(i).getTextContent().trim());
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
@@ -125,9 +126,9 @@ public class AwsXpathUtil {
 
         try {
             builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
+            Document document = builder.parse(new ByteArrayInputStream(awsResponse));
             String dynamicXpath = INSTANCE_STATE.replace("INSTANCE_ID", instanceId);
-            instanceState =  (String) xPath.compile(dynamicXpath).evaluate(document, XPathConstants.STRING);
+            instanceState = (String) xPath.compile(dynamicXpath).evaluate(document, XPathConstants.STRING);
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
             throw new AwsException(e);
         }
@@ -148,11 +149,11 @@ public class AwsXpathUtil {
 
         try {
             builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse( new ByteArrayInputStream(awsResponse));
+            Document document = builder.parse(new ByteArrayInputStream(awsResponse));
 
-            NodeList instanceNodes =  (NodeList)xPath.compile(MEMBERS_LIST).evaluate(document, XPathConstants.NODESET);
+            NodeList instanceNodes = (NodeList) xPath.compile(MEMBERS_LIST).evaluate(document, XPathConstants.NODESET);
 
-            for  (int i = 0; i < instanceNodes.getLength();i++) {
+            for (int i = 0; i < instanceNodes.getLength(); i++) {
                 instances.add(instanceNodes.item(i).getTextContent());
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {

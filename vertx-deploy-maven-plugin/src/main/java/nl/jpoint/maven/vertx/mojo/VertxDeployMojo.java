@@ -65,7 +65,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         for (Ec2Instance instance : instances) {
             final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
             boolean awsGroupIsInService = isInService(instances);
-            getLog().info("Auto scaling group inService :  " +awsGroupIsInService);
+            getLog().info("Auto scaling group inService :  " + awsGroupIsInService);
             boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
             getLog().info("Ignoring failure for instance " + instance.getInstanceId() + " : " + ignoreFailure);
             DeployRequest deployRequest = new DeployRequest.Builder()
@@ -79,7 +79,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
-            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure );
+            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure);
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
         }

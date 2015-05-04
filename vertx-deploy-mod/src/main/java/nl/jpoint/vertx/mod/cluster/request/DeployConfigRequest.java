@@ -9,8 +9,8 @@ public class DeployConfigRequest extends ModuleRequest {
 
     @JsonCreator
     private DeployConfigRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
-                                  @JsonProperty("version") final String version, @JsonProperty("classifier") final String classifier,
-                                  @JsonProperty("context") final String context, @JsonProperty("type") final String type) {
+                                @JsonProperty("version") final String version, @JsonProperty("classifier") final String classifier,
+                                @JsonProperty("context") final String context, @JsonProperty("type") final String type) {
         super(groupId, artifactId, version, classifier, type);
         this.context = context;
     }

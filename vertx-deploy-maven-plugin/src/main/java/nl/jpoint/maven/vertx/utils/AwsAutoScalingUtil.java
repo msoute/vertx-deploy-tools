@@ -10,7 +10,10 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 
 public class AwsAutoScalingUtil {
     private final static String AWS_AUTOSCALING_SERVICE = "autoscaling";

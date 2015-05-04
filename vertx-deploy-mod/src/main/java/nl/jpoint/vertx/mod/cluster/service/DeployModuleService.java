@@ -54,7 +54,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         // If the module with the same version is already installed there is no need to take any further action.
         if (moduleInstalled.equals(ModuleVersion.INSTALLED)) {
             if (deployRequest.restart()) {
-                RunModule runModCommand = new RunModule();
+                RunModule runModCommand = new RunModule(platformManager, config);
                 runModCommand.execute(deployRequest);
             }
             return true;
@@ -68,13 +68,12 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
 
             // If an older version (or SNAPSHOT) is installed undeploy it first.
             if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
-                if (!deployRequest.restart()) {
-                    StopModule stopModuleCommand = new StopModule(vertx, modRoot);
-                    JsonObject result = stopModuleCommand.execute(deployRequest);
 
-                    if (!result.getBoolean(Constants.STOP_STATUS)) {
-                        return false;
-                    }
+                StopModule stopModuleCommand = new StopModule(vertx, modRoot, config, true);
+                JsonObject result = stopModuleCommand.execute(deployRequest);
+
+                if (!result.getBoolean(Constants.STOP_STATUS)) {
+                    return false;
                 }
 
                 UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
@@ -86,7 +85,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
             }
 
             // Install the new module.
-            InstallModule installCommand = new InstallModule();
+            InstallModule installCommand = new InstallModule(platformManager, config);
             JsonObject installResult = installCommand.execute(deployRequest);
 
             // Respond failed if install did not complete.
@@ -96,7 +95,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         }
 
         // Run the newly installed module.
-        RunModule runModCommand = new RunModule();
+        RunModule runModCommand = new RunModule(platformManager, config);
         JsonObject runResult = runModCommand.execute(deployRequest);
 
         if (!runResult.getBoolean(Constants.STATUS_SUCCESS) && !deployRequest.isAsync()) {
@@ -128,7 +127,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                 LOG.info("[{} - {}]: Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
                 return ModuleVersion.INSTALLED;
             } else {
-                if (deployRequest.isSnapshot() && deployRequest.getSnapshotVersion().equals(installedModules.get(deployRequest.getMavenArtifactId()))) {
+                if (deployRequest.isSnapshot() && installedModules.containsKey(deployRequest.getMavenArtifactId()) && installedModules.get(deployRequest.getMavenArtifactId()).equals(deployRequest.getSnapshotVersion())) {
                     LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
                     return ModuleVersion.INSTALLED;
                 }

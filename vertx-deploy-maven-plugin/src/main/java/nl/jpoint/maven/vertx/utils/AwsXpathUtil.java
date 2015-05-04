@@ -51,6 +51,7 @@ public class AwsXpathUtil {
     public static int listMinimalInstancesInAutoscalingGroupResponse(byte[] result) throws AwsException {
         return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_MIN_INSTACES));
     }
+
     public static int listDesiredCapacityInAutoscalingGroupResponse(byte[] result) throws AwsException {
         return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_DESIRED_CAPACITY));
     }
