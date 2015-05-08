@@ -63,7 +63,8 @@ public class AwsXpathUtil {
     public static void updateInstanceState(List<Ec2Instance> instances, byte[] awsResponse) throws AwsException {
         Node node = getNode(awsResponse, "//DescribeInstanceHealthResponse/DescribeInstanceHealthResult/InstanceStates");
         for (Ec2Instance instance : instances) {
-            instance.updateState(AwsState.valueOf(getElementValueAsString((Element) node, "member[InstanceId=\"" + instance.getInstanceId() + "\"]/State").toUpperCase()));
+            String state = getElementValueAsString((Element) node, "member[InstanceId=\"" + instance.getInstanceId() + "\"]/State");
+            instance.updateState(AwsState.valueOf(state != null ? state.toUpperCase() : AwsState.OUTOFSERVICE.name()));
         }
 
     }
@@ -98,6 +99,9 @@ public class AwsXpathUtil {
 
 
     private static String getElementValueAsString(Element element, String xpath) throws AwsException {
+        if (element == null) {
+            return null;
+        }
         try {
             return (String) xPath.compile(xpath).evaluate(element, XPathConstants.STRING);
         } catch (XPathExpressionException e) {
