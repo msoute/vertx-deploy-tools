@@ -180,7 +180,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.groupId}~${project.artifactId}~${project.version}-mod
+                            <finalName>${project.groupId}~${project.artifactId}~${project.version}
                             </finalName>
                             <descriptors>
                                 <descriptor>src/main/assembly/mod.xml</descriptor>
