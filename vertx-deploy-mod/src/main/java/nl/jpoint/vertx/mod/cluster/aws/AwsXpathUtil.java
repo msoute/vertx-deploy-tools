@@ -25,7 +25,7 @@ public class AwsXpathUtil {
     private static final String INSTANCE_STATE = "//member[InstanceId=\"INSTANCE_ID\"]/State/text()";
 
     private static final String AUTO_SCALING_GROUP_MEMBERS_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[LifecycleState=\"InService\"]/InstanceId";
-    private static final String AUTO_SCALING_GROUP_ELB_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/LoadBalancerNames";
+    private static final String AUTO_SCALING_GROUP_ELB_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/LoadBalancerNames/member";
     private static final String AUTO_SCALING_GROUP_INSTANCE_STATE = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[InstanceId=\"${id}\"]/LifecycleState";
     private static final String EC2_PRIVATE_DNS_LIST = "//DescribeInstancesResponse/reservationSet/item/instancesSet/item/privateDnsName";
 
