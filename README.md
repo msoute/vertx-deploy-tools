@@ -6,6 +6,8 @@ vertx-deploy-mod
 Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
 # Changelog
+## 1.1.15
+* [Minor] Add -mod to module zip.
 ## 1.1.14
 * [Bug] Do not list elb's in an autoscaling group as a single string.
 * [Bug] Ignore null values during xpath parsing for elb instance members.
