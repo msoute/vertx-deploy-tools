@@ -9,6 +9,7 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 ## 1.1.14
 * [Bug] Do not list elb's in an autoscaling group as a single string.
 * [Bug] Ignore null values during xpath parsing for elb instance members.
+
 ## 1.1.12
 * [Feature] Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
 
