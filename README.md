@@ -7,10 +7,10 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 
 # Changelog
 ## 1.1.14
-### [Bug] Do not list elb's in an autoscaling group as a single string.
-### [Bug] Ignore null values during xpath parsing for elb instance members.
+* [Bug] Do not list elb's in an autoscaling group as a single string.
+* [Bug] Ignore null values during xpath parsing for elb instance members.
 ## 1.1.12
-### [Feature] Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
+* [Feature] Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
 
 ## Vert.X deploy mod
 A Vert.X based module to deploy that is able to deploy other modules into the local Vert.X container. If configured it takes into account
