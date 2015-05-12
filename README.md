@@ -8,8 +8,10 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 # Changelog
 ## DEV
 * [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
+
 ## 1.1.15
 * [Minor] Add -mod to module zip.
+
 ## 1.1.14
 * [Bug] Do not list elb's in an autoscaling group as a single string.
 * [Bug] Ignore null values during xpath parsing for elb instance members.
