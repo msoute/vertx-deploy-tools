@@ -17,11 +17,13 @@ import org.vertx.java.core.json.JsonObject;
 public class AwsAsRegisterInstance implements Command<DeployRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbRegisterInstance.class);
     private final Vertx vertx;
+    private final Integer maxDuration;
     private final AwsAutoScalingUtil awsAsUtil;
     private final AwsElbUtil awsElbUtil;
 
-    protected AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext) {
+    protected AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext, final Integer maxDuration) {
         this.vertx = vertx;
+        this.maxDuration = maxDuration;
         this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
         this.awsElbUtil = new AwsElbUtil(awsContext, "eu-west-1");
     }
@@ -34,8 +36,7 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
         }
 
         LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
-        vertx.setPeriodic(10000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, awsElbUtil, vertx, AwsState.INSERVICE));
-
+        vertx.setPeriodic(10000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, awsElbUtil, vertx, AwsState.INSERVICE, maxDuration));
         return new JsonObject().putBoolean("success", true);
     }
 }

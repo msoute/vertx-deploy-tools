@@ -7,9 +7,18 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 
 # Changelog
 ## 1.2-SNAPSHOT
-### Add local run support.
+* [Feature] Add local run support.
+* [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
+
+## 1.1.15
+* [Minor] Add -mod to module zip.
+
+## 1.1.14
+* [Bug] Do not list elb's in an autoscaling group as a single string.
+* [Bug] Ignore null values during xpath parsing for elb instance members.
+
 ## 1.1.12
-### Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
+* Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
 
 ## Vert.X deploy mod
 A Vert.X based module to deploy that is able to deploy other modules into the local Vert.X container. If configured it takes into account
