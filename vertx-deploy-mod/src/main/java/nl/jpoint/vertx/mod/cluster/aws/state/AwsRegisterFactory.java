@@ -14,7 +14,7 @@ public class AwsRegisterFactory {
                     context.getRegion(), config.getString("aws.elb.loadbalancer"), config.getString("aws.elb.instanceid"));
             return new AwsElbRegisterInstance(vertx, awsElbUtil);
         }  else if (deployRequest.withElb() && deployRequest.withAutoScaling()) {
-            return new AwsAsRegisterInstance(vertx, context);
+            return new AwsAsRegisterInstance(vertx, context, config.getInteger("aws.as.register.maxduration", 4));
         }
         return null;
     }

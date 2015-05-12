@@ -6,6 +6,8 @@ vertx-deploy-mod
 Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
 # Changelog
+## DEV
+* [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
 ## 1.1.15
 * [Minor] Add -mod to module zip.
 ## 1.1.14

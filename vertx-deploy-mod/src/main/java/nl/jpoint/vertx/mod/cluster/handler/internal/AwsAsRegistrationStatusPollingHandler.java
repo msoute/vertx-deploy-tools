@@ -18,6 +18,8 @@ import java.util.List;
 public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsAsRegistrationStatusPollingHandler.class);
+    private static final long ONE_SECOND = 1000l;
+    private static final int DEFAULT_TIMEOUT_MINUTES = 4;
     private final DeployRequest request;
     private final AwsAutoScalingUtil asUtil;
     private final AwsElbUtil elbUtil;
@@ -27,20 +29,19 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
 
     private List<String> loadbalancers = null;
 
-    public AwsAsRegistrationStatusPollingHandler(final DeployRequest request, final AwsAutoScalingUtil asUtil, final AwsElbUtil elbUtil, final Vertx vertx, final AwsState state) {
+    public AwsAsRegistrationStatusPollingHandler(final DeployRequest request, final AwsAutoScalingUtil asUtil, final AwsElbUtil elbUtil, final Vertx vertx, final AwsState state, final Integer maxDuration) {
         this.request = request;
         this.asUtil = asUtil;
         this.elbUtil = elbUtil;
         this.vertx = vertx;
         this.state = state;
-
-        this.timeout = System.currentTimeMillis() + + 240000;
+        this.timeout = System.currentTimeMillis() + (ONE_SECOND * DEFAULT_TIMEOUT_MINUTES);
 
         LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), state);
     }
 
-    public AwsAsRegistrationStatusPollingHandler(DeployRequest request, AwsAutoScalingUtil awsAsUtil, Vertx vertx, AwsState standby) {
-        this(request, awsAsUtil, null, vertx, standby);
+    public AwsAsRegistrationStatusPollingHandler(DeployRequest request, AwsAutoScalingUtil awsAsUtil, Vertx vertx, AwsState standby, final Integer maxDuration) {
+        this(request, awsAsUtil, null, vertx, standby, maxDuration);
     }
 
     @Override
