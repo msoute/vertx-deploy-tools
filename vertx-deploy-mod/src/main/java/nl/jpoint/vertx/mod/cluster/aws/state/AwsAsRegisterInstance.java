@@ -21,11 +21,11 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
     private final AwsAutoScalingUtil awsAsUtil;
     private final AwsElbUtil awsElbUtil;
 
-    protected AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext, final Integer maxDuration) {
+    protected AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext, final Integer maxDuration, final String region) {
         this.vertx = vertx;
         this.maxDuration = maxDuration;
         this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
-        this.awsElbUtil = new AwsElbUtil(awsContext, "eu-west-1");
+        this.awsElbUtil = new AwsElbUtil(awsContext, region);
     }
 
     @Override
