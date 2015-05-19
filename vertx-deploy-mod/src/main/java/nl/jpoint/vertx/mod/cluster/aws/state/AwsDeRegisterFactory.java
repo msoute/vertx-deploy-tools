@@ -16,6 +16,6 @@ public class AwsDeRegisterFactory {
         } else if (deployRequest.withElb() || deployRequest.withAutoScaling()) {
             return new AwsAsDeRegisterInstance(vertx, context, config.getInteger("aws.as.deregister.maxduration", 4));
         }
-        return null;
+        throw new IllegalStateException("Unable to create de-registration instance");
     }
 }

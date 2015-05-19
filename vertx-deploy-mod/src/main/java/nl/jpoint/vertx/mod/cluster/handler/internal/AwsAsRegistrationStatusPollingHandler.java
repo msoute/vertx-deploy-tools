@@ -18,7 +18,7 @@ import java.util.List;
 public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsAsRegistrationStatusPollingHandler.class);
-    private static final long ONE_SECOND = 1000l;
+    private static final long ONE_MINUTE = 1000l * 60;
     private static final int DEFAULT_TIMEOUT_MINUTES = 4;
     private final DeployRequest request;
     private final AwsAutoScalingUtil asUtil;
@@ -35,7 +35,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
         this.elbUtil = elbUtil;
         this.vertx = vertx;
         this.state = state;
-        this.timeout = System.currentTimeMillis() + (ONE_SECOND * DEFAULT_TIMEOUT_MINUTES);
+        this.timeout = System.currentTimeMillis() + (ONE_MINUTE * DEFAULT_TIMEOUT_MINUTES);
 
         LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), state);
     }
