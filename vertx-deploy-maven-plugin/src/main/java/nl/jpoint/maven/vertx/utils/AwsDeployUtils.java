@@ -34,7 +34,7 @@ public class AwsDeployUtils {
 
         try {
             log.debug("describing Autoscaling group");
-            AutoScalingGroup autoScalingGroup = awsAutoScalingUtil.describeAutoScalingGroup(activeConfiguration.getAutoScalingGroupId(), log);
+            AutoScalingGroup autoScalingGroup = awsAutoScalingUtil.describeAutoScalingGroup(activeConfiguration.getAutoScalingGroupId(), activeConfiguration.isIgnoreInStandby(), log);
             if (!autoScalingGroup.deployable()) {
                 throw new MojoExecutionException("Autoscaling group is not in a deployable state.");
             }
