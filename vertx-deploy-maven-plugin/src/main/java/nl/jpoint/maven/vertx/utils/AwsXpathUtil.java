@@ -65,7 +65,7 @@ public class AwsXpathUtil {
         Node node = getNode(awsResponse, "//DescribeInstanceHealthResponse/DescribeInstanceHealthResult/InstanceStates");
         for (Ec2Instance instance : instances) {
             String state = getElementValueAsString((Element) node, "member[InstanceId=\"" + instance.getInstanceId() + "\"]/State");
-            instance.updateState(AwsState.valueOf(state != null ? state.toUpperCase() : AwsState.OUTOFSERVICE.name()));
+            instance.updateState(AwsState.valueOf((state != null && !state.isEmpty()) ? state.toUpperCase() : AwsState.OUTOFSERVICE.name()));
         }
 
     }
