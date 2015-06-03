@@ -23,6 +23,7 @@ public class AwsXpathUtil {
     private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String AUTO_SCALING_GROUP_MEMBERS_LIST = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[LifecycleState=\"InService\"]/InstanceId";
+    private static final String AUTO_SCALING_GROUP_MEMBERS_LIST_INCLUDE_INSTANDBY = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/Instances/member[LifecycleState=\"InService\" or LifecycleState=\"Standby\"]/InstanceId";
     private static final String AUTO_SCALING_GROUP_MIN_INSTACES = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/MinSize";
     private static final String AUTO_SCALING_GROUP_MAX_INSTACES = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/MaxSize";
     private static final String AUTO_SCALING_GROUP_DESIRED_CAPACITY = "//DescribeAutoScalingGroupsResponse/DescribeAutoScalingGroupsResult/AutoScalingGroups/member/DesiredCapacity";
@@ -40,8 +41,8 @@ public class AwsXpathUtil {
         return instances;
     }
 
-    public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
-        return listStringItems(awsResponse, AUTO_SCALING_GROUP_MEMBERS_LIST);
+    public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse, boolean ignoreInStandby) throws AwsException {
+        return listStringItems(awsResponse,  ignoreInStandby ? AUTO_SCALING_GROUP_MEMBERS_LIST : AUTO_SCALING_GROUP_MEMBERS_LIST_INCLUDE_INSTANDBY);
     }
 
     public static List<String> listELBsInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {

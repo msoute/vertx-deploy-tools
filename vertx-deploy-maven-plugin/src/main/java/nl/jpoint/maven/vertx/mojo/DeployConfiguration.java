@@ -16,6 +16,8 @@ public class DeployConfiguration {
     private boolean awsPrivateIp = false;
 
     private boolean deployConfig = false;
+
+    private boolean ignoreInStandby = false;
     private String tag;
 
     public String getOpsWorksStackId() {
@@ -103,5 +105,13 @@ public class DeployConfiguration {
 
     public void setWithConfig(Boolean withConfig) {
         this.deployConfig = withConfig;
+    }
+
+    public boolean isIgnoreInStandby() {
+        return ignoreInStandby;
+    }
+
+    public void setIgnoreInStandby(boolean ignoreInStandby) {
+        this.ignoreInStandby = ignoreInStandby;
     }
 }
