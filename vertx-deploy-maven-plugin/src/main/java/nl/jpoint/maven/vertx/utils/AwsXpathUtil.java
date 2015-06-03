@@ -42,7 +42,7 @@ public class AwsXpathUtil {
     }
 
     public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse, boolean ignoreInStandby) throws AwsException {
-        return listStringItems(awsResponse,  ignoreInStandby ? AUTO_SCALING_GROUP_MEMBERS_LIST : AUTO_SCALING_GROUP_MEMBERS_LIST_INCLUDE_INSTANDBY);
+        return listStringItems(awsResponse, ignoreInStandby ? AUTO_SCALING_GROUP_MEMBERS_LIST : AUTO_SCALING_GROUP_MEMBERS_LIST_INCLUDE_INSTANDBY);
     }
 
     public static List<String> listELBsInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {
@@ -52,6 +52,7 @@ public class AwsXpathUtil {
     public static int listMinimalInstancesInAutoscalingGroupResponse(byte[] result) throws AwsException {
         return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_MIN_INSTACES));
     }
+
     public static int listDesiredCapacityInAutoscalingGroupResponse(byte[] result) throws AwsException {
         return Integer.valueOf(listStringItem(result, AUTO_SCALING_GROUP_DESIRED_CAPACITY));
     }
