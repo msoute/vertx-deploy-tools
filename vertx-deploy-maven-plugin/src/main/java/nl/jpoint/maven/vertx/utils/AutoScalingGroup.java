@@ -28,7 +28,7 @@ public class AutoScalingGroup {
     }
 
     public boolean deployable() {
-        return !(minInstances.equals(1) && desiredCapacity.equals(1));
+        return !(minInstances.equals(1) && desiredCapacity.equals(1) && instances.size() <= 1);
     }
 
     public static class Builder {
