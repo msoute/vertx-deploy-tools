@@ -42,7 +42,7 @@ public class AwsXpathUtil {
     }
 
     public static List<String> listInstancesInAutoscalingGroupResponse(byte[] awsResponse, boolean ignoreInStandby) throws AwsException {
-        return listStringItems(awsResponse,  ignoreInStandby ? AUTO_SCALING_GROUP_MEMBERS_LIST : AUTO_SCALING_GROUP_MEMBERS_LIST_INCLUDE_INSTANDBY);
+        return listStringItems(awsResponse, ignoreInStandby ? AUTO_SCALING_GROUP_MEMBERS_LIST : AUTO_SCALING_GROUP_MEMBERS_LIST_INCLUDE_INSTANDBY);
     }
 
     public static List<String> listELBsInAutoscalingGroupResponse(byte[] awsResponse) throws AwsException {

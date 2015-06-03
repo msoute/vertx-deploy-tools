@@ -9,7 +9,11 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 public class AwsAutoScalingUtil {
     private final static String AWS_AUTOSCALING_SERVICE = "autoscaling";
@@ -43,7 +47,7 @@ public class AwsAutoScalingUtil {
         return AwsXpathUtil.listLoadBalancersInGroup(describeAutoScalingGroup(groupId));
     }
 
-    public boolean enterStandby(final String instanceId, final String groupId) {
+    public boolean enterStandby(final String instanceId, final String groupId, boolean decrementDesiredCapacity) {
         String date = compressedIso8601DateFormat.format(new Date());
 
         Map<String, String> signedHeaders = this.createDefaultSignedHeaders(date, targetHost);
@@ -51,7 +55,7 @@ public class AwsAutoScalingUtil {
         requestParameters.put("AutoScalingGroupName", groupId);
         requestParameters.put("InstanceIds.member.1", instanceId);
         requestParameters.put("Version", "2011-01-01");
-        requestParameters.put("ShouldDecrementDesiredCapacity", "true");
+        requestParameters.put("ShouldDecrementDesiredCapacity", Boolean.toString(decrementDesiredCapacity));
         requestParameters.put("Action", "EnterStandby");
 
         try {

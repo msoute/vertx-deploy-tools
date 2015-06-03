@@ -20,17 +20,19 @@ public class AwsAsDeRegisterInstance implements Command<DeployRequest> {
     private final Vertx vertx;
     private final AwsAutoScalingUtil awsAsUtil;
     private final Integer maxDuration;
+    private final boolean decrementDesiredCapacity;
 
-    public AwsAsDeRegisterInstance(final Vertx vertx, final AwsContext context, final Integer maxDuration) {
+    public AwsAsDeRegisterInstance(final Vertx vertx, final AwsContext context, final Integer maxDuration, final boolean decrementDesiredCapacity) {
         this.maxDuration = maxDuration;
         this.awsAsUtil = new AwsAutoScalingUtil(context);
         this.vertx = vertx;
+        this.decrementDesiredCapacity = decrementDesiredCapacity;
     }
 
     @Override
     public JsonObject execute(DeployRequest request) {
 
-        if (!awsAsUtil.enterStandby(request.getInstanceId(), request.getAutoScalingGroup())) {
+        if (!awsAsUtil.enterStandby(request.getInstanceId(), request.getAutoScalingGroup(), decrementDesiredCapacity)) {
             LOG.info("[{} - {}]: Failed to enter standby for Instance {} in auto scaling group {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
             return new JsonObject().putBoolean("success", false);
         }
