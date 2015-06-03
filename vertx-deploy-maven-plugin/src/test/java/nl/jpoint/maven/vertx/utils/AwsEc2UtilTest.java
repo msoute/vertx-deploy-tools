@@ -46,6 +46,7 @@ public class AwsEc2UtilTest {
         AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
         AwsEc2Util ec2Util = new AwsEc2Util(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
         AutoScalingGroup autoScalingGroup = awsAutoScalingUtil.describeAutoScalingGroup(AWS_AS_GROUP, false, LOG);
+        Assert.assertTrue(autoScalingGroup.deployable());
         List<Ec2Instance> instances = ec2Util.describeInstances(autoScalingGroup.getInstances(), config.getTag(), LOG);
         Assert.assertEquals(2, instances.size());
     }
