@@ -8,6 +8,9 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 # Changelog
 ## DEV
 
+## 1.1.20
+* [Feature] Change configuration option `aws.as.deregister.decrementDesiredCapacity` to default is true
+
 ## 1.1.19
 * [Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting `includeInStandby` to false in DeployConfiguration. 
 * [Feature] Add configuration option `aws.as.deregister.decrementDesiredCapacity` to configure if desired capacity should be decremented if an instance is put in standby (defaults to false)
