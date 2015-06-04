@@ -11,7 +11,7 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 * [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
 * [Feature] Make aws region configurable `aws.region` (defaults to eu-west-1) 
 * [Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting `includeInStandby` to false in DeployConfiguration.
-* [Feature] Add configuration option `aws.as.deregister.decrementDesiredCapacity` to configure if desired capacity should be decremented if an instance is put in standby (defaults to false)
+* [Feature] Add configuration option `aws.as.deregister.decrementDesiredCapacity` to configure if desired capacity should be decremented if an instance is put in standby (defaults to true)
 
 ## 1.1.15
 * [Minor] Add -mod to module zip.
