@@ -42,6 +42,7 @@ public class AwsEc2UtilTest {
     }
 
     @Test
+    @Ignore
     public void describeInstancesInAutoScalingGroup() throws AwsException {
         DeployConfiguration config = new DeployConfiguration();
         AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
