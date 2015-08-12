@@ -42,13 +42,13 @@ public class AwsDeployUtilsTest {
     @Ignore
     public void testSuspendScheduledActions() throws Exception {
         deployUtils.suspendScheduledActions(null, deployConfiguration);
-        deployUtils.setMinimalCapacity(1, deployConfiguration);
+        deployUtils.setMinimalCapacity(null, 1, deployConfiguration);
     }
 
     @Test
     @Ignore
     public void testResumeScheduledActions() throws Exception {
-        deployUtils.setMinimalCapacity(2, deployConfiguration);
+        deployUtils.setMinimalCapacity(null, 2, deployConfiguration);
         deployUtils.resumeScheduledActions(null, deployConfiguration);
     }
 }
