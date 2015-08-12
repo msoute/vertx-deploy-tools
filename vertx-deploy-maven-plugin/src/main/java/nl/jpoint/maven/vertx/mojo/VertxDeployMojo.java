@@ -71,7 +71,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         Integer originalMinSize = asGroup.getMinSize();
 
         if (asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
-            awsDeployUtils.setMinimalCapacity(asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1, activeConfiguration);
+            awsDeployUtils.setMinimalCapacity(getLog(), asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1, activeConfiguration);
         }
 
         for (Ec2Instance instance : instances) {
@@ -87,6 +87,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .withElb(activeConfiguration.withElb())
                     .withInstanceId(instance.getInstanceId())
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
+                    .withDecrementDesiredCapacity(activeConfiguration.isDecrementDesiredCapacity())
                     .withRestart(activeConfiguration.doRestart())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
@@ -95,7 +96,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
         }
-        awsDeployUtils.setMinimalCapacity(originalMinSize, activeConfiguration);
+        awsDeployUtils.setMinimalCapacity(getLog(), originalMinSize, activeConfiguration);
         awsDeployUtils.resumeScheduledActions(getLog(), activeConfiguration);
 
     }

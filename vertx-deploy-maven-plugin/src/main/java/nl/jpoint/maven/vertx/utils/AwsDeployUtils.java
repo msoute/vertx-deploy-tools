@@ -52,10 +52,11 @@ public class AwsDeployUtils {
         awsAsClient.suspendProcesses(new SuspendProcessesRequest()
                 .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
-
+        log.info("Suspended autoscaling processes.");
     }
 
-    public void setMinimalCapacity(int cap, DeployConfiguration activeConfiguration) {
+    public void setMinimalCapacity(Log log, int cap, DeployConfiguration activeConfiguration) {
+        log.info("Set minimal capacity for group to " + cap);
         awsAsClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest().withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()).withMinSize(cap));
     }
 
@@ -63,6 +64,7 @@ public class AwsDeployUtils {
         awsAsClient.resumeProcesses(new ResumeProcessesRequest()
                 .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
+        log.info("Resumed autoscaling processes.");
     }
 
 

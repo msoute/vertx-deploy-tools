@@ -19,6 +19,7 @@ public class DeployConfiguration {
 
     private boolean ignoreInStandby = false;
     private boolean ignoreDeployState = false;
+    private boolean decrementDesiredCapacity = true;
     private String tag;
 
     public String getOpsWorksStackId() {
@@ -113,5 +114,9 @@ public class DeployConfiguration {
 
     public boolean isIgnoreDeployState() {
         return ignoreDeployState;
+    }
+
+    public boolean isDecrementDesiredCapacity() {
+        return decrementDesiredCapacity;
     }
 }

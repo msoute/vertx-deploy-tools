@@ -3,8 +3,6 @@ package nl.jpoint.maven.vertx.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.PrettyPrinter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -34,8 +32,10 @@ public class DeployRequest {
     private final String instanceId;
     @JsonProperty(value = "as_group_id")
     private final String asGroupId;
+    @JsonProperty(value = "as_decrement_desired_capacity")
+    private final boolean decrementDesiredCapacity;
 
-    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String instanceId, String asGroupId) {
+    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String instanceId, String asGroupId, boolean decrementDesiredCapacity) {
         this.modules = modules;
         this.artifacts = artifacts;
         this.configs = configs;
@@ -43,6 +43,7 @@ public class DeployRequest {
         this.restart = restart;
         this.instanceId = instanceId;
         this.asGroupId = asGroupId;
+        this.decrementDesiredCapacity = decrementDesiredCapacity;
         autoScaling = (asGroupId != null);
     }
 
@@ -69,6 +70,7 @@ public class DeployRequest {
         private List<Request> configs  = new ArrayList<>();
         private boolean elb = false ;
         private boolean restart = true;
+        private boolean decrementDesiredCapacity = true;
         private String autoScalingGroup = "";
         private String instanceId = "";
 
@@ -104,8 +106,14 @@ public class DeployRequest {
             return this;
         }
 
+        public Builder withDecrementDesiredCapacity(final boolean decrementDesiredCapacity ) {
+            this.decrementDesiredCapacity = decrementDesiredCapacity;
+            return this;
+        }
+
+
         public DeployRequest build() {
-            return new DeployRequest(modules, artifacts, configs, elb, restart, instanceId, autoScalingGroup);
+            return new DeployRequest(modules, artifacts, configs, elb, restart, instanceId, autoScalingGroup, decrementDesiredCapacity);
         }
     }
 }
