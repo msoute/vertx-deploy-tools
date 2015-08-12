@@ -2,7 +2,11 @@ package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.utils.*;
+import nl.jpoint.maven.vertx.utils.AwsDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsState;
+import nl.jpoint.maven.vertx.utils.DeployUtils;
+import nl.jpoint.maven.vertx.utils.Ec2Instance;
+import nl.jpoint.maven.vertx.utils.RequestExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -48,7 +52,6 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
         AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
 
-
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration);
 
         instances.sort(new Comparator<Ec2Instance>() {
@@ -62,10 +65,19 @@ class VertxDeployMojo extends AbstractDeployMojo {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
 
+        awsDeployUtils.suspendScheduledActions(getLog(), activeConfiguration);
+        com.amazonaws.services.autoscaling.model.AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
+
+        Integer originalMinSize = asGroup.getMinSize();
+
+        if (asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
+            awsDeployUtils.setMinimalCapacity(asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1, activeConfiguration);
+        }
+
         for (Ec2Instance instance : instances) {
             final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
             boolean awsGroupIsInService = isInService(instances);
-            getLog().info("Auto scaling group inService :  " +awsGroupIsInService);
+            getLog().info("Auto scaling group inService :  " + awsGroupIsInService);
             boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
             getLog().info("Ignoring failure for instance " + instance.getInstanceId() + " : " + ignoreFailure);
             DeployRequest deployRequest = new DeployRequest.Builder()
@@ -79,10 +91,12 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
-            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure );
+            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure);
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
         }
+        awsDeployUtils.setMinimalCapacity(originalMinSize, activeConfiguration);
+        awsDeployUtils.resumeScheduledActions(getLog(), activeConfiguration);
 
     }
 

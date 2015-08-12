@@ -18,6 +18,7 @@ public class DeployConfiguration {
     private boolean deployConfig = false;
 
     private boolean ignoreInStandby = false;
+    private boolean ignoreDeployState = false;
     private String tag;
 
     public String getOpsWorksStackId() {
@@ -108,5 +109,9 @@ public class DeployConfiguration {
 
     public void setIgnoreInStandby(boolean ignoreInStandby) {
         this.ignoreInStandby = ignoreInStandby;
+    }
+
+    public boolean isIgnoreDeployState() {
+        return ignoreDeployState;
     }
 }
