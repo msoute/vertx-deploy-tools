@@ -75,9 +75,9 @@ For deployment to groups the following extra take place :
  * The minimum capacity is restored to its old value
  * All suspended processes are resumed.   
     
- Note :
+ *Note :*
    The decrementDesiredCapacity should be set to true (default:false). The autoscaling process Launch is not suspendend to make sure instances can exitStandby. 
-   If the desiredCapacity is not decremented when an instance is put into standby the ASGroup wil launch a new instance.
+   If the desiredCapacity is not decremented when an instance is put into standby the AS group wil launch a new instance.
 
     <deployConfiguration>
         <target>[target]</target>
