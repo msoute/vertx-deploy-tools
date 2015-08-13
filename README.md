@@ -8,6 +8,7 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 # Changelog
 ## 1.2-SNAPSHOT
 * [Feature] Add local run support.
+* [Feature] Add support to deploy to autoscaling groups
 * [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
 * [Feature] Make aws region configurable `aws.region` (defaults to eu-west-1) 
 * [Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting `includeInStandby` to false in DeployConfiguration.

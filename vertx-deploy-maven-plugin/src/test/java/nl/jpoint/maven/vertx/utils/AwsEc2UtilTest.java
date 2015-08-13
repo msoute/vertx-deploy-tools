@@ -41,30 +41,9 @@ public class AwsEc2UtilTest {
         AWS_AS_GROUP = server.getPassphrase();
     }
 
-    @Test
-    public void describeInstancesInAutoScalingGroup() throws AwsException {
-        DeployConfiguration config = new DeployConfiguration();
-        AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
-        AwsEc2Util ec2Util = new AwsEc2Util(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
-        AwsElbUtil elbUtil = new AwsElbUtil(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
-        AutoScalingGroup autoScalingGroup = awsAutoScalingUtil.describeAutoScalingGroup(AWS_AS_GROUP, false, LOG);
-        Assert.assertTrue(autoScalingGroup.deployable());
-        List<Ec2Instance> instances = ec2Util.describeInstances(autoScalingGroup.getInstances(), config.getTag(), LOG);
-
-        instances.sort(new Comparator<Ec2Instance>() {
-            @Override
-            public int compare(Ec2Instance o1, Ec2Instance o2) {
-                return o1.getState().ordinal() - o2.getState().ordinal();
-            }
-        });
-        elbUtil.describeInstanceElbStatus(instances, autoScalingGroup.getElbs());
-        Assert.assertEquals(2, instances.size());
-    }
 
     @Test
     @Ignore
-    public void testDescribeInstances() throws Exception {
-
     public void describeInstancesInAutoScalingGroup() throws AwsException {
         DeployConfiguration config = new DeployConfiguration();
         AwsAutoScalingUtil awsAutoScalingUtil = new AwsAutoScalingUtil(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY);
