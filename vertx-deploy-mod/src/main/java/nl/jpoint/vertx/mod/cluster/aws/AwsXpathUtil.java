@@ -104,9 +104,7 @@ public class AwsXpathUtil {
         try {
             builder = builderFactory.newDocumentBuilder();
             Document document = builder.parse(new ByteArrayInputStream(awsResponse));
-
             NodeList instanceNodes = (NodeList) xPath.compile(AUTO_SCALING_GROUP_ELB_LIST).evaluate(document, XPathConstants.NODESET);
-
             for (int i = 0; i < instanceNodes.getLength(); i++) {
                 elbList.add(instanceNodes.item(i).getTextContent().trim());
             }

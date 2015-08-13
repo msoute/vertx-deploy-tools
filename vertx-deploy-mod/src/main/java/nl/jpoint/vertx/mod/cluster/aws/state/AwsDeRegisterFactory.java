@@ -14,8 +14,8 @@ public class AwsDeRegisterFactory {
                     context.getRegion(), config.getString("aws.elb.loadbalancer"), config.getString("aws.elb.instanceid"));
             return new AwsElbDeRegisterInstance(vertx, awsElbUtil);
         } else if (deployRequest.withElb() || deployRequest.withAutoScaling()) {
-            return new AwsAsDeRegisterInstance(vertx, context, config.getInteger("aws.as.deregister.maxduration", 4), config.getBoolean("aws.as.deregister.decrementDesiredCapacity", true));
+            return new AwsAsDeRegisterInstance(vertx, context, config.getInteger("aws.as.deregister.maxduration", 4));
         }
-        return null;
+        throw new IllegalStateException("Unable to create de-registration instance");
     }
 }

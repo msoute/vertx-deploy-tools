@@ -20,6 +20,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(AwsAsRegistrationStatusPollingHandler.class);
     private static final long ONE_SECOND = 1000l;
     private static final int DEFAULT_TIMEOUT_MINUTES = 4;
+
     private final DeployRequest request;
     private final AwsAutoScalingUtil asUtil;
     private final AwsElbUtil elbUtil;

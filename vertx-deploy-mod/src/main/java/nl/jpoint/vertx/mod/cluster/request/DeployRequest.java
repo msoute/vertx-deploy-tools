@@ -15,6 +15,7 @@ public class DeployRequest {
     private final List<DeployArtifactRequest> artifacts;
     private final boolean elb;
     private final boolean autoScaling;
+    private final boolean decrementDesiredCapacity;
     private final String autoScalingGroup;
 
     private final String instanceId;
@@ -27,6 +28,7 @@ public class DeployRequest {
                          @JsonProperty("configs") List<DeployConfigRequest> configs,
                          @JsonProperty("with_elb") boolean elb,
                          @JsonProperty("with_as") boolean autoScaling,
+                         @JsonProperty("as_decrement_desired_capacity") boolean decrementDesiredCapacity,
                          @JsonProperty("as_group_id") String autoScalingGroup,
                          @JsonProperty("instance_id") String instanceId,
                          @JsonProperty("restart") boolean restart) {
@@ -35,6 +37,7 @@ public class DeployRequest {
         this.configs = configs;
         this.elb = elb;
         this.autoScaling = autoScaling;
+        this.decrementDesiredCapacity = decrementDesiredCapacity;
         this.autoScalingGroup = autoScalingGroup;
         this.instanceId = instanceId;
         this.restart = restart;
@@ -82,5 +85,9 @@ public class DeployRequest {
 
     public DeployState getState() {
         return this.state;
+    }
+
+    public boolean isDecrementDesiredCapacity() {
+        return decrementDesiredCapacity;
     }
 }

@@ -101,6 +101,9 @@ public class AwsXpathUtil {
 
 
     private static String getElementValueAsString(Element element, String xpath) throws AwsException {
+        if (element == null) {
+            return null;
+        }
         try {
             return (String) xPath.compile(xpath).evaluate(element, XPathConstants.STRING);
         } catch (XPathExpressionException e) {

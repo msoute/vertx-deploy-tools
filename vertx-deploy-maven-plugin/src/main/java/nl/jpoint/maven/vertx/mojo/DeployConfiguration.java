@@ -18,6 +18,8 @@ public class DeployConfiguration {
     private boolean deployConfig = false;
 
     private boolean ignoreInStandby = false;
+    private boolean ignoreDeployState = false;
+    private boolean decrementDesiredCapacity = true;
     private String tag;
 
     public String getOpsWorksStackId() {
@@ -46,10 +48,7 @@ public class DeployConfiguration {
     public boolean isAutoScaling() {
         return autoScaling;
     }
-
-    public boolean isOpsworks() {
-        return opsWorks;
-    }
+    public boolean isOpsworks() { return opsWorks;}
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -79,9 +78,7 @@ public class DeployConfiguration {
         return this.elb;
     }
 
-    public boolean doRestart() {
-        return restart;
-    }
+    public boolean doRestart() { return restart; }
 
     public boolean getAwsPrivateIp() {
         return this.awsPrivateIp;
@@ -113,5 +110,13 @@ public class DeployConfiguration {
 
     public void setIgnoreInStandby(boolean ignoreInStandby) {
         this.ignoreInStandby = ignoreInStandby;
+    }
+
+    public boolean isIgnoreDeployState() {
+        return ignoreDeployState;
+    }
+
+    public boolean isDecrementDesiredCapacity() {
+        return decrementDesiredCapacity;
     }
 }

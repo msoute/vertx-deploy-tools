@@ -2,7 +2,11 @@ package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.utils.*;
+import nl.jpoint.maven.vertx.utils.AwsDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsState;
+import nl.jpoint.maven.vertx.utils.DeployUtils;
+import nl.jpoint.maven.vertx.utils.Ec2Instance;
+import nl.jpoint.maven.vertx.utils.RequestExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -48,7 +52,6 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
         AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
 
-
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration);
 
         instances.sort(new Comparator<Ec2Instance>() {
@@ -60,6 +63,15 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
+        }
+
+        awsDeployUtils.suspendScheduledActions(getLog(), activeConfiguration);
+        com.amazonaws.services.autoscaling.model.AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
+
+        Integer originalMinSize = asGroup.getMinSize();
+
+        if (asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
+            awsDeployUtils.setMinimalCapacity(getLog(), asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1, activeConfiguration);
         }
 
         for (Ec2Instance instance : instances) {
@@ -75,6 +87,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .withElb(activeConfiguration.withElb())
                     .withInstanceId(instance.getInstanceId())
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
+                    .withDecrementDesiredCapacity(activeConfiguration.isDecrementDesiredCapacity())
                     .withRestart(activeConfiguration.doRestart())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
@@ -83,6 +96,8 @@ class VertxDeployMojo extends AbstractDeployMojo {
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
         }
+        awsDeployUtils.setMinimalCapacity(getLog(), originalMinSize, activeConfiguration);
+        awsDeployUtils.resumeScheduledActions(getLog(), activeConfiguration);
 
     }
 

@@ -75,7 +75,6 @@ public class AwsAutoScalingUtil {
         requestParameters.put("AutoScalingGroupName", groupId);
         requestParameters.put("InstanceIds.member.1", instanceId);
         requestParameters.put("Version", "2011-01-01");
-        requestParameters.put("ShouldDecrementDesiredCapacity", "true");
         requestParameters.put("Action", "ExitStandby");
 
         try {

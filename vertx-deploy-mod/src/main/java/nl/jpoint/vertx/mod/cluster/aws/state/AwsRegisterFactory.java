@@ -19,6 +19,6 @@ public class AwsRegisterFactory {
         }  else if (deployRequest.withElb() && deployRequest.withAutoScaling()) {
             return new AwsAsRegisterInstance(vertx, context, config.getInteger("aws.as.register.maxduration", 4), config.getString("aws.region", DEFAULT_REGION));
         }
-        return null;
+        throw new IllegalStateException("Unable to create registration instance");
     }
 }

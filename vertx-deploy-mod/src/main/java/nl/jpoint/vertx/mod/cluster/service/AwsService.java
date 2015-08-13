@@ -67,8 +67,6 @@ public class AwsService {
             LOG.error("[{} - {}]: Request not registered.", LogConstants.AWS_ELB_REQUEST, buildId);
             return false;
         }
-        //
-
         Command<DeployRequest> registerCommand = AwsRegisterFactory.getInstance(awsContext, runningRequests.get(buildId), config, vertx);
         registerCommand.execute(runningRequests.get(buildId));
         return false;

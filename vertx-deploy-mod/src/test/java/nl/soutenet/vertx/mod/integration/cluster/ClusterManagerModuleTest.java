@@ -107,8 +107,8 @@ public class ClusterManagerModuleTest {
         final ObjectWriter writer = new ObjectMapper().writer();
 
         List<DeployModuleRequest> moduleRequests = new ArrayList<>(1);
-        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils", "mongo-connector", "1.0.1-SNAPSHOT", 1, false, "zip"));
-        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false, false, null, null, false);
+        moduleRequests.add(new DeployModuleRequest("nl.malmberg.edubase.utils","mongo-connector","1.0.1-SNAPSHOT",1, false, "zip"));
+        DeployRequest request = new DeployRequest(moduleRequests, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false, false, true, null,null,false);
 
         String postData = writer.writeValueAsString(request);
         ByteArrayInputStream bos = new ByteArrayInputStream(postData.getBytes());
