@@ -78,7 +78,8 @@ For deployment to groups the following extra take place :
  *Note :*
    The decrementDesiredCapacity should be set to true (default:false). The autoscaling process Launch is not suspendend to make sure instances can exitStandby. 
    If the desiredCapacity is not decremented when an instance is put into standby the AS group wil launch a new instance.
-   
+
+```
     <deployConfiguration>
         <target>[target]</target>
         <testScope>false|true</testScope>
@@ -88,7 +89,4 @@ For deployment to groups the following extra take place :
         <autoScalingGroupId>autoscaling-group-id</autoScalingGroupId>
         <decrementDesiredCapacity>true</decrementDesiredCapacity>
     </deployConfiguration>
-    
-
-
-
+```
