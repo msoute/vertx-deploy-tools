@@ -79,20 +79,13 @@ For deployment to groups the following extra take place :
    The decrementDesiredCapacity should be set to true (default:false). The autoscaling process Launch is not suspendend to make sure instances can exitStandby. 
    If the desiredCapacity is not decremented when an instance is put into standby the AS group wil launch a new instance.
    
-
     <deployConfiguration>
         <target>[target]</target>
-        <!-- Deploy modules in scope test -->
         <testScope>false|true</testScope>
-        <!-- Restarts all modules, not only those that are updated -->
         <restart>true</restart>
-        <!-- Enable inService checks on elbs -->
         <elb>true</elb>
-        <!-- Enable AS support -->
         <autoScaling>true</autoScaling>
-        <!-- AS Group Id -->
         <autoScalingGroupId>autoscaling-group-id</autoScalingGroupId>
-        <!-- Decrement desired capacity when an instance is put into standby. -->
         <decrementDesiredCapacity>true</decrementDesiredCapacity>
     </deployConfiguration>
     
