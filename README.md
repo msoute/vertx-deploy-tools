@@ -8,6 +8,9 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 # Changelog
 ## DEV
 
+## 1.1.23
+* [BUG] Make sure decrementDesiredCapacity defaults to true if no value is present in DeployRequest
+
 ## 1.1.22
 * [Bug] Fixed deploy to autoscaling groups
 * [Feature] removed `aws.as.deregister.decrementDesiredCapacity` config option from module. Moved it to deployConfiguration.
