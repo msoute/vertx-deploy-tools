@@ -1,9 +1,9 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
-import nl.jpoint.maven.vertx.utils.RequestExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -30,7 +30,7 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
 
         super.activeConfiguration = configuration;
         final DeployUtils utils = new DeployUtils(getLog(), project);
-        final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
+        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
 
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);

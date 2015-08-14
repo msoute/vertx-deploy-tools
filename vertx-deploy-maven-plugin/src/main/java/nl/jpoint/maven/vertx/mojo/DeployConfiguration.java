@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DeployConfiguration {
-
-    private List<String> dirsToClean = new ArrayList<>();
-
     private List<String> hosts = new ArrayList<>();
     private String target;
 
@@ -20,6 +17,7 @@ public class DeployConfiguration {
     private boolean ignoreInStandby = false;
     private boolean ignoreDeployState = false;
     private boolean decrementDesiredCapacity = true;
+    private boolean keepCurrentCapacity = true;
     private String tag;
 
     public String getOpsWorksStackId() {
@@ -48,7 +46,10 @@ public class DeployConfiguration {
     public boolean isAutoScaling() {
         return autoScaling;
     }
-    public boolean isOpsworks() { return opsWorks;}
+
+    public boolean isOpsworks() {
+        return opsWorks;
+    }
 
     public boolean isDeploySnapshots() {
         return deploySnapshots;
@@ -78,7 +79,9 @@ public class DeployConfiguration {
         return this.elb;
     }
 
-    public boolean doRestart() { return restart; }
+    public boolean doRestart() {
+        return restart;
+    }
 
     public boolean getAwsPrivateIp() {
         return this.awsPrivateIp;
@@ -114,6 +117,10 @@ public class DeployConfiguration {
 
     public boolean isIgnoreDeployState() {
         return ignoreDeployState;
+    }
+
+    public boolean isKeepCurrentCapacity() {
+        return keepCurrentCapacity;
     }
 
     public boolean isDecrementDesiredCapacity() {

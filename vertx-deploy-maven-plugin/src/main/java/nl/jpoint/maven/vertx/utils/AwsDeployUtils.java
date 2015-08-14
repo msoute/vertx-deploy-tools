@@ -11,8 +11,13 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.LifecycleState;
 import com.amazonaws.services.autoscaling.model.ResumeProcessesRequest;
+import com.amazonaws.services.autoscaling.model.SetDesiredCapacityRequest;
 import com.amazonaws.services.autoscaling.model.SuspendProcessesRequest;
 import com.amazonaws.services.autoscaling.model.UpdateAutoScalingGroupRequest;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthRequest;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthResult;
+import com.amazonaws.services.elasticloadbalancing.model.InstanceState;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -21,6 +26,7 @@ import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AwsDeployUtils {
@@ -30,6 +36,7 @@ public class AwsDeployUtils {
     private final AwsElbUtil awsElbUtil;
 
     AmazonAutoScalingClient awsAsClient;
+    AmazonElasticLoadBalancingClient awsElbClient;
 
 
     public AwsDeployUtils(String serverId, Settings settings) throws MojoFailureException {
@@ -38,8 +45,13 @@ public class AwsDeployUtils {
         }
         Server server = settings.getServer(serverId);
 
-        awsAsClient = new AmazonAutoScalingClient(new BasicAWSCredentials(server.getUsername(), server.getPassword()));
+        BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
+        awsAsClient = new AmazonAutoScalingClient(credentials);
         awsAsClient.setRegion(Region.getRegion(Regions.EU_WEST_1));
+
+        awsElbClient = new AmazonElasticLoadBalancingClient(credentials);
+        awsElbClient.setRegion(Region.getRegion(Regions.EU_WEST_1));
+
 
         awsEc2Util = new AwsEc2Util(server.getUsername(), server.getPassword());
         opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
@@ -71,20 +83,16 @@ public class AwsDeployUtils {
     }
 
 
-    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException, MojoExecutionException {
+    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup, DeployConfiguration activeConfiguration) throws MojoFailureException, MojoExecutionException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
         activeConfiguration.getHosts().clear();
 
+        log.debug("describing instances in Autoscaling group");
+
         try {
-            log.debug("describing Autoscaling group");
-            DescribeAutoScalingGroupsResult result = awsAsClient.describeAutoScalingGroups(new DescribeAutoScalingGroupsRequest().withAutoScalingGroupNames(activeConfiguration.getAutoScalingGroupId()));
-
-            AutoScalingGroup autoScalingGroup = result.getAutoScalingGroups().get(0);
-
-            if (isDeployable(autoScalingGroup, activeConfiguration.isIgnoreInStandby()) && !activeConfiguration.isIgnoreDeployState()) {
+            if (!isDeployable(autoScalingGroup, activeConfiguration.isIgnoreInStandby()) || activeConfiguration.isIgnoreDeployState()) {
                 throw new MojoExecutionException("Autoscaling group is not in a deployable state.");
             }
-            log.debug("describing instances in Autoscaling group");
             List<Ec2Instance> instances = awsEc2Util.describeInstances(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(Collectors.toList()), activeConfiguration.getTag(), log);
             log.debug("describing elb status");
             return awsElbUtil.describeInstanceElbStatus(instances, autoScalingGroup.getLoadBalancerNames());
@@ -104,8 +112,7 @@ public class AwsDeployUtils {
                 .count();
 
         long healthyInstances = ignoreInStandby ? inServiceInstances : inServiceInstances + inStandbyInstances;
-
-        return !(autoScalingGroup.getMinSize().equals(1) && autoScalingGroup.getDesiredCapacity().equals(1) && healthyInstances <= 1);
+        return autoScalingGroup.getMinSize() < autoScalingGroup.getDesiredCapacity()  && healthyInstances > 1 ;
     }
 
     public void getHostsOpsWorks(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException {
@@ -124,4 +131,34 @@ public class AwsDeployUtils {
         }
     }
 
+    public boolean setDesiredCapacity(Log log, AutoScalingGroup autoScalingGroup, Integer capacity) {
+        log.info("Setting desired capacity to : " + capacity);
+
+        try {
+            awsAsClient.setDesiredCapacity(new SetDesiredCapacityRequest()
+                    .withAutoScalingGroupName(autoScalingGroup.getAutoScalingGroupName())
+                    .withDesiredCapacity(capacity)
+                    .withHonorCooldown(false));
+            return true;
+        } catch (AmazonClientException e) {
+            log.error(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean getInstanceStatus(Instance newInstance, List<String> loadBalancerNames, Log log) {
+        for (String elb : loadBalancerNames) {
+            DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(elb));
+            Optional<InstanceState> state = result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(newInstance.getInstanceId())).findFirst();
+            if (!state.isPresent()) {
+                log.info("instance state for instance " + newInstance.getInstanceId() + " on elb " + elb + " is unknown");
+                return false;
+            }
+            log.info("instance state for instance " + newInstance.getInstanceId() + " on elb " + elb + " is " + state.get().getState());
+            if (!"InService".equals(state.get().getState())) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -1,7 +1,7 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
-import nl.jpoint.maven.vertx.utils.RequestExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -11,7 +11,7 @@ class VertxDeployArtifactMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
+        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
 
         setActiveDeployConfig();
 

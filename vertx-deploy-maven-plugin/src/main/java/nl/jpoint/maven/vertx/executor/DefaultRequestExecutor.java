@@ -1,8 +1,9 @@
-package nl.jpoint.maven.vertx.utils;
+package nl.jpoint.maven.vertx.executor;
 
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
+import nl.jpoint.maven.vertx.utils.AwsState;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -24,12 +25,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RequestExecutor {
+public class DefaultRequestExecutor {
 
     private final Log log;
     private final long timeout;
 
-    public RequestExecutor(Log log, Integer requestTimeout) {
+    public DefaultRequestExecutor(Log log, Integer requestTimeout) {
         this.log = log;
         timeout = System.currentTimeMillis() + (60000L * requestTimeout);
         log.info("Setting timeout to : " + new Date(timeout));
@@ -52,45 +53,41 @@ public class RequestExecutor {
             ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
 
-            exec.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-
-                    HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
-                    try (CloseableHttpResponse response = httpClient.execute(get)) {
-                        int code = response.getStatusLine().getStatusCode();
-                        String state = response.getStatusLine().getReasonPhrase();
-                        switch (code) {
-                            case 200:
-                                log.info("Deploy request finished executing");
-                                status.set(200);
+            exec.scheduleAtFixedRate(() -> {
+                HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
+                try (CloseableHttpResponse response = httpClient.execute(get)) {
+                    int code = response.getStatusLine().getStatusCode();
+                    String state = response.getStatusLine().getReasonPhrase();
+                    switch (code) {
+                        case 200:
+                            log.info("Deploy request finished executing");
+                            status.set(200);
+                            waitFor.decrementAndGet();
+                            break;
+                        case 500:
+                            if (status.get() != 200) {
+                                status.set(500);
+                                log.error("Deploy request failed");
                                 waitFor.decrementAndGet();
-                                break;
-                            case 500:
+                            }
+                            break;
+                        default:
+                            if (System.currentTimeMillis() > timeout) {
                                 if (status.get() != 200) {
                                     status.set(500);
-                                    log.error("Deploy request failed");
-                                    waitFor.decrementAndGet();
                                 }
-                                break;
-                            default:
-                                if (System.currentTimeMillis() > timeout) {
-                                    if (status.get() != 200) {
-                                        status.set(500);
-                                    }
-                                    log.error("Timeout while waiting for deploy request.");
-                                    waitFor.decrementAndGet();
-                                }
-                                log.info("Waiting for deploy to finish. Current status : " + state);
-                                break;
-                        }
-
-                    } catch (IOException e) {
-                        if (status.get() != 200) {
-                            status.set(500);
-                        }
-                        waitFor.decrementAndGet();
+                                log.error("Timeout while waiting for deploy request.");
+                                waitFor.decrementAndGet();
+                            }
+                            log.info("Waiting for deploy to finish. Current status : " + state);
+                            break;
                     }
+
+                } catch (IOException e) {
+                    if (status.get() != 200) {
+                        status.set(500);
+                    }
+                    waitFor.decrementAndGet();
                 }
             }, 0, 15, TimeUnit.SECONDS);
 
@@ -117,12 +114,7 @@ public class RequestExecutor {
 
     private AwsState executeRequest(final HttpPost postRequest) throws MojoExecutionException {
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-        exec.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                log.info("Waiting for deploy request to return...");
-            }
-        }, 5, 5, TimeUnit.SECONDS);
+        exec.scheduleAtFixedRate(() -> log.info("Waiting for deploy request to return..."), 5, 5, TimeUnit.SECONDS);
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             Timer timer = new Timer();

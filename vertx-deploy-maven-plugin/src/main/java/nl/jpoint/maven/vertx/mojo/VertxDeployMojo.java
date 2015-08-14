@@ -1,17 +1,18 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
+import nl.jpoint.maven.vertx.executor.WaitForInstanceRequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.utils.AwsDeployUtils;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import nl.jpoint.maven.vertx.utils.Ec2Instance;
-import nl.jpoint.maven.vertx.utils.RequestExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Mojo(name = "deploy")
@@ -52,21 +53,28 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
         AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
 
-        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), activeConfiguration);
+        AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
 
-        instances.sort(new Comparator<Ec2Instance>() {
-            @Override
-            public int compare(Ec2Instance o1, Ec2Instance o2) {
-                return o1.getState().ordinal() - o2.getState().ordinal();
-            }
-        });
+        final int originalDesiredCapacity = asGroup.getDesiredCapacity();
+
+        if (activeConfiguration.isKeepCurrentCapacity()) {
+            // we need to add an extra instance and wait for it to come online
+            awsDeployUtils.setDesiredCapacity(getLog(), asGroup, asGroup.getDesiredCapacity() + 1);
+            WaitForInstanceRequestExecutor waitForInstanceRequestExecutor = new WaitForInstanceRequestExecutor(getLog(), 10, activeConfiguration);
+            waitForInstanceRequestExecutor.executeRequest(asGroup, awsDeployUtils);
+            // update the autoscaling group
+            asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
+        }
+
+        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup, activeConfiguration);
+
+        instances.sort((o1, o2) -> o1.getState().ordinal() - o2.getState().ordinal());
 
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
 
         awsDeployUtils.suspendScheduledActions(getLog(), activeConfiguration);
-        com.amazonaws.services.autoscaling.model.AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
 
         Integer originalMinSize = asGroup.getMinSize();
 
@@ -75,7 +83,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
 
         for (Ec2Instance instance : instances) {
-            final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
+            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
             boolean awsGroupIsInService = isInService(instances);
             getLog().info("Auto scaling group inService :  " + awsGroupIsInService);
             boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
@@ -95,8 +103,13 @@ class VertxDeployMojo extends AbstractDeployMojo {
             AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure);
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
+
         }
         awsDeployUtils.setMinimalCapacity(getLog(), originalMinSize, activeConfiguration);
+
+        if (activeConfiguration.isKeepCurrentCapacity()) {
+            awsDeployUtils.setDesiredCapacity(getLog(), asGroup, originalDesiredCapacity);
+        }
         awsDeployUtils.resumeScheduledActions(getLog(), activeConfiguration);
 
     }
@@ -146,7 +159,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
         for (String host : activeConfiguration.getHosts()) {
 
-            final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
+            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
             executor.executeAwsDeployRequest(deployRequest, host, activeConfiguration.withElb(), false);
         }
     }
@@ -163,7 +176,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
 
         for (String host : activeConfiguration.getHosts()) {
-            final RequestExecutor executor = new RequestExecutor(getLog(), requestTimeout);
+            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
             executor.executeDeployRequest(deployRequest, host);
         }
     }
