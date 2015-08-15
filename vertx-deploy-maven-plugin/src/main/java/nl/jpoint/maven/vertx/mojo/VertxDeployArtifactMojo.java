@@ -11,7 +11,7 @@ class VertxDeployArtifactMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
+        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
 
         setActiveDeployConfig();
 

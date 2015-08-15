@@ -84,7 +84,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
 
         for (Ec2Instance instance : instances) {
-            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
+            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
             boolean awsGroupIsInService = isInService(instances);
             getLog().info("Auto scaling group inService :  " + awsGroupIsInService);
             boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
@@ -139,8 +139,8 @@ class VertxDeployMojo extends AbstractDeployMojo {
     }
 
     private void deployWithOpsWorks(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
-        if (activeConfiguration.getOpsWorksStackId() == null) {
-            throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no opsWorksStackId set");
+        if (activeConfiguration.getOpsWorksLayerId() == null) {
+            throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no opsWorksLayerId set");
         }
 
         if (credentialsId == null) {
@@ -160,7 +160,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
         for (String host : activeConfiguration.getHosts()) {
 
-            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
+            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
             executor.executeAwsDeployRequest(deployRequest, host, activeConfiguration.withElb(), false);
         }
     }
@@ -177,7 +177,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
 
         for (String host : activeConfiguration.getHosts()) {
-            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout);
+            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
             executor.executeDeployRequest(deployRequest, host);
         }
     }

@@ -30,6 +30,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected Integer requestTimeout;
     @Parameter
     protected String credentialsId;
+    @Parameter(defaultValue = "6789")
+    protected Integer port;
 
     DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {

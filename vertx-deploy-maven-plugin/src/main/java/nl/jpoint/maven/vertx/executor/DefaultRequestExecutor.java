@@ -28,11 +28,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DefaultRequestExecutor {
 
     private final Log log;
+    private final Integer port;
     private final long timeout;
 
-    public DefaultRequestExecutor(Log log, Integer requestTimeout) {
+    public DefaultRequestExecutor(Log log, Integer requestTimeout, Integer port) {
         this.log = log;
-        timeout = System.currentTimeMillis() + (60000L * requestTimeout);
+        this.port = port;
+        this.timeout = System.currentTimeMillis() + (60000L * requestTimeout);
         log.info("Setting timeout to : " + new Date(timeout));
     }
 
@@ -192,8 +194,8 @@ public class DefaultRequestExecutor {
         if (!host.startsWith("http://")) {
             host = "http://" + host;
         }
-        if (!host.endsWith(":6789")) {
-            host = host + ":6789";
+        if (!host.endsWith(Integer.toString(port))) {
+            host = host + ":" + port;
         }
         return host;
     }
