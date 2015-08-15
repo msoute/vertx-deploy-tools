@@ -7,13 +7,18 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 
 # Changelog
 ## 1.2-SNAPSHOT
-* [Feature] Add support for seamless deploy without capacity loss `keepCurrentCapacity` defaults to false
-* [Feature] Add local run support.
+
+* [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to false
+* [Feature] Add local run support `deploy.internal`.
 * [Feature] Add support to deploy to autoscaling groups
 * [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
 * [Feature] Make aws region configurable `aws.region` (defaults to eu-west-1) 
 * [Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting `includeInStandby` to false in DeployConfiguration.
 * [Feature] Add configuration option `aws.as.deregister.decrementDesiredCapacity` to configure if desired capacity should be decremented if an instance is put in standby (defaults to true)
+
+* [Maven Plugin] Dropped custom Aws implementation in favor of Amazon SDK
+* [Maven Plugin] Make port configurable, defaults to 6789
+* [Maven Plugin] Make aws region configurable, defaults to eu-west-1
 
 Note 
 Source level changed to 1.8
@@ -40,18 +45,30 @@ ElasticLoadBalancers the instance is a member if to.
     <plugin>
         <groupId>nl.jpoint.vertx-deploy-tools</groupId>
         <artifactId>vertx-deploy-maven-plugin</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
         <configuration>
+            <region>eu-west-1</region>
+            <credentialsId>credentials</credentialsId>
+            <port>6789</port>
             <deployConfigurations>
                 ...
             </deployConfigurations>
         </configuration>
     </plugin>
     ...
+    
+### AWS Credendials
+Aws credentials (accessKey / secretKey) should be stored in settings(-security).xml as a server element.
+
+    <server>
+        <id>credentialsId</id>
+        <username>[accessKey]</username>
+        <password>[secretKey]</password>	
+    </server>
+
 ### DeployConfigurations
 
-Multipe targets can be configured. The target configuration can be selected with *-Ddeploy.target=*
-
+Multiple targets can be configured. The target configuration can be selected with *-Ddeploy.target=*
 
 ## Vert.X Module Configuration
 
