@@ -52,7 +52,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (credentialsId == null) {
             throw new MojoExecutionException("credentialsId is not set");
         }
-        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(credentialsId, settings);
+        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(credentialsId, settings, region);
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
 
@@ -147,7 +147,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
             throw new MojoExecutionException("credentialsId is not set");
         }
 
-        AwsOpsWorksDeployUtils awsOpsWorksDeployUtils = new AwsOpsWorksDeployUtils(credentialsId, settings);
+        AwsOpsWorksDeployUtils awsOpsWorksDeployUtils = new AwsOpsWorksDeployUtils(credentialsId, settings, region);
         awsOpsWorksDeployUtils.getHostsOpsWorks(getLog(), activeConfiguration);
 
         DeployRequest deployRequest = new DeployRequest.Builder()

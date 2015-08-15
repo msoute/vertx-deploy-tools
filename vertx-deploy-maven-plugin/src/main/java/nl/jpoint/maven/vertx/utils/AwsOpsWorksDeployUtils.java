@@ -19,21 +19,22 @@ public class AwsOpsWorksDeployUtils {
     private final AWSOpsWorksClient awsOpsWorksClient;
 
 
-    public AwsOpsWorksDeployUtils(String serverId, Settings settings) throws MojoFailureException {
+    public AwsOpsWorksDeployUtils(String serverId, Settings settings, String region) throws MojoFailureException {
         if (settings.getServer(serverId) == null) {
             throw new MojoFailureException("No server config for id : " + serverId);
         }
         Server server = settings.getServer(serverId);
 
         BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
+        Region awsRegion = Region.getRegion(Regions.fromName(region));
         awsOpsWorksClient = new AWSOpsWorksClient(credentials);
-        awsOpsWorksClient.setRegion(Region.getRegion(Regions.EU_WEST_1));
+        awsOpsWorksClient.setRegion(awsRegion);
 
     }
 
 
     public void getHostsOpsWorks(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException {
-        log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
+        log.info("retrieving list of hosts for layer with id : " + activeConfiguration.getOpsWorksLayerId());
         activeConfiguration.getHosts().clear();
 
         try {

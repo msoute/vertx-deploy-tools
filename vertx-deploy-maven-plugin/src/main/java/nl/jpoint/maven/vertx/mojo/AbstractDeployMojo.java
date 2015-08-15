@@ -32,6 +32,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected String credentialsId;
     @Parameter(defaultValue = "6789")
     protected Integer port;
+    @Parameter(defaultValue = "eu-west-1")
+    protected String region;
 
     DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {

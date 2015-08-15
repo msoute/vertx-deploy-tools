@@ -38,21 +38,22 @@ public class AwsAutoScalingDeployUtils {
     private final AmazonElasticLoadBalancingClient awsElbClient;
     private final AmazonEC2Client awsEc2Client;
 
-    public AwsAutoScalingDeployUtils(String serverId, Settings settings) throws MojoFailureException {
+    public AwsAutoScalingDeployUtils(String serverId, Settings settings, String region) throws MojoFailureException {
         if (settings.getServer(serverId) == null) {
             throw new MojoFailureException("No server config for id : " + serverId);
         }
         Server server = settings.getServer(serverId);
 
         BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
+        Region awsRegion = Region.getRegion(Regions.fromName(region));
         awsAsClient = new AmazonAutoScalingClient(credentials);
-        awsAsClient.setRegion(Region.getRegion(Regions.EU_WEST_1));
+        awsAsClient.setRegion(awsRegion);
 
         awsElbClient = new AmazonElasticLoadBalancingClient(credentials);
-        awsElbClient.setRegion(Region.getRegion(Regions.EU_WEST_1));
+        awsElbClient.setRegion(awsRegion);
 
         awsEc2Client = new AmazonEC2Client(credentials);
-        awsEc2Client.setRegion(Region.getRegion(Regions.EU_WEST_1));
+        awsEc2Client.setRegion(awsRegion);
 
     }
 
