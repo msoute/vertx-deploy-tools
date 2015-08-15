@@ -12,8 +12,8 @@
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
     <artifactId>vertx-deploy-mod</artifactId>
 
-    <name>Vert.x deploy tools : Vert.x Module</name>
-    <description>Vert.x deploy module.</description>
+    <name>Vert.x Deploy Tools : Vert.x Module</name>
+    <description>Vert.x deploy module</description>
 
     <properties>
         <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>

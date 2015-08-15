@@ -2,7 +2,6 @@ package nl.jpoint.maven.vertx.mojo;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
@@ -15,12 +14,11 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     static final String MODULE_CLASSIFIER = "mod";
     static final String CONFIG_TYPE = "config";
 
-    DeployConfiguration activeConfiguration;
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
-    @Component
+    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
     Settings settings;
-    @Parameter
+    @Parameter(required = true)
     private List<DeployConfiguration> deployConfigurations;
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
     private String activeTarget;
@@ -34,6 +32,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected Integer port;
     @Parameter(defaultValue = "eu-west-1")
     protected String region;
+
+    DeployConfiguration activeConfiguration;
 
     DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {

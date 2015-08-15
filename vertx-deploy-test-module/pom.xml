@@ -13,7 +13,7 @@
     <artifactId>vertx-deploy-test-module</artifactId>
     <version>1.2.0-SNAPSHOT</version>
 
-    <name>Vert.x deploy test module</name>
+    <name>Vert.x Deploy Tools : Test module</name>
     <description>Vert.x deploy test module.</description>
 
     <properties>

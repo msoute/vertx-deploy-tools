@@ -35,7 +35,7 @@ public class AwsDeployUtilsTest {
 
     @Before
     public void init() throws IOException, XmlPullParserException, MojoFailureException {
-        deployUtils = new AwsAutoScalingDeployUtils("deploy-mod-test", settings);
+        deployUtils = new AwsAutoScalingDeployUtils("deploy-mod-test", settings, "eu-west-1");
         when(deployConfiguration.getAutoScalingGroupId()).thenReturn(settings.getServer("deploy-mod-test").getPassphrase());
     }
 
