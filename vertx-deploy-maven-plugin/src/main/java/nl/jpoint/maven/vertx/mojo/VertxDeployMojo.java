@@ -5,7 +5,8 @@ import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
 import nl.jpoint.maven.vertx.executor.WaitForInstanceRequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.utils.AwsDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsOpsWorksDeployUtils;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import nl.jpoint.maven.vertx.utils.Ec2Instance;
@@ -51,7 +52,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (credentialsId == null) {
             throw new MojoExecutionException("credentialsId is not set");
         }
-        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
+        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(credentialsId, settings);
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
 
@@ -146,8 +147,8 @@ class VertxDeployMojo extends AbstractDeployMojo {
             throw new MojoExecutionException("credentialsId is not set");
         }
 
-        AwsDeployUtils awsDeployUtils = new AwsDeployUtils(credentialsId, settings);
-        awsDeployUtils.getHostsOpsWorks(getLog(), activeConfiguration);
+        AwsOpsWorksDeployUtils awsOpsWorksDeployUtils = new AwsOpsWorksDeployUtils(credentialsId, settings);
+        awsOpsWorksDeployUtils.getHostsOpsWorks(getLog(), activeConfiguration);
 
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)

@@ -10,4 +10,10 @@ public enum AwsState {
     PENDING,
     INSERVICE;
 
+    public static AwsState map(String state) {
+        if (state == null || state.isEmpty()) {
+            return UNKNOWN;
+        }
+        return AwsState.valueOf(state.toUpperCase());
+    }
 }

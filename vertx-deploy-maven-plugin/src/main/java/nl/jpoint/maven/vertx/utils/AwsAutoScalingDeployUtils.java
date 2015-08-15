@@ -14,6 +14,9 @@ import com.amazonaws.services.autoscaling.model.ResumeProcessesRequest;
 import com.amazonaws.services.autoscaling.model.SetDesiredCapacityRequest;
 import com.amazonaws.services.autoscaling.model.SuspendProcessesRequest;
 import com.amazonaws.services.autoscaling.model.UpdateAutoScalingGroupRequest;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthResult;
@@ -29,17 +32,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class AwsDeployUtils {
+public class AwsAutoScalingDeployUtils {
 
-    private final AwsEc2Util awsEc2Util;
-    private final AwsOpsWorksUtil opsWorksUtil;
-    private final AwsElbUtil awsElbUtil;
+    private final AmazonAutoScalingClient awsAsClient;
+    private final AmazonElasticLoadBalancingClient awsElbClient;
+    private final AmazonEC2Client awsEc2Client;
 
-    AmazonAutoScalingClient awsAsClient;
-    AmazonElasticLoadBalancingClient awsElbClient;
-
-
-    public AwsDeployUtils(String serverId, Settings settings) throws MojoFailureException {
+    public AwsAutoScalingDeployUtils(String serverId, Settings settings) throws MojoFailureException {
         if (settings.getServer(serverId) == null) {
             throw new MojoFailureException("No server config for id : " + serverId);
         }
@@ -52,10 +51,9 @@ public class AwsDeployUtils {
         awsElbClient = new AmazonElasticLoadBalancingClient(credentials);
         awsElbClient.setRegion(Region.getRegion(Regions.EU_WEST_1));
 
+        awsEc2Client = new AmazonEC2Client(credentials);
+        awsEc2Client.setRegion(Region.getRegion(Regions.EU_WEST_1));
 
-        awsEc2Util = new AwsEc2Util(server.getUsername(), server.getPassword());
-        opsWorksUtil = new AwsOpsWorksUtil(server.getUsername(), server.getPassword());
-        awsElbUtil = new AwsElbUtil(server.getUsername(), server.getPassword());
     }
 
     public com.amazonaws.services.autoscaling.model.AutoScalingGroup getAutoscalingGroup(DeployConfiguration activeConfiguration) {
@@ -82,7 +80,6 @@ public class AwsDeployUtils {
         log.info("Resumed autoscaling processes.");
     }
 
-
     public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup, DeployConfiguration activeConfiguration) throws MojoFailureException, MojoExecutionException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
         activeConfiguration.getHosts().clear();
@@ -93,13 +90,19 @@ public class AwsDeployUtils {
             if (!isDeployable(autoScalingGroup, activeConfiguration.isIgnoreInStandby()) || activeConfiguration.isIgnoreDeployState()) {
                 throw new MojoExecutionException("Autoscaling group is not in a deployable state.");
             }
-            List<Ec2Instance> instances = awsEc2Util.describeInstances(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(Collectors.toList()), activeConfiguration.getTag(), log);
+            DescribeInstancesResult instancesResult = awsEc2Client.describeInstances(new DescribeInstancesRequest().withInstanceIds(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(Collectors.toList())));
+            List<Ec2Instance> ec2Instances = instancesResult.getReservations().stream().flatMap(r -> r.getInstances().stream()).map(this::toEc2Instance).collect(Collectors.toList());
             log.debug("describing elb status");
-            return awsElbUtil.describeInstanceElbStatus(instances, autoScalingGroup.getLoadBalancerNames());
+            autoScalingGroup.getLoadBalancerNames().forEach(elb -> this.updateInstancesStateOnLoadBalancer(elb, ec2Instances));
+            return ec2Instances;
 
-        } catch (AwsException | AmazonClientException e) {
+        } catch (AmazonClientException e) {
             throw new MojoFailureException(e.getMessage());
         }
+    }
+
+    private Ec2Instance toEc2Instance(com.amazonaws.services.ec2.model.Instance instance) {
+        return new Ec2Instance.Builder().withInstanceId(instance.getInstanceId()).withPrivateIp(instance.getPrivateIpAddress()).withPublicIp(instance.getPublicIpAddress()).build();
     }
 
     private boolean isDeployable(AutoScalingGroup autoScalingGroup, boolean ignoreInStandby) {
@@ -112,24 +115,9 @@ public class AwsDeployUtils {
                 .count();
 
         long healthyInstances = ignoreInStandby ? inServiceInstances : inServiceInstances + inStandbyInstances;
-        return autoScalingGroup.getMinSize() < autoScalingGroup.getDesiredCapacity()  && healthyInstances > 1 ;
+        return autoScalingGroup.getMinSize() < autoScalingGroup.getDesiredCapacity() && healthyInstances > 1;
     }
 
-    public void getHostsOpsWorks(Log log, DeployConfiguration activeConfiguration) throws MojoFailureException {
-        log.info("retrieving list of hosts for stack with id : " + activeConfiguration.getOpsWorksStackId());
-        activeConfiguration.getHosts().clear();
-
-        List<String> hosts;
-        try {
-            hosts = opsWorksUtil.ListStackInstances(activeConfiguration.getOpsWorksStackId(), activeConfiguration.getOpsWorksLayerId(), activeConfiguration.getAwsPrivateIp(), log);
-            for (String opsHost : hosts) {
-                log.info("Adding host from opsworks response : " + opsHost);
-                activeConfiguration.getHosts().add("http://" + opsHost + ":6789");
-            }
-        } catch (AwsException e) {
-            throw new MojoFailureException(e.getMessage());
-        }
-    }
 
     public boolean setDesiredCapacity(Log log, AutoScalingGroup autoScalingGroup, Integer capacity) {
         log.info("Setting desired capacity to : " + capacity);
@@ -146,7 +134,12 @@ public class AwsDeployUtils {
         }
     }
 
-    public boolean getInstanceStatus(Instance newInstance, List<String> loadBalancerNames, Log log) {
+    public void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
+        DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(loadBalancerName));
+        instances.stream().forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
+    }
+
+    public boolean checkInstanceInServiceOnAllElb(Instance newInstance, List<String> loadBalancerNames, Log log) {
         for (String elb : loadBalancerNames) {
             DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(elb));
             Optional<InstanceState> state = result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(newInstance.getInstanceId())).findFirst();
@@ -161,4 +154,5 @@ public class AwsDeployUtils {
         }
         return true;
     }
+
 }

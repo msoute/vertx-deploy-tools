@@ -15,6 +15,7 @@ import org.apache.maven.project.MavenProject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DeployUtils {
 
@@ -28,27 +29,15 @@ public class DeployUtils {
     }
 
     public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
-        List<Request> deployModuleRequests = new ArrayList<>();
-        for (Dependency dependency : createDeployListByClassifier(activeConfiguration, siteClassifier)) {
-            deployModuleRequests.add(new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(), activeConfiguration.getContext()));
-        }
-        return deployModuleRequests;
+        return createDeployListByClassifier(activeConfiguration, siteClassifier).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(), activeConfiguration.getContext())).collect(Collectors.toList());
     }
 
     public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
-        List<Request> deployModuleRequests = new ArrayList<>();
-        for (Dependency dependency : createDeployListByClassifier(activeConfiguration, classifier)) {
-            deployModuleRequests.add(new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), 4, activeConfiguration.doRestart()));
-        }
-        return deployModuleRequests;
+        return createDeployListByClassifier(activeConfiguration, classifier).stream().map(dependency -> new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), 4, activeConfiguration.doRestart())).collect(Collectors.toList());
     }
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {
-        List<Request> deployModuleRequests = new ArrayList<>();
-        for (Dependency dependency : createDeployListByType(activeConfiguration, type)) {
-            deployModuleRequests.add(new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType()));
-        }
-        return deployModuleRequests;
+        return createDeployListByType(activeConfiguration, type).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
     }
 
     private List<Dependency> createDeployListByClassifier(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {

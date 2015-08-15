@@ -27,7 +27,7 @@ public class AwsDeployUtilsTest {
 
     private final Settings settings;
 
-    private AwsDeployUtils deployUtils;
+    private AwsAutoScalingDeployUtils deployUtils;
 
     public AwsDeployUtilsTest() throws IOException, XmlPullParserException {
         settings = new SettingsXpp3Reader().read(new FileInputStream(System.getProperty("user.home")+"/.m2/settings.xml"));
@@ -35,7 +35,7 @@ public class AwsDeployUtilsTest {
 
     @Before
     public void init() throws IOException, XmlPullParserException, MojoFailureException {
-        deployUtils = new AwsDeployUtils("deploy-mod-test", settings);
+        deployUtils = new AwsAutoScalingDeployUtils("deploy-mod-test", settings);
         when(deployConfiguration.getAutoScalingGroupId()).thenReturn(settings.getServer("deploy-mod-test").getPassphrase());
     }
 

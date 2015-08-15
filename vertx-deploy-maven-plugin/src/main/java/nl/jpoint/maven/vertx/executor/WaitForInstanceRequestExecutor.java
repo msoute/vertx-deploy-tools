@@ -4,7 +4,7 @@ package nl.jpoint.maven.vertx.executor;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
-import nl.jpoint.maven.vertx.utils.AwsDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -29,7 +29,7 @@ public class WaitForInstanceRequestExecutor {
         this.activeConfiguration = activeConfiguration;
     }
 
-    private void checkState(AtomicInteger atomicInteger, AutoScalingGroup originalGroup, AwsDeployUtils awsDeployUtils) {
+    private void checkState(AtomicInteger atomicInteger, AutoScalingGroup originalGroup, AwsAutoScalingDeployUtils awsDeployUtils) {
         log.info("Waiting for new instance in asGroup to come in service...");
         AutoScalingGroup updatedGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
 
@@ -41,7 +41,7 @@ public class WaitForInstanceRequestExecutor {
             log.info("Found new instance with id " + newInstance.getInstanceId());
         }
 
-        if (!originalGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.getInstanceStatus(newInstance, originalGroup.getLoadBalancerNames(), log)) {
+        if (!originalGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, originalGroup.getLoadBalancerNames(), log)) {
             atomicInteger.decrementAndGet();
         }
     }
@@ -51,7 +51,7 @@ public class WaitForInstanceRequestExecutor {
         return updatedGroup.getInstances().get(0);
     }
 
-    public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsDeployUtils awsDeployUtils) throws MojoExecutionException {
+    public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils) throws MojoExecutionException {
         final AtomicInteger waitFor = new AtomicInteger(1);
         final AtomicBoolean inService = new AtomicBoolean(false);
 

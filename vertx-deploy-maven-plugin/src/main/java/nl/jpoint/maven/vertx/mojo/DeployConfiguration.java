@@ -20,11 +20,6 @@ public class DeployConfiguration {
     private boolean keepCurrentCapacity = true;
     private String tag;
 
-    public String getOpsWorksStackId() {
-        return opsWorksStackId;
-    }
-
-    private String opsWorksStackId = null;
     private String opsWorksLayerId = null;
 
     private List<Exclusion> exclusions;
