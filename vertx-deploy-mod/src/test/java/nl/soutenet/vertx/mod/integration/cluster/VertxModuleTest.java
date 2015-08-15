@@ -1,6 +1,6 @@
 package nl.soutenet.vertx.mod.integration.cluster;
 
-import nl.jpoint.vertx.mod.cluster.ClusterManagerModule;
+import nl.jpoint.vertx.mod.deploy.AwsDeployModule;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -36,7 +36,7 @@ public class VertxModuleTest extends TestVerticle {
         config.putString("mod.root", "/tmp/vertx/mods/");
         config.putString("artifact.repo", "/tmp/");
 
-        container.deployVerticle(ClusterManagerModule.class.getName(), config, handler);
+        container.deployVerticle(AwsDeployModule.class.getName(), config, handler);
     }
 
     @Test
