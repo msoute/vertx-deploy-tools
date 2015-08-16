@@ -7,7 +7,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.opsworks.AWSOpsWorksClient;
 import com.amazonaws.services.opsworks.model.DescribeInstancesRequest;
 import com.amazonaws.services.opsworks.model.DescribeInstancesResult;
-import nl.jpoint.maven.vertx.config.DeployConfiguration;
+import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;

@@ -1,6 +1,6 @@
 package nl.jpoint.maven.vertx.service;
 
-import nl.jpoint.maven.vertx.config.DeployConfiguration;
+import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.executor.AwsRequestExecutor;
 import nl.jpoint.maven.vertx.executor.RequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployRequest;

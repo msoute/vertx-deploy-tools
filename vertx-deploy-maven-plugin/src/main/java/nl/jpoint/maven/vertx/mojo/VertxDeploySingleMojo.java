@@ -33,7 +33,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         setActiveDeployConfig();
 
-        if (activeConfiguration.isAutoScaling() && activeConfiguration.isOpsworks()) {
+        if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsworks()) {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has both OpsWorks and Autoscaling enabled");
         }
 
@@ -44,10 +44,10 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
-        if (activeConfiguration.isAutoScaling()) {
+        if (activeConfiguration.useAutoScaling()) {
             AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog());
             service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        } else if (activeConfiguration.isOpsworks()) {
+        } else if (activeConfiguration.useOpsworks()) {
             OpsWorksDeployService service = new OpsWorksDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog());
             service.deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else {

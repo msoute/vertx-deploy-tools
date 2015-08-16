@@ -1,6 +1,5 @@
 package nl.jpoint.maven.vertx.mojo;
 
-import nl.jpoint.maven.vertx.config.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
