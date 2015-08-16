@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Vertx-deploy-tools by msoute</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Vertx-deploy-tools</h1>
+        <p>vertx-deploy-tools</p>
+
+        <p class="view"><a href="https://github.com/msoute/vertx-deploy-tools">View the Project on GitHub <small>msoute/vertx-deploy-tools</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/msoute/vertx-deploy-tools/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/msoute/vertx-deploy-tools/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/msoute/vertx-deploy-tools">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="vertx-deploy-mod" class="anchor" href="#vertx-deploy-mod" aria-hidden="true"><span class="octicon octicon-link"></span></a>vertx-deploy-mod</h1>
+
+<h1>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<p>vertx-deploy-mod</p>
+
+<p>Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).</p>
+
+<h1>
+<a id="installation--configuration" class="anchor" href="#installation--configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation / Configuration</h1>
+
+<h2>
+<a id="maven-plugin-configuration" class="anchor" href="#maven-plugin-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Maven Plugin Configuration</h2>
+
+<pre><code>...
+&lt;plugin&gt;
+    &lt;groupId&gt;nl.jpoint.vertx-deploy-tools&lt;/groupId&gt;
+    &lt;artifactId&gt;vertx-deploy-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;1.2.0-SNAPSHOT&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;region&gt;eu-west-1&lt;/region&gt;
+        &lt;credentialsId&gt;credentials&lt;/credentialsId&gt;
+        &lt;port&gt;6789&lt;/port&gt;
+        &lt;deployConfigurations&gt;
+            ...
+        &lt;/deployConfigurations&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+...
+</code></pre>
+
+<h3>
+<a id="aws-credendials" class="anchor" href="#aws-credendials" aria-hidden="true"><span class="octicon octicon-link"></span></a>AWS Credendials</h3>
+
+<p>Aws credentials (accessKey / secretKey) should be stored in settings(-security).xml as a server element.</p>
+
+<pre><code>&lt;server&gt;
+    &lt;id&gt;credentialsId&lt;/id&gt;
+    &lt;username&gt;[accessKey]&lt;/username&gt;
+    &lt;password&gt;[secretKey]&lt;/password&gt;    
+&lt;/server&gt;
+</code></pre>
+
+<h3>
+<a id="deployconfigurations" class="anchor" href="#deployconfigurations" aria-hidden="true"><span class="octicon octicon-link"></span></a>DeployConfigurations</h3>
+
+<p>Multiple targets can be configured. The target configuration can be selected with <em>-Ddeploy.target=</em></p>
+
+<h4>
+<a id="default-deploy-configuration-options" class="anchor" href="#default-deploy-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default Deploy Configuration Options</h4>
+
+<ul>
+<li>
+<strong>target</strong> : The target id</li>
+<li>
+<strong>hosts</strong> : List of hosts to deploy to. This property is ignored when deploying when either  <em>useOpsWorks</em> or <em>useAutoScaling</em> is true</li>
+<li>
+<strong>deployConfig</strong> : Indicates if config artifacts should also be deployed (default : <em>true</em>)</li>
+<li>
+<strong>exclusions</strong> : List of artifacts that should be ignored </li>
+<li>
+<strong>testScope</strong> : Include artifacts in test scope (default : <em>false</em>) </li>
+<li>
+<strong>restart</strong> : Restart whole container or only deployed modules (default : <em>false</em>)<br>
+</li>
+<li>
+<strong>deploySnapshots</strong> : Also deploy -SNAPSHOT artifacts (default : <em>false</em>)<br>
+</li>
+</ul>
+
+<h4>
+<a id="aws-configuration-options" class="anchor" href="#aws-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aws Configuration Options</h4>
+
+<ul>
+<li>
+<strong>awsPrivateIp</strong> : Use public or private ip's to connect to deploy mod. (default : <em>false</em>)<br>
+</li>
+<li>
+<strong>UseOpsWorks</strong> : Use OpsWorks (Layers) to detect instances to deploy to. Cannot be use icw <em>useAutoScaling</em>. (default : <em>false</em>)<br>
+</li>
+<li>
+<strong>useAutoScaling</strong> : Use auto scaling groups to detect instances to deploy to. Cannot be used icw <em>useOpsWorks</em>. (default : <em>false</em>)<br>
+</li>
+<li>
+<strong>elb</strong> : When true the deploy module with wait for instances to come InService on attached elb's before continuing deploy. (default : <em>false</em>)<br>
+</li>
+</ul>
+
+<h4>
+<a id="aws-autoscaling-configuration-options" class="anchor" href="#aws-autoscaling-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aws AutoScaling Configuration Options</h4>
+
+<ul>
+<li>
+<strong>autoScalingGroupId</strong> : The auto scaling group to get the list of instances from. </li>
+<li>
+<strong>ignoreInStandby</strong> : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : <em>false</em>)</li>
+<li>
+<strong>ignoreDeployState</strong> : Ignore if the application will go offline during a deploy and the InService count drops under the configured minimum instance count (default : <em>false</em>)</li>
+<li>
+<strong>decrementDesiredCapacity</strong> Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : <em>true</em>)</li>
+<li>
+<strong>keepCurrentCapacity</strong> : if true an extra instance will be added to the auto scaling group. The deploy continues after the new instance comes InService on Elb or auto scaling group. After the deploy one instance will be removed from the auto scaling group. (default : <em>true</em>)</li>
+</ul>
+
+<h4>
+<a id="aws-opsworks-configuration-options" class="anchor" href="#aws-opsworks-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aws OpsWorks Configuration Options</h4>
+
+<ul>
+<li>
+<strong>String opsWorksLayerId</strong> : The layer id to get a list of instances from.</li>
+</ul>
+
+<h2>
+<a id="vertx-module-configuration" class="anchor" href="#vertx-module-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Vert.X Module Configuration</h2>
+
+<h1>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Examples</h1>
+
+<h2>
+<a id="deploy-to-multiple-instances-in-an-auto-scaling-group-with-elb-support" class="anchor" href="#deploy-to-multiple-instances-in-an-auto-scaling-group-with-elb-support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deploy to multiple instances in an auto-scaling group with ELB support.</h2>
+
+<p>The following target configuration wil deploy to all instances in the as-group <em>autoscaling-group-id</em> and check if each instance reached the inService status
+on the ELB's it is a member of. If the instance does not reach the inService status within 5 minutes the build wil fail and the remaining instances wil nog be updated</p>
+
+<pre><code>&lt;deployConfiguration&gt;
+    &lt;target&gt;[target]&lt;/target&gt;
+    &lt;testScope&gt;false&lt;/testScope&gt;
+    &lt;restart&gt;true&lt;/restart&gt;
+    &lt;elb&gt;true&lt;/elb&gt;
+    &lt;autoScaling&gt;true&lt;/autoScaling&gt;
+    &lt;autoScalingGroupId&gt;autoscaling-group-id&lt;/autoScalingGroupId&gt;
+&lt;/deployConfiguration&gt;
+</code></pre>
+
+<h1>
+<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h1>
+
+<h2>
+<a id="12-snapshot" class="anchor" href="#12-snapshot" aria-hidden="true"><span class="octicon octicon-link"></span></a>1.2-SNAPSHOT</h2>
+
+<ul>
+<li>[Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option <code>keepCurrentCapacity</code> defaults to false</li>
+<li>[Feature] Add local run support <code>deploy.internal</code>.</li>
+<li>[Feature] Add support to deploy to autoscaling groups</li>
+<li>[Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.</li>
+<li>[Feature] Make aws region configurable <code>aws.region</code> (defaults to eu-west-1) </li>
+<li>[Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting <code>includeInStandby</code> to false in DeployConfiguration.</li>
+<li><p>[Feature] Add configuration option <code>aws.as.deregister.decrementDesiredCapacity</code> to configure if desired capacity should be decremented if an instance is put in standby (defaults to true)</p></li>
+<li><p>[Maven Plugin] Dropped custom Aws implementation in favor of Amazon SDK</p></li>
+<li>[Maven Plugin] Make port configurable, defaults to 6789</li>
+<li><p>[Maven Plugin] Make aws region configurable, defaults to eu-west-1</p></li>
+<li><p>[Vertx Module] Dropped custom Aws implementation in favor of Amazon SDK</p></li>
+<li>[Vertx Module] Make port configurable <code>http.port</code> , defaults to 6789</li>
+<li>[Vertx Module] Make aws region configurable, defaults to eu-west-1</li>
+</ul>
+
+<p>Note 
+Source level changed to 1.8</p>
+
+<h2>
+<a id="1115" class="anchor" href="#1115" aria-hidden="true"><span class="octicon octicon-link"></span></a>1.1.15</h2>
+
+<ul>
+<li>[Minor] Add -mod to module zip.</li>
+</ul>
+
+<h2>
+<a id="1114" class="anchor" href="#1114" aria-hidden="true"><span class="octicon octicon-link"></span></a>1.1.14</h2>
+
+<ul>
+<li>[Bug] Do not list elb's in an autoscaling group as a single string.</li>
+<li>[Bug] Ignore null values during xpath parsing for elb instance members.</li>
+</ul>
+
+<h2>
+<a id="1112" class="anchor" href="#1112" aria-hidden="true"><span class="octicon octicon-link"></span></a>1.1.12</h2>
+
+<ul>
+<li>Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes</li>
+</ul>
+
+<h2>
+<a id="vertx-deploy-mod-1" class="anchor" href="#vertx-deploy-mod-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Vert.X deploy mod</h2>
+
+<p>A Vert.X based module to deploy that is able to deploy other modules into the local Vert.X container. If configured it takes into account
+ElasticLoadBalancers the instance is a member if to.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/msoute">msoute</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
