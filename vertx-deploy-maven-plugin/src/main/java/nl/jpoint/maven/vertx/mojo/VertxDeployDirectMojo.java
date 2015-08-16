@@ -11,13 +11,13 @@ import org.apache.maven.plugins.annotations.Parameter;
 import java.util.List;
 
 @Mojo(name = "deploy-direct")
-public class VertxDeploySoloMojo extends AbstractDeployMojo {
+public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
     @Parameter(property = "deploy.remoteIp", required = true)
     private String remoteIp;
-    @Parameter(property = "deploy.stubbed", defaultValue = "true")
+    @Parameter(property = "deploy.testScope", defaultValue = "false")
     private Boolean stubbed;
-    @Parameter(property = "deploy.withConfig", defaultValue = "false")
+    @Parameter(property = "deploy.withConfig", defaultValue = "true")
     private Boolean withConfig;
 
     @Override
