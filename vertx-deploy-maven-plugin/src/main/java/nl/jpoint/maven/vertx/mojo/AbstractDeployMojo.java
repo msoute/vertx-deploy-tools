@@ -5,6 +5,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 
 import java.util.List;
@@ -36,7 +37,9 @@ abstract class AbstractDeployMojo extends AbstractMojo {
 
     DeployConfiguration activeConfiguration;
 
+
     DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
+
         if (deployConfigurations.size() == 1) {
             getLog().info("Found exactly one deploy config to activate.");
             activeConfiguration = deployConfigurations.get(0);
@@ -54,7 +57,22 @@ abstract class AbstractDeployMojo extends AbstractMojo {
             throw new MojoFailureException("No active deployConfig !, config should contain at least one config with scope default");
         }
 
+
         getLog().info("Deploy config with target " + activeConfiguration.getTarget() + " activated");
         return activeConfiguration;
+    }
+
+    public Server getServer() throws MojoFailureException {
+        if (credentialsId == null || credentialsId.isEmpty()) {
+            throw new MojoFailureException("No CredentialsId set.");
+        }
+
+        Server server = settings.getServer(credentialsId);
+
+        if (server == null) {
+            throw new MojoFailureException("No server for id : " + credentialsId);
+        }
+
+        return server;
     }
 }

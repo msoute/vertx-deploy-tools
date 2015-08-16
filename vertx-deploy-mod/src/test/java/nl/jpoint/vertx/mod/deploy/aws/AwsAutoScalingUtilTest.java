@@ -50,8 +50,8 @@ public class AwsAutoScalingUtilTest {
 
     @Test
     @Ignore
-    public void testEnterStandby() throws  AwsException {
-        util.enterStandby(INSTANCE_ID,AS_GROUP_ID, false);
+    public void testEnterStandby() throws AwsException {
+        util.enterStandby(INSTANCE_ID, AS_GROUP_ID, false);
     }
 
     @Test

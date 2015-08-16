@@ -29,7 +29,7 @@ public class DeployUtils {
     }
 
     public List<Request> createDeploySiteList(DeployConfiguration activeConfiguration, String siteClassifier) throws MojoFailureException {
-        return createDeployListByClassifier(activeConfiguration, siteClassifier).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(), activeConfiguration.getContext())).collect(Collectors.toList());
+        return createDeployListByClassifier(activeConfiguration, siteClassifier).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
     }
 
     public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {

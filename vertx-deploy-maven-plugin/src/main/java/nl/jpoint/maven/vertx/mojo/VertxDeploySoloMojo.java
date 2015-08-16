@@ -1,9 +1,8 @@
 package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.config.DeployConfiguration;
-import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
-import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
+import nl.jpoint.maven.vertx.service.DefaultDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -12,7 +11,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.util.List;
 
-@Mojo(name = "deploy-solo")
+@Mojo(name = "deploy-direct")
 public class VertxDeploySoloMojo extends AbstractDeployMojo {
 
     @Parameter(property = "deploy.remoteIp", required = true)
@@ -31,24 +30,13 @@ public class VertxDeploySoloMojo extends AbstractDeployMojo {
 
         super.activeConfiguration = configuration;
         final DeployUtils utils = new DeployUtils(getLog(), project);
-        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
 
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
 
-        DeployRequest deployRequest = new DeployRequest.Builder()
-                .withModules(deployModuleRequests)
-                .withArtifacts(deployArtifactRequests)
-                .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
-                .withRestart(true)
-                .withElb(false)
-                .build();
+        DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
+        service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
 
-        getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
-        getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
-        getLog().debug("Sending request -> " + deployRequest.toJson(true));
-
-        executor.executeRequest(deployRequest, remoteIp, false);
     }
 }

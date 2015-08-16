@@ -109,7 +109,7 @@ public class DeployRequest {
             return this;
         }
 
-        public Builder withDecrementDesiredCapacity(final boolean decrementDesiredCapacity ) {
+        public Builder withDecrementDesiredCapacity(final boolean decrementDesiredCapacity) {
             this.decrementDesiredCapacity = decrementDesiredCapacity;
             return this;
         }

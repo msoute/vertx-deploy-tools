@@ -5,15 +5,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
-import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
-import com.amazonaws.services.autoscaling.model.Instance;
-import com.amazonaws.services.autoscaling.model.LifecycleState;
-import com.amazonaws.services.autoscaling.model.ResumeProcessesRequest;
-import com.amazonaws.services.autoscaling.model.SetDesiredCapacityRequest;
-import com.amazonaws.services.autoscaling.model.SuspendProcessesRequest;
-import com.amazonaws.services.autoscaling.model.UpdateAutoScalingGroupRequest;
+import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
@@ -26,7 +18,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,12 +29,10 @@ public class AwsAutoScalingDeployUtils {
     private final AmazonElasticLoadBalancingClient awsElbClient;
     private final AmazonEC2Client awsEc2Client;
 
-    public AwsAutoScalingDeployUtils(String serverId, Settings settings, String region) throws MojoFailureException {
-        if (settings.getServer(serverId) == null) {
-            throw new MojoFailureException("No server config for id : " + serverId);
+    public AwsAutoScalingDeployUtils(Server server, String region) throws MojoFailureException {
+        if (server == null) {
+            throw new MojoFailureException("No server config provided");
         }
-        Server server = settings.getServer(serverId);
-
         BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
         Region awsRegion = Region.getRegion(Regions.fromName(region));
         awsAsClient = new AmazonAutoScalingClient(credentials);

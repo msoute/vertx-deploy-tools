@@ -11,7 +11,6 @@ import nl.jpoint.maven.vertx.config.DeployConfiguration;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
 
 
 public class AwsOpsWorksDeployUtils {
@@ -19,17 +18,11 @@ public class AwsOpsWorksDeployUtils {
     private final AWSOpsWorksClient awsOpsWorksClient;
 
 
-    public AwsOpsWorksDeployUtils(String serverId, Settings settings, String region) throws MojoFailureException {
-        if (settings.getServer(serverId) == null) {
-            throw new MojoFailureException("No server config for id : " + serverId);
-        }
-        Server server = settings.getServer(serverId);
-
+    public AwsOpsWorksDeployUtils(Server server, String region) throws MojoFailureException {
         BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
         Region awsRegion = Region.getRegion(Regions.fromName(region));
         awsOpsWorksClient = new AWSOpsWorksClient(credentials);
         awsOpsWorksClient.setRegion(awsRegion);
-
     }
 
 
