@@ -54,13 +54,6 @@ identified by type config
 These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always after config artifacts and before modules
 identified by classifier site
 
-#### For config artifacts
-<?xml version="1.0"?>
-<artifact>
-    <baselocation>/etc/nginx/conf.d/</baselocation>
-    <testCommand>sudo nginx -t</testCommand>
-    <restartCommand>sudo service nginx restart</restartCommand>
-</artifact>
 ## Maven Plugin Configuration
     ...
     <plugin>
