@@ -3,7 +3,7 @@ package nl.jpoint.maven.vertx.executor;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
+import nl.jpoint.maven.vertx.config.DeployConfiguration;
 import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;

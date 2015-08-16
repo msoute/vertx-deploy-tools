@@ -1,7 +1,7 @@
 package nl.jpoint.maven.vertx.utils;
 
 
-import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
+import nl.jpoint.maven.vertx.config.DeployConfiguration;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;

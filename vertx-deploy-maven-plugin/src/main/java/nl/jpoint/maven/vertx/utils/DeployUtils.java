@@ -1,6 +1,6 @@
 package nl.jpoint.maven.vertx.utils;
 
-import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
+import nl.jpoint.maven.vertx.config.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
 import nl.jpoint.maven.vertx.request.DeployModuleRequest;

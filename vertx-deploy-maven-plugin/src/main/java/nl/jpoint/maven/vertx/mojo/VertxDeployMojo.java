@@ -1,7 +1,9 @@
 package nl.jpoint.maven.vertx.mojo;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import nl.jpoint.maven.vertx.executor.AwsRequestExecutor;
 import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
+import nl.jpoint.maven.vertx.executor.RequestExecutor;
 import nl.jpoint.maven.vertx.executor.WaitForInstanceRequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
@@ -84,7 +86,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         }
 
         for (Ec2Instance instance : instances) {
-            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
+            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port);
             boolean awsGroupIsInService = isInService(instances);
             getLog().info("Auto scaling group inService :  " + awsGroupIsInService);
             boolean ignoreFailure = ignoreFailure(awsGroupIsInService, instance, countInServiceInstances(instances));
@@ -101,7 +103,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
-            AwsState newState = executor.executeAwsDeployRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.withElb(), ignoreFailure);
+            AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), ignoreFailure);
             getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
             instance.updateState(newState);
 
@@ -160,13 +162,12 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
         for (String host : activeConfiguration.getHosts()) {
 
-            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
-            executor.executeAwsDeployRequest(deployRequest, host, activeConfiguration.withElb(), false);
+            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port);
+            executor.executeRequest(deployRequest, host, false);
         }
     }
 
     private void normalDeploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
-
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)
@@ -174,11 +175,10 @@ class VertxDeployMojo extends AbstractDeployMojo {
                 .withElb(activeConfiguration.withElb())
                 .withRestart(activeConfiguration.doRestart())
                 .build();
-
-
+        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
         for (String host : activeConfiguration.getHosts()) {
-            final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
-            executor.executeDeployRequest(deployRequest, host);
+            executor.executeRequest(deployRequest, host, false);
         }
+
     }
 }

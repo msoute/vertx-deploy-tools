@@ -1,0 +1,55 @@
+package nl.jpoint.maven.vertx.executor;
+
+
+import nl.jpoint.maven.vertx.request.DeployRequest;
+import nl.jpoint.maven.vertx.utils.AwsState;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+
+import java.io.ByteArrayInputStream;
+import java.util.Date;
+
+public abstract class RequestExecutor {
+    protected final Log log;
+    private final Integer port;
+    private final long timeout;
+
+    public RequestExecutor(Log log, Integer requestTimeout, Integer port) {
+        this.log = log;
+        this.port = port;
+        this.timeout = System.currentTimeMillis() + (60000L * requestTimeout);
+        log.info("Setting timeout to : " + new Date(timeout));
+    }
+
+    protected HttpPost createPost(DeployRequest deployRequest, String host) {
+        log.info("Deploying to host : " + host);
+        HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
+        ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson(false).getBytes());
+        BasicHttpEntity entity = new BasicHttpEntity();
+        entity.setContent(bos);
+        entity.setContentLength(deployRequest.toJson(false).getBytes().length);
+        post.setEntity(entity);
+        return post;
+    }
+
+
+    private String createDeployUri(String host) {
+        if (!host.startsWith("http://")) {
+            host = "http://" + host;
+        }
+        if (!host.endsWith(Integer.toString(port))) {
+            host = host + ":" + port;
+        }
+        return host;
+    }
+
+    protected long getTimeout() {
+        return timeout;
+    }
+
+
+    public abstract AwsState executeRequest(DeployRequest deployRequest, String host, boolean ignoreFailure) throws MojoExecutionException, MojoFailureException;
+}

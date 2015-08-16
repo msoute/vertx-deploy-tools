@@ -1,4 +1,4 @@
-package nl.jpoint.maven.vertx.mojo;
+package nl.jpoint.maven.vertx.config;
 
 import org.apache.maven.model.Exclusion;
 
@@ -90,10 +90,6 @@ public class DeployConfiguration {
         this.testScope = testScope;
     }
 
-    public String getTag() {
-        return tag;
-    }
-
     public boolean isDeployConfig() {
         return deployConfig;
     }
@@ -104,10 +100,6 @@ public class DeployConfiguration {
 
     public boolean isIgnoreInStandby() {
         return ignoreInStandby;
-    }
-
-    public void setIgnoreInStandby(boolean ignoreInStandby) {
-        this.ignoreInStandby = ignoreInStandby;
     }
 
     public boolean isIgnoreDeployState() {

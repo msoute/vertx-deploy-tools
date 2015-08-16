@@ -6,15 +6,18 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
-@Mojo(name = "deploy-module")
-class VertxDeployModuleMojo extends AbstractDeployMojo {
+@Mojo(name = "deploy-single")
+class VertxDeploySingleMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
-
         setActiveDeployConfig();
-        DeployModuleRequest request = new DeployModuleRequest(project.getGroupId(), project.getArtifactId(), project.getVersion(), project.getArtifact().getType(), 4, activeConfiguration.doRestart());
-        executor.executeSingleDeployRequest(activeConfiguration, request);
+        // DeployModuleRequest request = new DeployModuleRequest();
+        // executor.executeRequest(request, activeConfiguration, false);
+    }
+
+    private DeployModuleRequest createModuleRequest() {
+        return new DeployModuleRequest(project.getGroupId(), project.getArtifactId(), project.getVersion(), project.getArtifact().getType(), 4, activeConfiguration.doRestart());
     }
 }

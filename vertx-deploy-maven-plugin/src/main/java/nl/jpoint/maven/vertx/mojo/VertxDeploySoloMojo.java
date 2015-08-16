@@ -1,5 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.config.DeployConfiguration;
 import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
@@ -11,10 +12,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.util.List;
 
-@Mojo(name = "single-deploy")
-public class VertxSingleDeployMojo extends AbstractDeployMojo {
+@Mojo(name = "deploy-solo")
+public class VertxDeploySoloMojo extends AbstractDeployMojo {
 
-    @Parameter(property = "deploy.remoteIp")
+    @Parameter(property = "deploy.remoteIp", required = true)
     private String remoteIp;
     @Parameter(property = "deploy.stubbed", defaultValue = "true")
     private Boolean stubbed;
@@ -47,7 +48,7 @@ public class VertxSingleDeployMojo extends AbstractDeployMojo {
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
         getLog().debug("Sending request -> " + deployRequest.toJson(true));
-        executor.executeDeployRequest(deployRequest, remoteIp);
 
+        executor.executeRequest(deployRequest, remoteIp, false);
     }
 }
