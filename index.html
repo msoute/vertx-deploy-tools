@@ -1,34 +1,25 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>Vertx-deploy-tools by msoute</title>
-
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-light.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Vertx-deploy-tools</h1>
-        <p>vertx-deploy-tools</p>
+    <section class="page-header">
+      <h1 class="project-name">Vertx-deploy-tools</h1>
+      <h2 class="project-tagline">vertx-deploy-tools</h2>
+      <a href="https://github.com/msoute/vertx-deploy-tools" class="btn">View on GitHub</a>
+      <a href="https://github.com/msoute/vertx-deploy-tools/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/msoute/vertx-deploy-tools/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-        <p class="view"><a href="https://github.com/msoute/vertx-deploy-tools">View the Project on GitHub <small>msoute/vertx-deploy-tools</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/msoute/vertx-deploy-tools/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/msoute/vertx-deploy-tools/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/msoute/vertx-deploy-tools">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="vertx-deploy-mod" class="anchor" href="#vertx-deploy-mod" aria-hidden="true"><span class="octicon octicon-link"></span></a>vertx-deploy-mod</h1>
 
 <h1>
@@ -40,6 +31,76 @@
 
 <h1>
 <a id="installation--configuration" class="anchor" href="#installation--configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation / Configuration</h1>
+
+<h2>
+<a id="deploy-artifacts" class="anchor" href="#deploy-artifacts" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deploy artifacts.</h2>
+
+<p>The plugin uses the projects pom to determine what artifacts need to be deployed. There are three types of artifacts (in the order of deployment)</p>
+
+<ul>
+<li>config : configuration files, unpacked to a specified location</li>
+<li>static artifacts : static content, sites etc that are extracted to a specified location on the target host</li>
+<li>modules : Vert.x (2) packaged modules</li>
+</ul>
+
+<p>To instruct the plugin to deploy an artifact (module, artifact or config) it only needs to be added as a dependency to the pom.xml. The plugin ignores all dependencies specified in parent poms or transitive.</p>
+
+<h3>
+<a id="vertx-mod-artifact" class="anchor" href="#vertx-mod-artifact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Vert.x Mod artifact</h3>
+
+<pre><code>...
+&lt;dependency&gt;
+    &lt;groupId&gt;[groupId]&lt;/groupId&gt;
+    &lt;artifactId&gt;[artifactId]&lt;/artifactId&gt;
+    &lt;version&gt;[version]&lt;/version&gt;
+    &lt;classifier&gt;mod&lt;/classifier&gt;
+    &lt;type&gt;zip&lt;/type&gt;
+&lt;/dependency&gt;
+...
+</code></pre>
+
+<p>All modules will be installed as a module and started (either through init.d or internal see vertx module configuration)
+identified by classifier mod</p>
+
+<h3>
+<a id="config-artifact" class="anchor" href="#config-artifact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Config artifact</h3>
+
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;[groupId]&lt;/groupId&gt;
+    &lt;artifactId&gt;[artifactId]&lt;/artifactId&gt;
+    &lt;version&gt;[version]&lt;/version&gt;
+    &lt;classifier&gt;[classifier]&lt;/version&gt;
+    &lt;type&gt;config&lt;/type&gt;
+&lt;/dependency&gt;
+</code></pre>
+
+<p>These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always before static artifacts or modules
+identified by type config</p>
+
+<h3>
+<a id="static-artifact" class="anchor" href="#static-artifact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Static artifact</h3>
+
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;[groupId]&lt;/groupId&gt;
+    &lt;artifactId&gt;[artifactId]&lt;/artifactId&gt;
+    &lt;version&gt;[version]&lt;/version&gt;
+    &lt;classifier&gt;site&lt;/version&gt;
+    &lt;type&gt;zip&lt;/type&gt;
+&lt;/dependency&gt;
+</code></pre>
+
+<p>These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always after config artifacts and before modules
+identified by classifier site</p>
+
+<h4>
+<a id="for-config-artifacts" class="anchor" href="#for-config-artifacts" aria-hidden="true"><span class="octicon octicon-link"></span></a>For config artifacts</h4>
+
+<p>&lt;?xml version="1.0"?&gt;
+
+    /etc/nginx/conf.d/
+    sudo nginx -t
+    sudo service nginx restart
+</p>
 
 <h2>
 <a id="maven-plugin-configuration" class="anchor" href="#maven-plugin-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Maven Plugin Configuration</h2>
@@ -142,6 +203,80 @@
 <strong>String opsWorksLayerId</strong> : The layer id to get a list of instances from.</li>
 </ul>
 
+<h3>
+<a id="mojos" class="anchor" href="#mojos" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mojos</h3>
+
+<p>General Mojo parameters</p>
+
+<ul>
+<li>
+<strong>deploy.activeTarget</strong> : selects the target configuration</li>
+<li>
+<strong>deploy.requestTimeout</strong> : overwrites the default timeout (in minutes)</li>
+</ul>
+
+<h4>
+<a id="mvn-deploydeploy" class="anchor" href="#mvn-deploydeploy" aria-hidden="true"><span class="octicon octicon-link"></span></a>mvn deploy:deploy</h4>
+
+<p>The default mojo. Based on configuration it wil deploy to a set of configured instances, instances in an OpWorks layer or instances in an auto scaling group.
+When deploying to an OpsWorks based set of instances the deploy module can be configured to wait for every instance to come InService on an elb before continuing.</p>
+
+<p>When deploying to an auto scaling group the plugin wil (default) always try to keep at least one instance online and honor minimum limits configured in an auto scaling group. If it fails
+to honor those limits the deploy wil fail. The plugin can be configured to ignore the minimum limit of 1  healthy instance ( <strong>ignoreDeployState</strong> ). It also defaults to keep the same capacity of InService instances
+during the deploy by adding one instances to the auto scaling group and waiting for it to come InService on all configured elb's ( <strong>elb</strong> ) or in the auto scaling group 
+If the plugin is configured to ignore the current capacity ( <strong>keepCurrentCapacity</strong> ). The capacity wil drop to n-1 during the deploy. The deploy will fail if only one instance is InService,
+this can be ignored ( <strong>ignoreDeployState</strong> )</p>
+
+<p>During deploys to an auto scaling group the plugin wil first try to deploy Standby instances and put those back into service. This can be overridden with <strong>ignoreInStandby</strong></p>
+
+<p>When an instance is put InStandby for deployment it wil decrement the desired capacity of the auto scaling group with 1. This can be overridden (  <strong>decrementDesiredCapacity</strong> ). Note that an
+auto scaling group will always try to conform to the configured desired amount i.e. it wil launch a new instance.</p>
+
+<p>Note : During a deploy to an auto scaling group the deploy mod temporarily suspends the following auto scaling policies : <em>ScheduledActions</em> , <em>Terminate</em> and <em>ReplaceUnhealthy</em>. These processes are resumed
+after the deploy finished (or fails). If the maven task is killed during the deploy those processes are not automatically. This can be fixed either by running a new deploy or with the AWS CLI  </p>
+
+<p>Note : The plugin assumes that a deploy is ready when an instance reaches the status <em>InService</em> on all elb's or when no elb's are attached in the auto scaling group. The default ELB health check
+does not guarantee any application to be ready and listening. A custom elb health-check needs to be <a href="http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/elb-healthchecks.html">configured</a>. </p>
+
+<p>Maven options :</p>
+
+<h4>
+<a id="mvn-deploydeploy-direct" class="anchor" href="#mvn-deploydeploy-direct" aria-hidden="true"><span class="octicon octicon-link"></span></a>mvn deploy:deploy-direct</h4>
+
+<p>Deploys to a single instance. For example when an instance comes online tools like puppet can instruct a remote Jenkins instance to schedule a build to deploy a set of modules to the newly created instance. 
+This mojo ignores <strong>deploy.activeTarget</strong> </p>
+
+<ul>
+<li>
+<strong>deploy.remoteIp</strong> : The Ip to deploy to <em>required</em> .</li>
+<li>
+<strong>deploy.testScope</strong> : Include test artifacts  (default : <em>false</em>)</li>
+<li>
+<strong>deploy.withConfig</strong> : Include config artifacts (default : <em>true</em>)</li>
+</ul>
+
+<h4>
+<a id="mvn-deploydeploy-single" class="anchor" href="#mvn-deploydeploy-single" aria-hidden="true"><span class="octicon octicon-link"></span></a>mvn deploy:deploy-single</h4>
+
+<p>Deploys a single artifact to a DeployTarget </p>
+
+<ul>
+<li>
+<strong>deploy.single.type</strong> : artifact type <em>required</em>
+</li>
+<li>
+<strong>deploy.single.groupId</strong> : The artifact groupId <em>required</em>
+</li>
+<li>
+<strong>deploy.single.artifactId</strong> : The artifactId <em>required</em>
+</li>
+<li>
+<strong>deploy.single.classifier</strong> : The artifact classifier </li>
+<li>
+<strong>deploy.single.version</strong> : The artifact version <em>required</em>
+</li>
+</ul>
+
 <h2>
 <a id="vertx-module-configuration" class="anchor" href="#vertx-module-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Vert.X Module Configuration</h2>
 
@@ -211,18 +346,14 @@ Source level changed to 1.8</p>
 <li>Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes</li>
 </ul>
 
-<h2>
-<a id="vertx-deploy-mod-1" class="anchor" href="#vertx-deploy-mod-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Vert.X deploy mod</h2>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/msoute/vertx-deploy-tools">Vertx-deploy-tools</a> is maintained by <a href="https://github.com/msoute">msoute</a>.</span>
 
-<p>A Vert.X based module to deploy that is able to deploy other modules into the local Vert.X container. If configured it takes into account
-ElasticLoadBalancers the instance is a member if to.</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/msoute">msoute</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
+
+    </section>
+
+  
   </body>
 </html>
