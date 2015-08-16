@@ -64,7 +64,7 @@ public class AwsDeployModule extends Verticle {
         });
 
         httpServer.requestHandler(matcher);
-        httpServer.listen(6789);
+        httpServer.listen(getContainer().config().getInteger("http.port", 6789));
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
 

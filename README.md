@@ -20,6 +20,10 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 * [Maven Plugin] Make port configurable, defaults to 6789
 * [Maven Plugin] Make aws region configurable, defaults to eu-west-1
 
+* [Vertx Module] Dropped custom Aws implementation in favor of Amazon SDK
+* [Vertx Module] Make port configurable `http.port` , defaults to 6789
+* [Vertx Module] Make aws region configurable, defaults to eu-west-1
+
 Note 
 Source level changed to 1.8
 

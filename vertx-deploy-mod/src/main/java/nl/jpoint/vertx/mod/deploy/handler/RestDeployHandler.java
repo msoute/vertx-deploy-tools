@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 import java.io.IOException;
@@ -43,84 +42,81 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
 
     @Override
     public void handle(final HttpServerRequest request) {
-        request.bodyHandler(new Handler<Buffer>() {
-            @Override
-            public void handle(Buffer event) {
-                ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
+        request.bodyHandler(event -> {
+            ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
 
-                DeployRequest deployRequest;
+            DeployRequest deployRequest;
 
-                if (event.getBytes() == null || event.getBytes().length == 0) {
-                    LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
-                    respondFailed(request);
-                    return;
-                }
-                byte[] eventBody = event.getBytes();
-                LOG.debug("{}: received postdata size  -> {} ", LogConstants.DEPLOY_REQUEST, eventBody.length);
-                LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, new String(eventBody));
-                try {
-                    deployRequest = reader.readValue(event.getBytes());
-                } catch (IOException e) {
-                    LOG.error("{}: Error while reading postdata -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
-                    respondFailed(request);
-                    return;
-                }
-
-                LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
-                        deployRequest.getId().toString(),
-                        deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,
-                        deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
-                        deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
-
-                boolean deployOk;
-
-
-                if (deployRequest.withElb()) {
-                    if (awsService.registerRequest(deployRequest)) {
-                        respondContinue(request, deployRequest.getId().toString());
-                        awsService.deRegisterInstance(deployRequest.getId().toString());
-                    } else {
-                        respondFailed(request);
-                    }
-                    return;
-                }
-
-                if (deployRequest.withRestart()) {
-                    ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
-                }
-
-                if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
-                    for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
-                        deployOk = configDeployService.deploy(configRequest);
-                        if (!deployOk) {
-                            respondFailed(request);
-                            return;
-                        }
-                    }
-                }
-
-                if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
-                    for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
-                        deployOk = artifactDeployService.deploy(artifactRequest);
-                        if (!deployOk) {
-                            respondFailed(request);
-                            return;
-                        }
-                    }
-                }
-
-                if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
-                    for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
-                        deployOk = moduleDeployService.deploy(moduleRequest);
-                        if (!deployOk) {
-                            respondFailed(request);
-                            return;
-                        }
-                    }
-                }
-
-                respondOk(request);
+            if (event.getBytes() == null || event.getBytes().length == 0) {
+                LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
+                respondFailed(request);
+                return;
             }
+            byte[] eventBody = event.getBytes();
+            LOG.debug("{}: received postdata size  -> {} ", LogConstants.DEPLOY_REQUEST, eventBody.length);
+            LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, new String(eventBody));
+            try {
+                deployRequest = reader.readValue(event.getBytes());
+            } catch (IOException e) {
+                LOG.error("{}: Error while reading postdata -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
+                respondFailed(request);
+                return;
+            }
+
+            LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
+                    deployRequest.getId().toString(),
+                    deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,
+                    deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
+                    deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
+
+            boolean deployOk;
+
+
+            if (deployRequest.withElb()) {
+                if (awsService.registerRequest(deployRequest)) {
+                    respondContinue(request, deployRequest.getId().toString());
+                    awsService.deRegisterInstance(deployRequest.getId().toString());
+                } else {
+                    respondFailed(request);
+                }
+                return;
+            }
+
+            if (deployRequest.withRestart()) {
+                ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
+            }
+
+            if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
+                for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
+                    deployOk = configDeployService.deploy(configRequest);
+                    if (!deployOk) {
+                        respondFailed(request);
+                        return;
+                    }
+                }
+            }
+
+            if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
+                for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
+                    deployOk = artifactDeployService.deploy(artifactRequest);
+                    if (!deployOk) {
+                        respondFailed(request);
+                        return;
+                    }
+                }
+            }
+
+            if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
+                for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
+                    deployOk = moduleDeployService.deploy(moduleRequest);
+                    if (!deployOk) {
+                        respondFailed(request);
+                        return;
+                    }
+                }
+            }
+
+            respondOk(request);
         });
     }
 

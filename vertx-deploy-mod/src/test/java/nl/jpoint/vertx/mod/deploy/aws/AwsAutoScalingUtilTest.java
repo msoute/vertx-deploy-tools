@@ -17,9 +17,8 @@ public class AwsAutoScalingUtilTest {
 
     private final AwsContext context = AwsContext.build(ACCESS_KEY, SECRET_ACCESS_KEY, AWS_REGION);
 
-    AwsAutoScalingUtil util = new AwsAutoScalingUtil(context);
-    AwsElbUtil elbUtil = new AwsElbUtil(ACCESS_KEY, SECRET_ACCESS_KEY, "eu-west-1", ELB, INSTANCE_ID);
-
+    private AwsAutoScalingUtil util = new AwsAutoScalingUtil(context);
+    private AwsElbUtil elbUtil = new AwsElbUtil(context, INSTANCE_ID, ELB);
 
     @Test
     @Ignore
@@ -40,7 +39,6 @@ public class AwsAutoScalingUtilTest {
     public void testListLoadBalancersInGroup() throws AwsException {
         List<String> result = util.listLoadBalancers(AS_GROUP_ID);
         Assert.assertEquals(1, result.size());
-
     }
 
     @Test
@@ -61,6 +59,4 @@ public class AwsAutoScalingUtilTest {
     public void testExitStandby() throws AwsException {
         util.exitStandby(INSTANCE_ID, AS_GROUP_ID);
     }
-
-
 }

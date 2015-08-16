@@ -17,9 +17,9 @@ import java.util.Map;
 
 public class AwsService {
     private static final Logger LOG = LoggerFactory.getLogger(AwsService.class);
+    private static final String DEFAULT_REGION = "eu-west-1";
     private final Vertx vertx;
     private final JsonObject config;
-    /*private final AwsElbUtil awsElbUtil;*/
     private AwsContext awsContext;
 
     private final Map<String, DeployRequest> runningRequests = new HashMap<>();
@@ -28,7 +28,7 @@ public class AwsService {
         this.vertx = vertx;
         this.config = config;
 
-        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("eu-west-1"));
+        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("aws.region", DEFAULT_REGION));
     }
 
     public boolean registerRequest(DeployRequest deployRequest) {
