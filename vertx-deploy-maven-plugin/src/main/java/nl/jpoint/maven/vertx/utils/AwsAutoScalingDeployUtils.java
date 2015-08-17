@@ -122,14 +122,12 @@ public class AwsAutoScalingDeployUtils {
         if (targetedInstances == 0) {
             return false;
         }
-        if (activeConfiguration.isIgnoreFailure() && activeConfiguration.getMinCapacity() < inServiceInstances) {
-            return true;
-        }
-
         if (activeConfiguration.isKeepCurrentCapacity() && inServiceInstances <= autoScalingGroup.getDesiredCapacity() - 1) {
             return false;
         }
-
+        if (activeConfiguration.isIgnoreFailure() && activeConfiguration.getMinCapacity() < inServiceInstances) {
+            return true;
+        }
         return !(inServiceInstances == 1 && !activeConfiguration.isIgnoreState());
     }
 
