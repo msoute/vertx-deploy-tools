@@ -35,7 +35,7 @@ public class AwsDeployUtilsTest {
 
     @Before
     public void init() throws IOException, XmlPullParserException, MojoFailureException {
-        deployUtils = new AwsAutoScalingDeployUtils("deploy-mod-test", settings, "eu-west-1");
+        deployUtils = new AwsAutoScalingDeployUtils(settings.getServer("deploy-mod-test"), "eu-west-1", deployConfiguration);
         when(deployConfiguration.getAutoScalingGroupId()).thenReturn(settings.getServer("deploy-mod-test").getPassphrase());
     }
 
@@ -43,14 +43,14 @@ public class AwsDeployUtilsTest {
     @Test
     @Ignore
     public void testSuspendScheduledActions() throws Exception {
-        deployUtils.suspendScheduledActions(null, deployConfiguration);
-        deployUtils.setMinimalCapacity(null, 1, deployConfiguration);
+        deployUtils.suspendScheduledActions(null);
+        deployUtils.setMinimalCapacity(null, 1);
     }
 
     @Test
     @Ignore
     public void testResumeScheduledActions() throws Exception {
-        deployUtils.setMinimalCapacity(null, 2, deployConfiguration);
-        deployUtils.resumeScheduledActions(null, deployConfiguration);
+        deployUtils.setMinimalCapacity(null, 2);
+        deployUtils.resumeScheduledActions(null);
     }
 }

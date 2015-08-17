@@ -102,13 +102,19 @@ Multiple targets can be configured. The target configuration can be selected wit
 #### Aws AutoScaling Configuration Options
 * **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
 * **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *false*)
-* **ignoreState** : Ignore if the application will go offline during a deploy and the InService count drops under the configured minimum instance count (default : *false*)
-* **ignoreFailure** : Continue deploying after a deploy failed.
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
-* **keepCurrentCapacity** : if true an extra instance will be added to the auto scaling group. The deploy continues after the new instance comes InService on Elb or auto scaling group. After the deploy one instance will be removed from the auto scaling group. The capacity wil never grow beyond the groups max instance setting. (default : *true*) 
-* **maxCapacity** : If **keepCurrentCapacity** is true, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
-* **minCapacity** : If **ignoreFailure** is true and a deploy failed the build wil also fail if the capacity drops under **minCapacity** 
+* **maxCapacity** : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
+* **minCapacity** : If Strategy is GUARANTEE_MINIMUM and a deploy failed the build wil also fail if the capacity drops under the configured minimum. (default : *1*)
+* **deployStrategy** : The deploy strategy to use. Valid values are *KEEP_CAPACITY*, *GUARANTEE_MINIMUM*, *WHATEVER*. (default: *KEEP_CAPACITY) 
 
+#### Auto Scaling deploy strategies.
+
+* **KEEP_CAPACITY** : The deploy mod wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
+configured maximum. If *maxCapacity** is configured the desired count wil never be greater than **maxCapacity**. If *elb** is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. 
+* **GUARANTEE_MINIMUM** : Yhe deploy mod does not care if a single instance deploy fails. As long as the InService count never drops below **minCapacity**. With **elb** the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.
+* **WHATEVER** : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)
+
+Note : When there are no InService instances (elb or auto scaling group) on start of the deploy the strategy wil set to **WHATEVER**
 
 #### Aws OpsWorks Configuration Options
 * **String opsWorksLayerId** : The layer id to get a list of instances from.
@@ -123,12 +129,6 @@ General Mojo parameters
 
 The default mojo. Based on configuration it wil deploy to a set of configured instances, instances in an OpWorks layer or instances in an auto scaling group.
 When deploying to an OpsWorks based set of instances the deploy module can be configured to wait for every instance to come InService on an elb before continuing.
-
- When deploying to an auto scaling group the plugin wil (default) always try to keep at least one instance online and honor minimum limits configured in an auto scaling group. If it fails
-to honor those limits the deploy wil fail. The plugin can be configured to ignore the minimum limit of 1  healthy instance ( **ignoreDeployState** ). It also defaults to keep the same capacity of InService instances
-during the deploy by adding one instances to the auto scaling group and waiting for it to come InService on all configured elb's ( **elb** ) or in the auto scaling group 
-If the plugin is configured to ignore the current capacity ( **keepCurrentCapacity** ). The capacity wil drop to n-1 during the deploy. The deploy will fail if only one instance is InService,
-this can be ignored ( **ignoreDeployState** )
 
 During deploys to an auto scaling group the plugin wil first try to deploy Standby instances and put those back into service. This can be overridden with **ignoreInStandby**
 

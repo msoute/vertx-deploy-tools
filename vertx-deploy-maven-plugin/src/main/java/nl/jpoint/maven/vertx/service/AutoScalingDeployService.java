@@ -10,6 +10,8 @@ import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.Ec2Instance;
+import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStateStrategyFactory;
+import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -43,16 +45,22 @@ public class AutoScalingDeployService extends DeployService {
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
 
-        if (activeConfiguration.isKeepCurrentCapacity() && awsDeployUtils.shouldDeployToAutoScalingGroup(asGroup)) {
+        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
+
+        if ((activeConfiguration.withElb() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
+                || !activeConfiguration.withElb() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))){
+            activeConfiguration.setDeployStrategy(DeployStrategyType.WHATEVER);
+        }
+
+        if (DeployStrategyType.KEEP_CAPACITY.equals(activeConfiguration.getDeployStrategy()) && awsDeployUtils.shouldAddExtraInstance(asGroup)) {
             // we need to add an extra instance and wait for it to come online
             awsDeployUtils.setDesiredCapacity(getLog(), asGroup, asGroup.getDesiredCapacity() + 1);
             WaitForInstanceRequestExecutor waitForInstanceRequestExecutor = new WaitForInstanceRequestExecutor(getLog(), 10);
             waitForInstanceRequestExecutor.executeRequest(asGroup, awsDeployUtils);
             // update the auto scaling group
             asGroup = awsDeployUtils.getAutoscalingGroup();
-            // update the auto scaling group instance list
         }
-        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
+        instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
         instances.sort((o1, o2) -> o1.getState().ordinal() - o2.getState().ordinal());
 
@@ -60,8 +68,8 @@ public class AutoScalingDeployService extends DeployService {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
 
-        if (!awsDeployUtils.isDeployable(asGroup, instances)) {
-            throw new MojoExecutionException("Autoscaling group is not in a deployable state.");
+        if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
+            throw new MojoExecutionException("Auto scaling group is not in a deployable state.");
         }
 
         awsDeployUtils.suspendScheduledActions(getLog());
@@ -74,9 +82,9 @@ public class AutoScalingDeployService extends DeployService {
 
         for (Ec2Instance instance : instances) {
             awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
-            if (!awsDeployUtils.isDeployable(asGroup, instances)) {
+            if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
                 awsDeployUtils.resumeScheduledActions(getLog());
-                throw new MojoExecutionException("Auto-scaling group is not in a deployable state.");
+                throw new MojoExecutionException("auto scaling group is not in a deployable state.");
             }
 
             final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port);
@@ -101,15 +109,15 @@ public class AutoScalingDeployService extends DeployService {
             } catch (MojoExecutionException | MojoFailureException e) {
                 getLog().error("Error during deploy. Resuming auto scaling processes.", e);
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
-                if (!awsDeployUtils.isDeployable(asGroup, instances)) {
+                if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
                     awsDeployUtils.resumeScheduledActions(getLog());
-                    throw new MojoExecutionException("Auto-scaling group is not in a deployable state.");
+                    throw new MojoExecutionException("auto scaling group is not in a deployable state.");
                 }
             }
         }
         awsDeployUtils.setMinimalCapacity(getLog(), originalMinSize);
 
-        if (activeConfiguration.isKeepCurrentCapacity()) {
+        if (DeployStrategyType.KEEP_CAPACITY.equals(activeConfiguration.getDeployStrategy())) {
             awsDeployUtils.setDesiredCapacity(getLog(), asGroup, originalDesiredCapacity);
         }
         awsDeployUtils.resumeScheduledActions(getLog());

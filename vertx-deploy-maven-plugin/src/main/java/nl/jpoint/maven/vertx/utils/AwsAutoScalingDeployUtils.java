@@ -9,7 +9,6 @@ import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.services.autoscaling.model.Instance;
-import com.amazonaws.services.autoscaling.model.LifecycleState;
 import com.amazonaws.services.autoscaling.model.ResumeProcessesRequest;
 import com.amazonaws.services.autoscaling.model.SetDesiredCapacityRequest;
 import com.amazonaws.services.autoscaling.model.SuspendProcessesRequest;
@@ -65,7 +64,7 @@ public class AwsAutoScalingDeployUtils {
         awsAsClient.suspendProcesses(new SuspendProcessesRequest()
                 .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
-        log.info("Suspended autoscaling processes.");
+        log.info("Suspended auto scaling processes.");
     }
 
     public void setMinimalCapacity(Log log, int cap) {
@@ -77,14 +76,14 @@ public class AwsAutoScalingDeployUtils {
         awsAsClient.resumeProcesses(new ResumeProcessesRequest()
                 .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
-        log.info("Resumed autoscaling processes.");
+        log.info("Resumed auto scaling processes.");
     }
 
     public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup) throws MojoFailureException, MojoExecutionException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
         activeConfiguration.getHosts().clear();
 
-        log.debug("describing instances in Autoscaling group");
+        log.debug("describing instances in auto scaling group");
 
         try {
             DescribeInstancesResult instancesResult = awsEc2Client.describeInstances(new DescribeInstancesRequest().withInstanceIds(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(Collectors.toList())));
@@ -98,39 +97,13 @@ public class AwsAutoScalingDeployUtils {
         }
     }
 
-    public boolean shouldDeployToAutoScalingGroup(AutoScalingGroup autoScalingGroup) {
+    public boolean shouldAddExtraInstance(AutoScalingGroup autoScalingGroup) {
         return autoScalingGroup.getInstances().size() < autoScalingGroup.getMaxSize() && !(activeConfiguration.getMaxCapacity() != -1 && autoScalingGroup.getInstances().size() < activeConfiguration.getMaxCapacity());
     }
 
     private Ec2Instance toEc2Instance(com.amazonaws.services.ec2.model.Instance instance) {
         return new Ec2Instance.Builder().withInstanceId(instance.getInstanceId()).withPrivateIp(instance.getPrivateIpAddress()).withPublicIp(instance.getPublicIpAddress()).build();
     }
-
-    public boolean isDeployable(AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
-        long healthyInstances = autoScalingGroup.getInstances().stream()
-                .filter(i -> i.getLifecycleState().equals(LifecycleState.InService.toString()))
-                .count();
-
-        long inStandbyInstances = autoScalingGroup.getInstances().stream()
-                .filter(i -> i.getLifecycleState().equals(LifecycleState.Standby.toString()))
-                .count();
-
-        long inServiceInstances = instances.stream().filter(i -> AwsState.INSERVICE.equals(i.getState())).count();
-
-        long targetedInstances = activeConfiguration.isIgnoreInStandby() ? healthyInstances : healthyInstances + inStandbyInstances;
-
-        if (targetedInstances == 0) {
-            return false;
-        }
-        if (activeConfiguration.isKeepCurrentCapacity() && inServiceInstances <= autoScalingGroup.getDesiredCapacity() - 1) {
-            return false;
-        }
-        if (activeConfiguration.isIgnoreFailure() && activeConfiguration.getMinCapacity() < inServiceInstances) {
-            return true;
-        }
-        return !(inServiceInstances == 1 && !activeConfiguration.isIgnoreState());
-    }
-
 
     public boolean setDesiredCapacity(Log log, AutoScalingGroup autoScalingGroup, Integer capacity) {
         log.info("Setting desired capacity to : " + capacity);
