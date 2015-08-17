@@ -17,7 +17,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         setActiveDeployConfig();
 
-        if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsworks()) {
+        if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsWorks()) {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has both OpsWorks and Autoscaling enabled");
         }
 
@@ -33,7 +33,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (activeConfiguration.useAutoScaling()) {
             AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog());
             service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        } else if (activeConfiguration.useOpsworks()) {
+        } else if (activeConfiguration.useOpsWorks()) {
             OpsWorksDeployService service = new OpsWorksDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog());
             service.deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else {

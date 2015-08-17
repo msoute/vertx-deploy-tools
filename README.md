@@ -102,7 +102,7 @@ Multiple targets can be configured. The target configuration can be selected wit
 #### Aws AutoScaling Configuration Options
 * **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
 * **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *false*)
-* **ignoreDeployState** : Ignore if the application will go offline during a deploy and the InService count drops under the configured minimum instance count (default : *false*)
+* **ignoreState** : Ignore if the application will go offline during a deploy and the InService count drops under the configured minimum instance count (default : *false*)
 * **ignoreFailure** : Continue deploying after a deploy failed.
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
 * **keepCurrentCapacity** : if true an extra instance will be added to the auto scaling group. The deploy continues after the new instance comes InService on Elb or auto scaling group. After the deploy one instance will be removed from the auto scaling group. The capacity wil never grow beyond the groups max instance setting. (default : *true*) 

@@ -130,7 +130,7 @@ public class AwsAutoScalingDeployUtils {
             return false;
         }
 
-        return !(inServiceInstances == 1 && !activeConfiguration.isIgnoreDeployState());
+        return !(inServiceInstances == 1 && !activeConfiguration.isIgnoreState());
     }
 
 

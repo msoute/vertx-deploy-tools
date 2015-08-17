@@ -32,7 +32,7 @@ public class DeployConfiguration {
     /** AWS AutoScaling Properties **/
     private String autoScalingGroupId;
     private boolean ignoreInStandby = false;
-    private boolean ignoreDeployState = false;
+    private boolean ignoreState = false;
     private boolean ignoreFailure = false;
     private boolean decrementDesiredCapacity = true;
     private boolean keepCurrentCapacity = true;
@@ -51,7 +51,7 @@ public class DeployConfiguration {
         return useAutoScaling;
     }
 
-    public boolean useOpsworks() {
+    public boolean useOpsWorks() {
         return useOpsWorks;
     }
 
@@ -107,8 +107,8 @@ public class DeployConfiguration {
         return ignoreInStandby;
     }
 
-    public boolean isIgnoreDeployState() {
-        return ignoreDeployState;
+    public boolean isIgnoreState() {
+        return ignoreState;
     }
 
     public boolean isKeepCurrentCapacity() {
