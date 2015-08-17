@@ -3,7 +3,6 @@ package nl.jpoint.maven.vertx.executor;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -19,19 +18,17 @@ public class WaitForInstanceRequestExecutor {
     private final Log log;
     private final long timeout;
 
-    private final DeployConfiguration activeConfiguration;
 
     private Instance newInstance = null;
 
-    public WaitForInstanceRequestExecutor(Log log, Integer requestTimeout, DeployConfiguration activeConfiguration) {
+    public WaitForInstanceRequestExecutor(Log log, Integer requestTimeout) {
         this.timeout = System.currentTimeMillis() + (60000L * requestTimeout);
         this.log = log;
-        this.activeConfiguration = activeConfiguration;
     }
 
     private void checkState(AtomicInteger atomicInteger, AutoScalingGroup originalGroup, AwsAutoScalingDeployUtils awsDeployUtils) {
         log.info("Waiting for new instance in asGroup to come in service...");
-        AutoScalingGroup updatedGroup = awsDeployUtils.getAutoscalingGroup(activeConfiguration);
+        AutoScalingGroup updatedGroup = awsDeployUtils.getAutoscalingGroup();
 
         if (updatedGroup.getInstances().equals(originalGroup.getInstances())) {
             log.info("no new instance found in autoscaling group.");

@@ -33,8 +33,11 @@ public class DeployConfiguration {
     private String autoScalingGroupId;
     private boolean ignoreInStandby = false;
     private boolean ignoreDeployState = false;
+    private boolean ignoreFailure = false;
     private boolean decrementDesiredCapacity = true;
     private boolean keepCurrentCapacity = true;
+    private Integer maxCapacity = -1;
+    private Integer minCapacity = 1;
 
     /** AWS OpsWorks Properties **/
     private String opsWorksLayerId = null;
@@ -114,5 +117,17 @@ public class DeployConfiguration {
 
     public boolean isDecrementDesiredCapacity() {
         return decrementDesiredCapacity;
+    }
+
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public Integer getMinCapacity() {
+        return minCapacity;
+    }
+
+    public boolean isIgnoreFailure() {
+        return ignoreFailure;
     }
 }

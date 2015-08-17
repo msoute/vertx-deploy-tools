@@ -103,8 +103,12 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
 * **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *false*)
 * **ignoreDeployState** : Ignore if the application will go offline during a deploy and the InService count drops under the configured minimum instance count (default : *false*)
+* **ignoreFailure** : Continue deploying after a deploy failed.
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
-* **keepCurrentCapacity** : if true an extra instance will be added to the auto scaling group. The deploy continues after the new instance comes InService on Elb or auto scaling group. After the deploy one instance will be removed from the auto scaling group. (default : *true*)
+* **keepCurrentCapacity** : if true an extra instance will be added to the auto scaling group. The deploy continues after the new instance comes InService on Elb or auto scaling group. After the deploy one instance will be removed from the auto scaling group. The capacity wil never grow beyond the groups max instance setting. (default : *true*) 
+* **maxCapacity** : If **keepCurrentCapacity** is true, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
+* **minCapacity** : If **ignoreFailure** is true and a deploy failed the build wil also fail if the capacity drops under **minCapacity** 
+
 
 #### Aws OpsWorks Configuration Options
 * **String opsWorksLayerId** : The layer id to get a list of instances from.
@@ -178,7 +182,7 @@ on the ELB's it is a member of. If the instance does not reach the inService sta
 # Changelog
 ## 1.2-SNAPSHOT
 
-* [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to false
+* [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to true
 * [Feature] Add local run support `deploy.internal`.
 * [Feature] Add support to deploy to autoscaling groups
 * [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
