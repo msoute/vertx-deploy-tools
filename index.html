@@ -1,37 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <title>Vertx-deploy-tools by msoute</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <title>Vertx-deploy-tools by msoute</title>
   </head>
-
   <body>
-    <div id="container">
-      <div class="inner">
-
-        <header>
-          <h1>Vertx-deploy-tools</h1>
-          <h2>vertx-deploy-tools</h2>
-        </header>
-
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/msoute/vertx-deploy-tools/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/msoute/vertx-deploy-tools/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/msoute/vertx-deploy-tools" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
-
-        <section id="main_content">
-          <h1>
+    <div class="wrapper">
+      <header>
+        <h1>Vertx-deploy-tools</h1>
+        <p>vertx-deploy-tools</p>
+        <p class="view"><a href="https://github.com/msoute/vertx-deploy-tools">View the Project on GitHub <small>msoute/vertx-deploy-tools</small></a></p>
+        <ul>
+          <li><a href="https://github.com/msoute/vertx-deploy-tools/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/msoute/vertx-deploy-tools/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/msoute/vertx-deploy-tools">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
 <a id="vertx-deploy-mod" class="anchor" href="#vertx-deploy-mod" aria-hidden="true"><span class="octicon octicon-link"></span></a>vertx-deploy-mod</h1>
 
 <h1>
@@ -190,12 +186,29 @@ identified by classifier site</p>
 <li>
 <strong>ignoreInStandby</strong> : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : <em>false</em>)</li>
 <li>
-<strong>ignoreDeployState</strong> : Ignore if the application will go offline during a deploy and the InService count drops under the configured minimum instance count (default : <em>false</em>)</li>
-<li>
 <strong>decrementDesiredCapacity</strong> Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : <em>true</em>)</li>
 <li>
-<strong>keepCurrentCapacity</strong> : if true an extra instance will be added to the auto scaling group. The deploy continues after the new instance comes InService on Elb or auto scaling group. After the deploy one instance will be removed from the auto scaling group. (default : <em>true</em>)</li>
+<strong>maxCapacity</strong> : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than <strong>maxCapacity</strong>. Defaults to max capacity in configured in auto scaling group.</li>
+<li>
+<strong>minCapacity</strong> : If Strategy is GUARANTEE_MINIMUM and a deploy failed the build wil also fail if the capacity drops under the configured minimum. (default : <em>1</em>)</li>
+<li>
+<strong>deployStrategy</strong> : The deploy strategy to use. Valid values are <em>KEEP_CAPACITY</em>, <em>GUARANTEE_MINIMUM</em>, <em>WHATEVER</em>. (default: *KEEP_CAPACITY) </li>
 </ul>
+
+<h4>
+<a id="auto-scaling-deploy-strategies" class="anchor" href="#auto-scaling-deploy-strategies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Auto Scaling deploy strategies.</h4>
+
+<ul>
+<li>
+<strong>KEEP_CAPACITY</strong> : The deploy mod wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
+configured maximum. If <em>maxCapacity</em>* is configured the desired count wil never be greater than <strong>maxCapacity</strong>. If <em>elb</em>* is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. </li>
+<li>
+<strong>GUARANTEE_MINIMUM</strong> : Yhe deploy mod does not care if a single instance deploy fails. As long as the InService count never drops below <strong>minCapacity</strong>. With <strong>elb</strong> the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.</li>
+<li>
+<strong>WHATEVER</strong> : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)</li>
+</ul>
+
+<p>Note : When there are no InService instances (elb or auto scaling group) on start of the deploy the strategy wil set to <strong>WHATEVER</strong></p>
 
 <h4>
 <a id="aws-opsworks-configuration-options" class="anchor" href="#aws-opsworks-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aws OpsWorks Configuration Options</h4>
@@ -222,12 +235,6 @@ identified by classifier site</p>
 
 <p>The default mojo. Based on configuration it wil deploy to a set of configured instances, instances in an OpWorks layer or instances in an auto scaling group.
 When deploying to an OpsWorks based set of instances the deploy module can be configured to wait for every instance to come InService on an elb before continuing.</p>
-
-<p>When deploying to an auto scaling group the plugin wil (default) always try to keep at least one instance online and honor minimum limits configured in an auto scaling group. If it fails
-to honor those limits the deploy wil fail. The plugin can be configured to ignore the minimum limit of 1  healthy instance ( <strong>ignoreDeployState</strong> ). It also defaults to keep the same capacity of InService instances
-during the deploy by adding one instances to the auto scaling group and waiting for it to come InService on all configured elb's ( <strong>elb</strong> ) or in the auto scaling group 
-If the plugin is configured to ignore the current capacity ( <strong>keepCurrentCapacity</strong> ). The capacity wil drop to n-1 during the deploy. The deploy will fail if only one instance is InService,
-this can be ignored ( <strong>ignoreDeployState</strong> )</p>
 
 <p>During deploys to an auto scaling group the plugin wil first try to deploy Standby instances and put those back into service. This can be overridden with <strong>ignoreInStandby</strong></p>
 
@@ -308,7 +315,7 @@ on the ELB's it is a member of. If the instance does not reach the inService sta
 <a id="12-snapshot" class="anchor" href="#12-snapshot" aria-hidden="true"><span class="octicon octicon-link"></span></a>1.2-SNAPSHOT</h2>
 
 <ul>
-<li>[Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option <code>keepCurrentCapacity</code> defaults to false</li>
+<li>[Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option <code>keepCurrentCapacity</code> defaults to true</li>
 <li>[Feature] Add local run support <code>deploy.internal</code>.</li>
 <li>[Feature] Add support to deploy to autoscaling groups</li>
 <li>[Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.</li>
@@ -347,15 +354,13 @@ Source level changed to 1.8</p>
 <ul>
 <li>Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes</li>
 </ul>
-        </section>
-
-        <footer>
-          Vertx-deploy-tools is maintained by <a href="https://github.com/msoute">msoute</a><br>
-          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
-
-        
-      </div>
+      </section>
     </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/msoute">msoute</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
   </body>
 </html>
