@@ -7,6 +7,8 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 
 # Changelog
 ## DEV
+## 1.1.24
+* [BUG] Fix #9
 
 ## 1.1.23
 * [BUG] Make sure decrementDesiredCapacity defaults to true if no value is present in DeployRequest
