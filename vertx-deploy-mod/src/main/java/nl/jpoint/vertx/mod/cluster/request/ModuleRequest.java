@@ -45,8 +45,8 @@ public abstract class ModuleRequest {
         return this.groupId + "~" + this.artifactId + "~" + this.version;
     }
 
-    public String getMavenArtifactId() {
-        return this.groupId + ":" + this.artifactId + ":" + this.version;
+    public String getModuleIdentifier() {
+        return this.groupId + ":" + this.artifactId;
     }
 
     public String getRemoteLocation() {

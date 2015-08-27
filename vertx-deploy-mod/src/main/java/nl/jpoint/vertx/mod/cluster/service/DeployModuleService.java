@@ -1,7 +1,13 @@
 package nl.jpoint.vertx.mod.cluster.service;
 
 import nl.jpoint.vertx.mod.cluster.Constants;
-import nl.jpoint.vertx.mod.cluster.command.*;
+import nl.jpoint.vertx.mod.cluster.command.Command;
+import nl.jpoint.vertx.mod.cluster.command.InstallModule;
+import nl.jpoint.vertx.mod.cluster.command.InvokeContainer;
+import nl.jpoint.vertx.mod.cluster.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.cluster.command.RunModule;
+import nl.jpoint.vertx.mod.cluster.command.StopModule;
+import nl.jpoint.vertx.mod.cluster.command.UndeployModule;
 import nl.jpoint.vertx.mod.cluster.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.cluster.request.ModuleRequest;
 import nl.jpoint.vertx.mod.cluster.util.LogConstants;
@@ -81,7 +87,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                 undeployCommand.execute(deployRequest);
 
                 //after undeploying remove previous installed version from cache
-                installedModules.remove(deployRequest.getMavenArtifactId());
+                installedModules.remove(deployRequest.getModuleIdentifier());
 
             }
 
@@ -103,7 +109,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
             return false;
         }
 
-        installedModules.put(deployRequest.getMavenArtifactId(), deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
+        installedModules.put(deployRequest.getModuleIdentifier(), deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
 
         LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
         return true;
@@ -125,10 +131,10 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
 
         for (String mod : modRoot.list(new ModuleFileNameFilter(deployRequest))) {
             if (mod.equals(deployRequest.getModuleId()) && !deployRequest.isSnapshot()) {
-                LOG.info("[{} - {}]: Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
+                LOG.info("[{} - {}]: Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleIdentifier());
                 return ModuleVersion.INSTALLED;
             } else {
-                if (deployRequest.isSnapshot() && deployRequest.getSnapshotVersion().equals(installedModules.get(deployRequest.getMavenArtifactId()))) {
+                if (deployRequest.isSnapshot() && deployRequest.getSnapshotVersion().equals(installedModules.get(deployRequest.getModuleIdentifier()))) {
                     LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
                     return ModuleVersion.INSTALLED;
                 }
