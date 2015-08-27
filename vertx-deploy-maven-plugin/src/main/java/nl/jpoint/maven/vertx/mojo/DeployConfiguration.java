@@ -94,7 +94,7 @@ public class DeployConfiguration {
         return target;
     }
 
-    public boolean withElb() {
+    public boolean useElbStatusCheck() {
         return this.elb;
     }
 
@@ -141,7 +141,63 @@ public class DeployConfiguration {
     public DeployStrategyType getDeployStrategy() {
         return deployStrategy;
     }
+
     public void setDeployStrategy(DeployStrategyType deployStrategy) {
         this.deployStrategy = deployStrategy;
+    }
+
+    public DeployConfiguration withAutoScalingGroup(String autoScalingGroup) {
+        this.autoScalingGroupId = autoScalingGroup;
+        return this;
+    }
+
+    public DeployConfiguration withStrategy(String strategy) {
+        this.deployStrategy = DeployStrategyType.valueOf(strategy);
+        return this;
+    }
+
+    public DeployConfiguration withMaxGroupSize(Integer maxGroupSize) {
+        this.maxCapacity = maxGroupSize;
+        return this;
+    }
+
+    public DeployConfiguration withMinGroupSize(Integer minGroupSize) {
+        this.minCapacity = minGroupSize;
+        return this;
+    }
+
+    public DeployConfiguration withElb(boolean useElb) {
+        this.elb = useElb;
+        return this;
+    }
+
+    public DeployConfiguration withPrivateIp(boolean usePrivateIp) {
+        this.awsPrivateIp = usePrivateIp;
+        return this;
+    }
+
+    public DeployConfiguration withTestScope(boolean isTestScope) {
+        this.testScope = isTestScope;
+        return this;
+    }
+
+    public DeployConfiguration withConfig(boolean deployConfig) {
+        this.deployConfig = deployConfig;
+        return this;
+    }
+
+    public DeployConfiguration withRestart(boolean doRestart) {
+        this.restart = doRestart;
+        return this;
+    }
+
+    public DeployConfiguration withDecrementCapacity(boolean decrementCapacity) {
+        this.decrementDesiredCapacity = decrementCapacity;
+        return this;
+    }
+
+    public DeployConfiguration withIgnoreInStandby(boolean ignoreInStandby) {
+        this.ignoreInStandby = ignoreInStandby;
+        return this;
     }
 }

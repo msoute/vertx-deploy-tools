@@ -47,8 +47,8 @@ public class AutoScalingDeployService extends DeployService {
 
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
-        if ((activeConfiguration.withElb() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
-                || !activeConfiguration.withElb() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))){
+        if ((activeConfiguration.useElbStatusCheck() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
+                || !activeConfiguration.useElbStatusCheck() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))){
             activeConfiguration.setDeployStrategy(DeployStrategyType.WHATEVER);
         }
 
@@ -93,7 +93,7 @@ public class AutoScalingDeployService extends DeployService {
                     .withModules(deployModuleRequests)
                     .withArtifacts(deployArtifactRequests)
                     .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
-                    .withElb(activeConfiguration.withElb())
+                    .withElb(activeConfiguration.useElbStatusCheck())
                     .withInstanceId(instance.getInstanceId())
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
                     .withDecrementDesiredCapacity(activeConfiguration.isDecrementDesiredCapacity())

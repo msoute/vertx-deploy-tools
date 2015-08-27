@@ -1,8 +1,8 @@
 package nl.jpoint.maven.vertx.service;
 
-import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.executor.AwsRequestExecutor;
 import nl.jpoint.maven.vertx.executor.RequestExecutor;
+import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.utils.AwsOpsWorksDeployUtils;
@@ -39,7 +39,7 @@ public class OpsWorksDeployService extends DeployService {
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)
                 .withConfigs(deployConfigRequests)
-                .withElb(activeConfiguration.withElb())
+                .withElb(activeConfiguration.useElbStatusCheck())
                 .withRestart(activeConfiguration.doRestart())
                 .build();
 

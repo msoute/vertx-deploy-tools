@@ -1,7 +1,7 @@
 package nl.jpoint.maven.vertx.service;
 
-import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
+import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -28,7 +28,7 @@ public class DefaultDeployService extends DeployService {
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)
                 .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
-                .withElb(activeConfiguration.withElb())
+                .withElb(activeConfiguration.useElbStatusCheck())
                 .withRestart(activeConfiguration.doRestart())
                 .build();
         final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
