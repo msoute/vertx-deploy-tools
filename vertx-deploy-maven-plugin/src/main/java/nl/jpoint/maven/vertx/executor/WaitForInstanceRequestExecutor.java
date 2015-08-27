@@ -28,7 +28,7 @@ public class WaitForInstanceRequestExecutor {
 
     private void checkState(AtomicInteger atomicInteger, AutoScalingGroup originalGroup, AwsAutoScalingDeployUtils awsDeployUtils) {
         log.info("Waiting for new instance in asGroup to come in service...");
-        AutoScalingGroup updatedGroup = awsDeployUtils.getAutoscalingGroup();
+        AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
 
         if (updatedGroup.getInstances().equals(originalGroup.getInstances())) {
             log.info("no new instance found in autoscaling group.");

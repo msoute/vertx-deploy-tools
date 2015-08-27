@@ -13,13 +13,13 @@ public class DeployStateStrategyFactory {
         // default calculator
         switch (activeConfiguration.getDeployStrategy()) {
             case KEEP_CAPACITY:
-                new KeepCapacityStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                canDeploy = new KeepCapacityStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
                 break;
             case GUARANTEE_MINIMUM:
-                new GuaranteeMinimumStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                canDeploy = new GuaranteeMinimumStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
                 break;
             case WHATEVER:
-                new WhateverStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                canDeploy = new WhateverStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
                 break;
             default:
 

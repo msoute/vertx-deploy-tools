@@ -41,7 +41,7 @@ public class AutoScalingDeployService extends DeployService {
 
         AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(getServer(), region, activeConfiguration);
 
-        AutoScalingGroup asGroup = awsDeployUtils.getAutoscalingGroup();
+        AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
 
@@ -58,7 +58,7 @@ public class AutoScalingDeployService extends DeployService {
             WaitForInstanceRequestExecutor waitForInstanceRequestExecutor = new WaitForInstanceRequestExecutor(getLog(), 10);
             waitForInstanceRequestExecutor.executeRequest(asGroup, awsDeployUtils);
             // update the auto scaling group
-            asGroup = awsDeployUtils.getAutoscalingGroup();
+            asGroup = awsDeployUtils.getAutoScalingGroup();
         }
         instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
