@@ -161,6 +161,10 @@ Deploys a single artifact to a DeployTarget
 * **deploy.single.classifier** : The artifact classifier 
 * **deploy.single.version** : The artifact version *required*
 
+### mvn deploy:as-enable
+Mojo to add one instance to an as_group if current instances size equals 0.
+* **autoScalingGroupId** : The auto scaling group to enable. 
+
 ## Vert.X Module Configuration
 
 
