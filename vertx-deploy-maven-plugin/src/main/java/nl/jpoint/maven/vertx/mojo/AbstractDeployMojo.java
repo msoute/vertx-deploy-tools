@@ -25,7 +25,7 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     private String activeTarget;
     @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
     protected Integer requestTimeout;
-    @Parameter
+    @Parameter(property = "deploy.credentialsId")
     protected String credentialsId;
     @Parameter(defaultValue = "6789")
     protected Integer port;

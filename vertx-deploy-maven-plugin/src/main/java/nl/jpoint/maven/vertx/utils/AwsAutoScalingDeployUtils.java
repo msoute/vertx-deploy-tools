@@ -153,4 +153,8 @@ public class AwsAutoScalingDeployUtils {
         return true;
     }
 
+    public void enableAsGroup(String autoScalingGroupName) {
+        awsAsClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest().withAutoScalingGroupName(autoScalingGroupName).withDesiredCapacity(1));
+
+    }
 }
