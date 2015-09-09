@@ -60,8 +60,9 @@ public class AutoScalingDeployService extends DeployService {
             waitForInstanceRequestExecutor.executeRequest(asGroup, awsDeployUtils);
             // update the auto scaling group
             asGroup = awsDeployUtils.getAutoScalingGroup();
+            new Thread().stop();
+            instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
         }
-        instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
         instances.sort((o1, o2) -> o1.getState().ordinal() - o2.getState().ordinal());
 
@@ -77,7 +78,7 @@ public class AutoScalingDeployService extends DeployService {
 
         Integer originalMinSize = asGroup.getMinSize();
 
-        if (!DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()) && asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
+        if (asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
             awsDeployUtils.setMinimalCapacity(getLog(), asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
         }
 

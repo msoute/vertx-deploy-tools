@@ -11,11 +11,6 @@ import java.util.List;
 public interface DeployStrategy {
 
     default boolean isDeployable(DeployConfiguration activeConfiguration, AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
-
-        if(autoScalingGroup.getDesiredCapacity() <= autoScalingGroup.getMinSize()) {
-            return false;
-        }
-
         long healthyInstances = autoScalingGroup.getInstances().stream()
                 .filter(i -> i.getLifecycleState().equals(LifecycleState.InService.toString()))
                 .count();
