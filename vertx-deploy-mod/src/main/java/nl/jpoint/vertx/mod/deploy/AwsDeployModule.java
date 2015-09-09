@@ -71,7 +71,7 @@ public class AwsDeployModule extends Verticle {
     }
 
     public boolean isLocal() {
-        return getContainer().config().containsField("deploy.internal") && getContainer().config().getBoolean("deploy.internal");
+        return getContainer().config().getBoolean("deploy.internal", false);
 
     }
 }

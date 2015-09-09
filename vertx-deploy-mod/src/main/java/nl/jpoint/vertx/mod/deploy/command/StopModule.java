@@ -24,7 +24,7 @@ public class StopModule implements Command<ModuleRequest> {
     private boolean success = false;
     private AtomicBoolean isDone = new AtomicBoolean(false);
 
-    private final boolean stopWithInit;
+    private final boolean deployInternal;
 
 
     private final Vertx vertx;
@@ -36,16 +36,16 @@ public class StopModule implements Command<ModuleRequest> {
         this.vertx = vertx;
         this.modRoot = modRoot;
         this.olderVersion = olderVersion;
-        this.stopWithInit = (config.containsField("deploy.internal") && !config.getBoolean("deploy.internal"));
+        this.deployInternal = config.getBoolean("deploy.internal", false);
     }
 
     @Override
     public JsonObject execute(ModuleRequest request) {
         result.putBoolean(Constants.STOP_STATUS, false);
-        if (stopWithInit) {
-            stopWithInit(request);
-        } else {
+        if (deployInternal) {
             stopWithManager(request);
+        } else {
+            stopWithInit(request);
         }
         return result;
     }

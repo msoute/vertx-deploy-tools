@@ -12,21 +12,20 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsAsRegistrationStatusPollingHandler.class);
-    private static final long ONE_SECOND = 1000l;
-    private static final int DEFAULT_TIMEOUT_MINUTES = 4;
 
     private final DeployRequest request;
     private final AwsAutoScalingUtil asUtil;
     private final AwsElbUtil elbUtil;
     private final Vertx vertx;
     private final AwsState state;
-    private final long timeout;
+    private final LocalDateTime timeout;
 
     private List<String> loadbalancers = null;
 
@@ -36,8 +35,9 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
         this.elbUtil = elbUtil;
         this.vertx = vertx;
         this.state = state;
-        this.timeout = System.currentTimeMillis() + (ONE_SECOND * DEFAULT_TIMEOUT_MINUTES);
+        this.timeout = LocalDateTime.now().plusMinutes(maxDuration);
         LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), state);
+        LOG.info("[{} - {}]: Setting timeout to {}.", LogConstants.AWS_AS_REQUEST, request.getId(), timeout.toString());
     }
 
     public AwsAsRegistrationStatusPollingHandler(DeployRequest request, AwsAutoScalingUtil awsAsUtil, Vertx vertx, AwsState standby, final Integer maxDuration) {
@@ -54,7 +54,7 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
                 vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", true)
                         .putString("id", request.getId().toString())
                         .putString("state", state.toString()));
-            } else if (System.currentTimeMillis() > timeout) {
+            } else if (LocalDateTime.now().isAfter(timeout)) {
                 LOG.error("[{} - {}]: Error executing de-register, timeout while waiting for instance to reach {} ", LogConstants.AWS_AS_REQUEST, request.getId(), state.name());
                 vertx.cancelTimer(timer);
                 vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", false)
@@ -77,7 +77,6 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
                     LOG.error("[{} - {}]: Error executing list elb in auto scaling group request", LogConstants.AWS_AS_REQUEST, request.getId(), e.getMessage());
                 }
             }
-
             for (String loadbalancer : loadbalancers) {
                 try {
                     LOG.info("[{} - {}]: Checking Instance {} state on elb {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), loadbalancer);

@@ -111,6 +111,8 @@ Multiple targets can be configured. The target configuration can be selected wit
 
 * **KEEP_CAPACITY** : The deploy mod wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
 configured maximum. If *maxCapacity** is configured the desired count wil never be greater than **maxCapacity**. If *elb** is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. 
+* **DEFAULT** : The deploy mod wil only deploy if the  InService count is greater than the groups minimum count. The deploy wil never continue after a failed deploy. The deploy mod
+wil not guarantee at least one InService instance (i.e. if the groups minimum count is 0 with one InService instance)
 * **GUARANTEE_MINIMUM** : Yhe deploy mod does not care if a single instance deploy fails. As long as the InService count never drops below **minCapacity**. With **elb** the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.
 * **WHATEVER** : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)
 

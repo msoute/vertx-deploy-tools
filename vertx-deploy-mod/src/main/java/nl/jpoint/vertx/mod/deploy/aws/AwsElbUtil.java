@@ -73,10 +73,11 @@ public class AwsElbUtil {
         return this.getInstanceState(instanceId, loadBalancer);
     }
 
-    public AwsState getInstanceState(final String instanceId, final String loadbalancer) throws AwsException {
+    public AwsState getInstanceState(final String instanceId, final String loadBalancer) throws AwsException {
         if (instanceId != null && loadBalancer != null) {
             try {
                 DescribeInstanceHealthResult result = elbClient.describeInstanceHealth(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId)));
+                LOG.info(result.toString());
                 Optional<InstanceState> state = result.getInstanceStates().stream().filter(i -> i.getInstanceId().equals(instanceId)).findFirst();
                 if (state.isPresent()) {
                     return AwsState.map(state.get().getState());

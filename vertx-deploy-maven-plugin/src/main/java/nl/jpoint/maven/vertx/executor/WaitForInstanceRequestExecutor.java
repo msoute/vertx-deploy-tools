@@ -31,7 +31,7 @@ public class WaitForInstanceRequestExecutor {
         AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
 
         if (updatedGroup.getInstances().equals(originalGroup.getInstances())) {
-            log.info("no new instance found in autoscaling group.");
+            log.info("no new instance found in auto scaling group.");
         }
         if (newInstance == null) {
             newInstance = findNewInstance(originalGroup, updatedGroup);

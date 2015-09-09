@@ -15,6 +15,9 @@ public class DeployStateStrategyFactory {
             case KEEP_CAPACITY:
                 canDeploy = new KeepCapacityStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
                 break;
+            case DEFAULT:
+                canDeploy = new DefaultDeployStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                break;
             case GUARANTEE_MINIMUM:
                 canDeploy = new GuaranteeMinimumStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
                 break;
@@ -25,5 +28,10 @@ public class DeployStateStrategyFactory {
 
         }
         return canDeploy;
+    }
+
+    public static boolean isDeployableOnError(DeployConfiguration activeConfiguration, AutoScalingGroup asGroup, List<Ec2Instance> instances) {
+        return !DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()) && isDeployable(activeConfiguration, asGroup, instances);
+
     }
 }

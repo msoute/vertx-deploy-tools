@@ -48,7 +48,8 @@ public class AutoScalingDeployService extends DeployService {
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
         if ((activeConfiguration.useElbStatusCheck() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
-                || !activeConfiguration.useElbStatusCheck() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))){
+                || !activeConfiguration.useElbStatusCheck() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))) {
+            getLog().info("No instances inService, using deploy strategy WHATEVER");
             activeConfiguration.setDeployStrategy(DeployStrategyType.WHATEVER);
         }
 
@@ -76,7 +77,7 @@ public class AutoScalingDeployService extends DeployService {
 
         Integer originalMinSize = asGroup.getMinSize();
 
-        if (asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
+        if (!DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()) && asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
             awsDeployUtils.setMinimalCapacity(getLog(), asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
         }
 
@@ -103,13 +104,14 @@ public class AutoScalingDeployService extends DeployService {
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-                AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), true);
+
+                AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), !DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()));
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
             } catch (MojoExecutionException | MojoFailureException e) {
                 getLog().error("Error during deploy. Resuming auto scaling processes.", e);
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
-                if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
+                if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, instances)) {
                     awsDeployUtils.resumeScheduledActions(getLog());
                     throw new MojoExecutionException("auto scaling group is not in a deployable state.");
                 }

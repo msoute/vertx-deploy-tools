@@ -22,11 +22,11 @@ public class RunModule implements Command<ModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(RunModule.class);
     private boolean success = false;
 
-    private final boolean startWithInit;
+    private final boolean deployInternal;
     private final String vertxHome;
 
     public RunModule(final PlatformManager platformManager, final JsonObject config) {
-        this.startWithInit = (config.containsField("deploy.internal") && !config.getBoolean("deploy.internal"));
+        this.deployInternal = config.getBoolean("deploy.internal", false);
         this.vertxHome = config.getString("vertx.home");
     }
 
@@ -34,10 +34,10 @@ public class RunModule implements Command<ModuleRequest> {
     public JsonObject execute(final ModuleRequest request) {
         LOG.info("[{} - {}]: Running module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
 
-        if (startWithInit) {
-            startWithInit(request);
-        } else {
+        if (deployInternal) {
             startFromContainer(request);
+        } else {
+            startWithInit(request);
         }
 
         return new JsonObject()
