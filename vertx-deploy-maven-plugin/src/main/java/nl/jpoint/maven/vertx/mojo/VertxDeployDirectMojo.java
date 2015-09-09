@@ -16,16 +16,19 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
     @Parameter(property = "deploy.remoteIp", required = true)
     private String remoteIp;
     @Parameter(property = "deploy.testScope", defaultValue = "false")
-    private Boolean stubbed;
+    private Boolean scopeTest;
     @Parameter(property = "deploy.withConfig", defaultValue = "true")
     private Boolean withConfig;
+    @Parameter(property = "deploy.allowSnapshots", defaultValue = "false")
+    private Boolean allowSnapshots;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         DeployConfiguration configuration = new DeployConfiguration();
         configuration.getHosts().add(remoteIp);
-        configuration.setTestScope(stubbed);
+        configuration.setTestScope(scopeTest);
         configuration.setWithConfig(withConfig);
+        configuration.setDeploySnapshots(allowSnapshots);
 
         super.activeConfiguration = configuration;
         final DeployUtils utils = new DeployUtils(getLog(), project);

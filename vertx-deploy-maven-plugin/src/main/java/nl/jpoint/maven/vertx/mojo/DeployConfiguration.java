@@ -22,7 +22,7 @@ public class DeployConfiguration {
     /**
      * List of artifacts to exclude
      **/
-    private List<Exclusion> exclusions;
+    private List<Exclusion> exclusions = new ArrayList<>();
     /**
      * Deploy artifacts in test scope
      **/
@@ -199,5 +199,9 @@ public class DeployConfiguration {
     public DeployConfiguration withIgnoreInStandby(boolean ignoreInStandby) {
         this.ignoreInStandby = ignoreInStandby;
         return this;
+    }
+
+    public void setDeploySnapshots(boolean deploySnapshots) {
+        this.deploySnapshots = deploySnapshots;
     }
 }

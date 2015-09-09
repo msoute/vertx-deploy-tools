@@ -5,8 +5,6 @@ import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.PlatformManager;
 
@@ -23,11 +21,11 @@ public class InstallModule implements Command<ModuleRequest> {
     private boolean success = false;
     private AtomicBoolean isDone = new AtomicBoolean(false);
 
-    private final boolean deployWithInit;
+    private final boolean deployInternal;
 
     public InstallModule(final PlatformManager platformManager, final JsonObject config) {
         this.platformManager = platformManager;
-        this.deployWithInit = (config.containsField("deploy.internal") && !config.getBoolean("deploy.internal"));
+        this.deployInternal = config.getBoolean("deploy.internal", false);
     }
 
     @Override
@@ -35,10 +33,10 @@ public class InstallModule implements Command<ModuleRequest> {
 
         LOG.info("[{} - {}]: Installing module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
 
-        if (deployWithInit) {
-            deployWithInit(request);
-        } else {
+        if (deployInternal) {
             deployWithManager(request);
+        } else {
+            deployWithInit(request);
         }
 
         return new JsonObject()
@@ -48,13 +46,10 @@ public class InstallModule implements Command<ModuleRequest> {
 
 
     private void deployWithManager(final ModuleRequest request) {
-        platformManager.installModule(request.getModuleId(), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> voidAsyncResult) {
-                success = voidAsyncResult.succeeded();
-                isDone.set(true);
-                LOG.info("[{} - {}]: Install Module succeeded {}", LogConstants.DEPLOY_REQUEST, request.getId(), success);
-            }
+        platformManager.installModule(request.getModuleId(), voidAsyncResult -> {
+            success = voidAsyncResult.succeeded();
+            isDone.set(true);
+            LOG.info("[{} - {}]: Install Module succeeded {}", LogConstants.DEPLOY_REQUEST, request.getId(), success);
         });
 
         while (!isDone.get()) {

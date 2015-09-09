@@ -1,7 +1,11 @@
 package nl.jpoint.vertx.mod.deploy.handler.servicebus;
 
 import nl.jpoint.vertx.mod.deploy.aws.AwsState;
-import nl.jpoint.vertx.mod.deploy.request.*;
+import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
+import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
+import nl.jpoint.vertx.mod.deploy.request.DeployModuleRequest;
+import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
+import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
@@ -40,7 +44,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             return;
         }
 
-        LOG.info("[{} - {}]: Handle internal deploy request with state {}", LogConstants.DEPLOY_REQUEST, deployId, state);
+        LOG.info("[{} - {}]: Handle deploy request with state {}", LogConstants.DEPLOY_REQUEST, deployId, state);
         switch (state) {
             case STANDBY:
             case NOTREGISTERED:
