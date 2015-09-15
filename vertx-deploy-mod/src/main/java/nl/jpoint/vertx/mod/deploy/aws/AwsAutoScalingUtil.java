@@ -55,8 +55,17 @@ public class AwsAutoScalingUtil {
 
     public boolean enterStandby(final String instanceId, final String groupId, boolean decrementDesiredCapacity) {
         try {
-            asClient.enterStandby(new EnterStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId).withShouldDecrementDesiredCapacity(decrementDesiredCapacity));
-            return true;
+            DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withMaxRecords(1).withInstanceIds(instanceId));
+            Optional<AutoScalingInstanceDetails> state = result.getAutoScalingInstances()
+                    .stream()
+                    .filter(asi -> asi.getInstanceId().equals(instanceId)).findFirst();
+            state.ifPresent(s -> LOG.trace("enterStandby() instance {} current state : {}", instanceId, s.getLifecycleState()));
+            if (state.isPresent() && state.get().getLifecycleState().equalsIgnoreCase(AwsState.STANDBY.name())) {
+                return true;
+            } else {
+                asClient.enterStandby(new EnterStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId).withShouldDecrementDesiredCapacity(decrementDesiredCapacity));
+                return true;
+            }
         } catch (AmazonClientException e) {
             LOG.error("Error executing request {}.", e);
             return false;
