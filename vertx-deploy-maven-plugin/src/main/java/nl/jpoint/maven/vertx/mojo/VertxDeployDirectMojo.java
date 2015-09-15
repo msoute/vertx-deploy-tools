@@ -24,15 +24,16 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        final DeployUtils utils = new DeployUtils(getLog(), project);
+
         DeployConfiguration configuration = new DeployConfiguration();
         configuration.getHosts().add(remoteIp);
         configuration.setTestScope(scopeTest);
         configuration.setWithConfig(withConfig);
         configuration.setDeploySnapshots(allowSnapshots);
-
+        configuration.getExclusions().addAll(utils.parseExclusions(exclusions));
         super.activeConfiguration = configuration;
-        final DeployUtils utils = new DeployUtils(getLog(), project);
-
+        
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);

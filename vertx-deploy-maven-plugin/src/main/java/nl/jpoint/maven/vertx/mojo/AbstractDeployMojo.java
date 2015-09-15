@@ -31,6 +31,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected Integer port;
     @Parameter(defaultValue = "eu-west-1")
     protected String region;
+    @Parameter(required = false, defaultValue = "", property = "deploy.exclusions")
+    protected String exclusions;
 
     DeployConfiguration activeConfiguration;
 

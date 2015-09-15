@@ -11,10 +11,12 @@ import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DeployUtils {
@@ -38,6 +40,27 @@ public class DeployUtils {
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {
         return createDeployListByType(activeConfiguration, type).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+    }
+
+    public List<Exclusion> parseExclusions(String exclusions) {
+        List<Exclusion> result = new ArrayList<>();
+        if (StringUtils.isBlank(exclusions)) {
+            return result;
+        }
+
+        Pattern.compile(";")
+                .splitAsStream(exclusions)
+                .forEach(s -> {
+                            String[] mavenIds = Pattern.compile(":").split(s, 2);
+                            if (mavenIds.length == 2) {
+                                Exclusion exclusion = new Exclusion();
+                                exclusion.setGroupId(mavenIds[0]);
+                                exclusion.setArtifactId(mavenIds[1]);
+                                result.add(exclusion);
+                            }
+                        }
+                );
+        return result;
     }
 
     private List<Dependency> createDeployListByClassifier(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
@@ -117,6 +140,4 @@ public class DeployUtils {
         }
         return false;
     }
-
-
 }

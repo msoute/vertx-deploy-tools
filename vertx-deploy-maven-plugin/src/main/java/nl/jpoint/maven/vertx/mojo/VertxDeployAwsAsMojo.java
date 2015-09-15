@@ -3,12 +3,17 @@ package nl.jpoint.maven.vertx.mojo;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 @Mojo(name = "deploy-single-as")
 public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
@@ -37,11 +42,14 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
     private boolean deploySnapshots;
 
+
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         final DeployUtils utils = new DeployUtils(getLog(), project);
 
         activeConfiguration = this.createConfiguration();
+        activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
@@ -55,7 +63,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     }
 
     private DeployConfiguration createConfiguration() {
-        return new DeployConfiguration().withAutoScalingGroup(autoScalingGroup)
+        return new DeployConfiguration()
+                .withAutoScalingGroup(autoScalingGroup)
                 .withStrategy(strategy)
                 .withMaxGroupSize(maxGroupSize)
                 .withMinGroupSize(minGroupSize)
@@ -66,7 +75,6 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withRestart(doRestart)
                 .withDecrementCapacity(decrementCapacity)
                 .withIgnoreInStandby(ignoreInStandby)
-                .withDeploySnapshots(deploySnapshots)
-        ;
+                .withDeploySnapshots(deploySnapshots);
     }
 }

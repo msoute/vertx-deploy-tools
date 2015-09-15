@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 
 import java.util.ArrayList;
@@ -203,6 +204,10 @@ public class DeployConfiguration {
 
     public DeployConfiguration withDeploySnapshots(boolean deploySnapshots) {
         this.deploySnapshots = deploySnapshots;
+        return this;
+    }
+    public DeployConfiguration withExclusions(List<Exclusion> exclusions) {
+        this.exclusions = exclusions;
         return this;
     }
 
