@@ -34,6 +34,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private boolean decrementCapacity;
     @Parameter(required = false, defaultValue = "true", property = "deploy.as.ignore")
     private boolean ignoreInStandby;
+    @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
+    private boolean deploySnapshots;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -64,6 +66,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withRestart(doRestart)
                 .withDecrementCapacity(decrementCapacity)
                 .withIgnoreInStandby(ignoreInStandby)
+                .withDeploySnapshots(deploySnapshots)
         ;
     }
 }

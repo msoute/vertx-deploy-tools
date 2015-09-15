@@ -201,6 +201,11 @@ public class DeployConfiguration {
         return this;
     }
 
+    public DeployConfiguration withDeploySnapshots(boolean deploySnapshots) {
+        this.deploySnapshots = deploySnapshots;
+        return this;
+    }
+
     public void setDeploySnapshots(boolean deploySnapshots) {
         this.deploySnapshots = deploySnapshots;
     }
