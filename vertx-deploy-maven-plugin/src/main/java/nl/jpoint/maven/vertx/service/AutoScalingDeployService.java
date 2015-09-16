@@ -39,6 +39,8 @@ public class AutoScalingDeployService extends DeployService {
             throw new MojoExecutionException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no autoScalingGroupId set");
         }
 
+        getLog().info("Deploy with strategy : " + activeConfiguration.getDeployStrategy().name());
+
         AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(getServer(), region, activeConfiguration);
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
@@ -54,13 +56,13 @@ public class AutoScalingDeployService extends DeployService {
         }
 
         if (DeployStrategyType.KEEP_CAPACITY.equals(activeConfiguration.getDeployStrategy()) && awsDeployUtils.shouldAddExtraInstance(asGroup)) {
+            getLog().info("Adding extra instance");
             // we need to add an extra instance and wait for it to come online
             awsDeployUtils.setDesiredCapacity(getLog(), asGroup, asGroup.getDesiredCapacity() + 1);
             WaitForInstanceRequestExecutor waitForInstanceRequestExecutor = new WaitForInstanceRequestExecutor(getLog(), 10);
             waitForInstanceRequestExecutor.executeRequest(asGroup, awsDeployUtils);
             // update the auto scaling group
             asGroup = awsDeployUtils.getAutoScalingGroup();
-            new Thread().stop();
             instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
         }
 

@@ -98,7 +98,7 @@ public class AwsAutoScalingDeployUtils {
     }
 
     public boolean shouldAddExtraInstance(AutoScalingGroup autoScalingGroup) {
-        return autoScalingGroup.getInstances().size() < autoScalingGroup.getMaxSize() && !(activeConfiguration.getMaxCapacity() != -1 && autoScalingGroup.getInstances().size() < activeConfiguration.getMaxCapacity());
+        return autoScalingGroup.getInstances().size() < autoScalingGroup.getMaxSize() && !(activeConfiguration.getMaxCapacity() != -1 && autoScalingGroup.getInstances().size() > activeConfiguration.getMaxCapacity());
     }
 
     private Ec2Instance toEc2Instance(com.amazonaws.services.ec2.model.Instance instance) {

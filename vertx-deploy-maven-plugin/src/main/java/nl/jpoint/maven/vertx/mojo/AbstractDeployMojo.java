@@ -19,7 +19,6 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     MavenProject project;
     @Parameter(defaultValue = "${settings}", readonly = true, required = true)
     Settings settings;
-    @Parameter(required = false)
     private List<DeployConfiguration> deployConfigurations;
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
     private String activeTarget;
