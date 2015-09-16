@@ -35,7 +35,7 @@ public class AwsElbRegisterInstance implements Command<DeployRequest> {
 
             awsElbUtil.registerInstanceWithLoadbalancer();
             LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-            vertx.setPeriodic(30000L, new AwsElbRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.INSERVICE));
+            vertx.setPeriodic(3000L, new AwsElbRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.INSERVICE));
 
             return new JsonObject().putBoolean("success", true);
 

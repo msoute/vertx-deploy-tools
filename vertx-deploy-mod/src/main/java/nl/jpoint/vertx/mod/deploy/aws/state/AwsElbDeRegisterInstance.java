@@ -43,7 +43,7 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
                 return new JsonObject().putBoolean("success", false);
             }
             LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-            vertx.setPeriodic(5000L, new AwsElbRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.OUTOFSERVICE));
+            vertx.setPeriodic(3000L, new AwsElbRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.OUTOFSERVICE));
 
         } catch (AwsException e) {
             LOG.error("[{} - {}]: Error de-register instance {} from loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());

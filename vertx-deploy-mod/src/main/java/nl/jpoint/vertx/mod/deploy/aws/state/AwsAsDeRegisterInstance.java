@@ -35,7 +35,7 @@ public class AwsAsDeRegisterInstance implements Command<DeployRequest> {
             return new JsonObject().putBoolean("success", false);
         }
         LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
-        vertx.setPeriodic(5000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, vertx, AwsState.STANDBY, maxDuration));
+        vertx.setPeriodic(3000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, vertx, AwsState.STANDBY, maxDuration));
 
         return new JsonObject().putBoolean("success", true);
     }

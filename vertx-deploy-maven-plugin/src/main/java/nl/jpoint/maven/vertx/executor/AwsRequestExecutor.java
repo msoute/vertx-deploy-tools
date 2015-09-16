@@ -82,10 +82,10 @@ public class AwsRequestExecutor extends RequestExecutor {
                     }
                     waitFor.decrementAndGet();
                 }
-            }, 0, 15, TimeUnit.SECONDS);
+            }, 0, 2, TimeUnit.SECONDS);
 
             while (waitFor.intValue() > 0) {
-                Thread.sleep(15000);
+                Thread.sleep(3000);
             }
 
             log.info("Shutting down executor");

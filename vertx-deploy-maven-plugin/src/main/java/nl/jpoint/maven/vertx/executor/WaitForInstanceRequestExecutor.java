@@ -27,6 +27,7 @@ public class WaitForInstanceRequestExecutor {
     }
 
     private void checkState(AtomicInteger atomicInteger, AutoScalingGroup originalGroup, AwsAutoScalingDeployUtils awsDeployUtils) {
+
         log.info("Waiting for new instance in asGroup to come in service...");
         AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
 
@@ -38,7 +39,7 @@ public class WaitForInstanceRequestExecutor {
             log.info("Found new instance with id " + newInstance.getInstanceId());
         }
 
-        if (!originalGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, originalGroup.getLoadBalancerNames(), log)) {
+        if (newInstance != null && !originalGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, originalGroup.getLoadBalancerNames(), log)) {
             atomicInteger.decrementAndGet();
         }
     }
@@ -54,16 +55,16 @@ public class WaitForInstanceRequestExecutor {
 
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
         exec.scheduleAtFixedRate(() ->
-                this.checkState(waitFor, autoScalingGroup, awsDeployUtils), 30, 60, TimeUnit.SECONDS);
+                this.checkState(waitFor, autoScalingGroup, awsDeployUtils), 5, 2, TimeUnit.SECONDS);
 
         try {
             while (waitFor.intValue() > 0 && System.currentTimeMillis() <= timeout) {
-                Thread.sleep(30000);
+                Thread.sleep(3000);
             }
             log.info("Shutting down executor");
             exec.shutdown();
             log.info("awaiting termination of executor");
-            exec.awaitTermination(30, TimeUnit.SECONDS);
+            exec.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.error(e.getMessage());
             inService.get();

@@ -36,7 +36,7 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
         }
 
         LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
-        vertx.setPeriodic(10000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, awsElbUtil, vertx, AwsState.INSERVICE, maxDuration));
+        vertx.setPeriodic(3000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, awsElbUtil, vertx, AwsState.INSERVICE, maxDuration));
 
         return new JsonObject().putBoolean("success", true);
     }
