@@ -17,8 +17,6 @@ public class WaitForInstanceRequestExecutor {
 
     private final Log log;
     private final long timeout;
-
-
     private Instance newInstance = null;
 
     public WaitForInstanceRequestExecutor(Log log, Integer requestTimeout) {
@@ -26,36 +24,32 @@ public class WaitForInstanceRequestExecutor {
         this.log = log;
     }
 
-    private void checkState(AtomicInteger atomicInteger, AutoScalingGroup originalGroup, AwsAutoScalingDeployUtils awsDeployUtils) {
-
-        log.info("Waiting for new instance in asGroup to come in service...");
-        AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
-
-        if (updatedGroup.getInstances().equals(originalGroup.getInstances())) {
-            log.info("no new instance found in auto scaling group.");
-        }
-        if (newInstance == null) {
-            newInstance = findNewInstance(originalGroup, updatedGroup);
-            log.info("Found new instance with id " + newInstance.getInstanceId());
-        }
-
-        if (newInstance != null && !originalGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, originalGroup.getLoadBalancerNames(), log)) {
-            atomicInteger.decrementAndGet();
-        }
-    }
-
     private Instance findNewInstance(AutoScalingGroup originalGroup, AutoScalingGroup updatedGroup) {
         updatedGroup.getInstances().removeAll(originalGroup.getInstances());
-        return updatedGroup.getInstances().get(0);
+        return updatedGroup.getInstances().isEmpty() ? null : updatedGroup.getInstances().get(0);
     }
 
     public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils) throws MojoExecutionException {
         final AtomicInteger waitFor = new AtomicInteger(1);
         final AtomicBoolean inService = new AtomicBoolean(false);
 
+        log.info("Waiting for new instance in asGroup to come in service...");
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-        exec.scheduleAtFixedRate(() ->
-                this.checkState(waitFor, autoScalingGroup, awsDeployUtils), 5, 2, TimeUnit.SECONDS);
+        exec.scheduleAtFixedRate(() -> {
+            AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
+
+            if (updatedGroup.getInstances().equals(autoScalingGroup.getInstances())) {
+                log.info("no new instance found in auto scaling group.");
+            }
+            if (newInstance == null) {
+                newInstance = findNewInstance(autoScalingGroup, updatedGroup);
+                log.info("Found new instance with id " + newInstance.getInstanceId());
+            }
+
+            if (!autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames(), log)) {
+                waitFor.decrementAndGet();
+            }
+        },  30, 30, TimeUnit.SECONDS);
 
         try {
             while (waitFor.intValue() > 0 && System.currentTimeMillis() <= timeout) {
@@ -68,6 +62,8 @@ public class WaitForInstanceRequestExecutor {
         } catch (InterruptedException e) {
             log.error(e.getMessage());
             inService.get();
+        } catch (Throwable t) {
+            log.error("Throwable: ", t);
         }
 
         return inService.get();

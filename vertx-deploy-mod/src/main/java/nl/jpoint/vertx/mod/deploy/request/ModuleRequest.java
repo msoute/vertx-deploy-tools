@@ -89,10 +89,6 @@ public abstract class ModuleRequest {
         this.snapshotVersion = snapshotVersion;
     }
 
-    public boolean isAsync() {
-        return false;
-    }
-
     public boolean isSnapshot() {
         return version.endsWith("-SNAPSHOT");
     }

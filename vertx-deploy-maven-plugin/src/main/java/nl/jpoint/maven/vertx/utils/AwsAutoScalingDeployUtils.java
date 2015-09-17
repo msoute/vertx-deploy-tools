@@ -55,7 +55,8 @@ public class AwsAutoScalingDeployUtils {
 
     }
 
-    public com.amazonaws.services.autoscaling.model.AutoScalingGroup getAutoScalingGroup() {
+    public AutoScalingGroup getAutoScalingGroup() {
+
         DescribeAutoScalingGroupsResult result = awsAsClient.describeAutoScalingGroups(new DescribeAutoScalingGroupsRequest().withAutoScalingGroupNames(activeConfiguration.getAutoScalingGroupId()));
         return !result.getAutoScalingGroups().isEmpty() ? result.getAutoScalingGroups().get(0) : null;
     }

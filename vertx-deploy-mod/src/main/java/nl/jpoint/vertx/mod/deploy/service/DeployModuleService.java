@@ -1,7 +1,13 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
 import nl.jpoint.vertx.mod.deploy.Constants;
-import nl.jpoint.vertx.mod.deploy.command.*;
+import nl.jpoint.vertx.mod.deploy.command.Command;
+import nl.jpoint.vertx.mod.deploy.command.InstallModule;
+import nl.jpoint.vertx.mod.deploy.command.InvokeContainer;
+import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.deploy.command.RunModule;
+import nl.jpoint.vertx.mod.deploy.command.StopModule;
+import nl.jpoint.vertx.mod.deploy.command.UndeployModule;
 import nl.jpoint.vertx.mod.deploy.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -61,19 +67,15 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         }
 
         if (!moduleInstalled.equals(ModuleVersion.INSTALLED)) {
-            // Respond OK if the deployment is async.
-            if (deployRequest.isAsync()) {
-                return true;
-            }
-
             // If an older version (or SNAPSHOT) is installed undeploy it first.
             if (moduleInstalled.equals(ModuleVersion.OLDER_VERSION)) {
+                if (!deployRequest.restart()) {
+                    StopModule stopModuleCommand = new StopModule(vertx, modRoot, config, true);
+                    JsonObject result = stopModuleCommand.execute(deployRequest);
 
-                StopModule stopModuleCommand = new StopModule(vertx, modRoot, config, true);
-                JsonObject result = stopModuleCommand.execute(deployRequest);
-
-                if (!result.getBoolean(Constants.STOP_STATUS)) {
-                    return false;
+                    if (!result.getBoolean(Constants.STOP_STATUS)) {
+                        return false;
+                    }
                 }
 
                 UndeployModule undeployCommand = new UndeployModule(vertx, modRoot);
@@ -98,7 +100,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         RunModule runModCommand = new RunModule(platformManager, config);
         JsonObject runResult = runModCommand.execute(deployRequest);
 
-        if (!runResult.getBoolean(Constants.STATUS_SUCCESS) && !deployRequest.isAsync()) {
+        if (!runResult.getBoolean(Constants.STATUS_SUCCESS)) {
             return false;
         }
 
