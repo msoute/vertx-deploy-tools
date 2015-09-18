@@ -5,6 +5,11 @@ vertx-deploy-mod
 
 Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
+## TODO
+* Documentation on module configuration
+* Documentation on module installation
+* Default AMI
+
 # Installation / Configuration
 
 ## Deploy artifacts.
