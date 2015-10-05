@@ -50,7 +50,7 @@ public class AwsDeployUtils {
 
     public void suspendScheduledActions(Log log, DeployConfiguration activeConfiguration) {
         awsAsClient.suspendProcesses(new SuspendProcessesRequest()
-                .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy")
+                .withScalingProcesses("AZRebalance", "ScheduledActions", "Terminate", "ReplaceUnhealthy")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
         log.info("Suspended autoscaling processes.");
     }
@@ -62,7 +62,7 @@ public class AwsDeployUtils {
 
     public void resumeScheduledActions(Log log, DeployConfiguration activeConfiguration) {
         awsAsClient.resumeProcesses(new ResumeProcessesRequest()
-                .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy")
+                .withScalingProcesses("AZRebalance","ScheduledActions", "Terminate", "ReplaceUnhealthy")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
         log.info("Resumed autoscaling processes.");
     }
