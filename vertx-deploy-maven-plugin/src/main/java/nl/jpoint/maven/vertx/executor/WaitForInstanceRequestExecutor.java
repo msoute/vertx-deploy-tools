@@ -7,6 +7,7 @@ import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +37,9 @@ public class WaitForInstanceRequestExecutor {
         log.info("Waiting for new instance in asGroup to come in service...");
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
         exec.scheduleAtFixedRate(() -> {
+            log.info("existing instances : " + Arrays.toString(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
             AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
+            log.info("Updated instances : " + Arrays.toString(updatedGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
 
             if (updatedGroup.getInstances().equals(autoScalingGroup.getInstances())) {
                 log.info("no new instance found in auto scaling group.");

@@ -7,6 +7,7 @@ import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
 import nl.jpoint.maven.vertx.service.OpsWorksDeployService;
+import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -31,11 +32,14 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        final DeployUtils utils = new DeployUtils(getLog(), project);
         setActiveDeployConfig();
 
         if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsWorks()) {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has both OpsWorks and Autoscaling enabled");
         }
+
+        activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
 
         final List<Request> deployModuleRequests = MODULE_CLASSIFIER.equals(type) ? createModuleRequest() : Collections.emptyList();
         final List<Request> deployArtifactRequests = SITE_CLASSIFIER.equals(type) ? createArtifactRequest() : Collections.emptyList();
