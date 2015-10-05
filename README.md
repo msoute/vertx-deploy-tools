@@ -6,7 +6,9 @@ vertx-deploy-mod
 Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
 # Changelog
-## DEV
+## 1.1.25
+* [BUG] Also stop AZRebalance during deploy
+
 ## 1.1.24
 * [BUG] Fix #9
 
