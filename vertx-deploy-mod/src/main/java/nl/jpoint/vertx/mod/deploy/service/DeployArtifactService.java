@@ -29,7 +29,7 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
     }
 
     @Override
-    public boolean deploy(DeployArtifactRequest deployRequest) {
+    public JsonObject deploy(DeployArtifactRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
             Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_SITE_REQUEST);
@@ -43,14 +43,14 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         if (installedArtifacts.containsKey(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId())
                 && installedArtifacts.get(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId()).equals(deployRequest.getSnapshotVersion())) {
             LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Artifact {} already installed.", LogConstants.DEPLOY_SITE_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
-            return true;
+            new JsonObject().putBoolean("result",true);
         }
 
         DownloadArtifact downloadArtifactCommand = new DownloadArtifact(config);
         JsonObject downloadResult = downloadArtifactCommand.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
-            return false;
+            new JsonObject().putBoolean("result",false);
         }
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
 
@@ -60,6 +60,6 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         if (deployRequest.getSnapshotVersion() != null) {
             installedArtifacts.put(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId(), deployRequest.getSnapshotVersion());
         }
-        return extractResult.getBoolean("success");
+        return new JsonObject().putBoolean("result",extractResult.getBoolean("success"));
     }
 }

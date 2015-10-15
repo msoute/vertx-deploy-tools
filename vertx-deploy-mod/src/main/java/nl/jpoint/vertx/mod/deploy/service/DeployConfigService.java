@@ -25,7 +25,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
     }
 
     @Override
-    public boolean deploy(DeployConfigRequest deployRequest) {
+    public JsonObject deploy(DeployConfigRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
             Command<ModuleRequest> resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_CONFIG_REQUEST);
@@ -40,7 +40,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
         JsonObject downloadResult = downloadArtifact.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
-            return false;
+            return new JsonObject().putBoolean("result", false);
         }
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
         ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false, LogConstants.DEPLOY_CONFIG_REQUEST);
@@ -51,7 +51,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             JsonObject testResult = consoleCommand.execute(artifactContextUtil.getTestCommand());
             if (!testResult.getBoolean(Constants.COMMAND_STATUS)) {
                 LOG.info("ERROR");
-                return false;
+                return new JsonObject().putBoolean("result", false);
             }
         }
 
@@ -59,10 +59,10 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             RunConsoleCommand consoleCommand = new RunConsoleCommand(deployRequest.getId().toString());
             JsonObject restartResult = consoleCommand.execute(artifactContextUtil.getRestartCommand());
             if (!restartResult.getBoolean(Constants.COMMAND_STATUS)) {
-                return false;
+                return new JsonObject().putBoolean("result", false);
             }
         }
 
-        return extractResult.getBoolean("success");
+        return new JsonObject().putBoolean("result", extractResult.getBoolean("success"));
     }
 }

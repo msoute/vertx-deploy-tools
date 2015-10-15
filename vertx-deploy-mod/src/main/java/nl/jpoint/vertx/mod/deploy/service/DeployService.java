@@ -1,6 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import org.vertx.java.core.json.JsonObject;
+
 public interface DeployService<T> {
-    boolean deploy(T deployRequest);
+    JsonObject deploy(T deployRequest);
 
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 
@@ -49,9 +50,9 @@ public class RestDeployArtifactHandler implements Handler<HttpServerRequest> {
 
             LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_SITE_REQUEST, artifactRequest.getId().toString(), new String(postData));
 
-            boolean result = service.deploy(artifactRequest);
+            JsonObject result = service.deploy(artifactRequest);
 
-            if (!result) {
+            if (!result.getBoolean("result")) {
                 respondFailed(request);
                 return;
             }

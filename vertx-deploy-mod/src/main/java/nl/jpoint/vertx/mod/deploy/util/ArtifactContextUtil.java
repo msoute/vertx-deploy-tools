@@ -23,6 +23,7 @@ public class ArtifactContextUtil {
     private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String BASE_LOCATION = "/artifact/baselocation/text()";
+    private static final String RESTART_ON_CHANGED_CONTENT = "/artifact/checkContent/text()";
     private static final String RESTART_COMMAND = "/artifact/restartCommand/text()";
     private static final String TEST_COMMAND = "/artifact/testCommand/text()";
 
@@ -49,6 +50,14 @@ public class ArtifactContextUtil {
             return document != null ? (String) xPath.compile(BASE_LOCATION).evaluate(document, XPathConstants.STRING) : null;
         } catch (XPathExpressionException e) {
             return null;
+        }
+    }
+
+    public boolean getCheckConfig() {
+        try {
+            return Boolean.valueOf(document != null ? (String) xPath.compile(RESTART_COMMAND).evaluate(document, XPathConstants.STRING) : null);
+        } catch (XPathExpressionException e) {
+            return false;
         }
     }
 
