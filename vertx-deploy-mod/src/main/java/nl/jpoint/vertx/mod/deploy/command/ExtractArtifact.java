@@ -11,13 +11,17 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -60,7 +64,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
             return new JsonObject().putBoolean("success", false);
         }
-        return new JsonObject().putBoolean("success", true);
+        return new JsonObject().putBoolean("success", true).putBoolean("configChanged", configChanged);
     }
 
     private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath) {
@@ -91,10 +95,6 @@ public class ExtractArtifact implements Command<ModuleRequest> {
                 return FileVisitResult.CONTINUE;
             }
         };
-    }
-
-    public boolean getConfigChanged() {
-        return configChanged;
     }
 
     private void removeBasePath(ModuleRequest request, Path basePath) {

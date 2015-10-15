@@ -66,7 +66,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
     private void deployArtifacts(String deployId) {
         DeployRequest deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployId);
 
-        JsonObject deployOk;
+        JsonObject deployOk = null;
 
         if (deployRequest.withRestart()) {
             deployModuleService.stopContainer(deployId);
@@ -79,6 +79,12 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
                     awsService.failBuild(deployId);
                     return;
                 }
+            }
+
+            if (deployRequest.withRestart() && deployOk != null && deployOk.getBoolean("configChanged", false)) {
+                deployModuleService.stopContainer(deployRequest.getId().toString());
+                awsService.updateRestartAndGetRequest(true, deployId);
+                deployRequest.setRestart(true);
             }
         }
 

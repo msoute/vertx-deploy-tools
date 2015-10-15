@@ -1,7 +1,11 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
 import nl.jpoint.vertx.mod.deploy.Constants;
-import nl.jpoint.vertx.mod.deploy.command.*;
+import nl.jpoint.vertx.mod.deploy.command.Command;
+import nl.jpoint.vertx.mod.deploy.command.DownloadArtifact;
+import nl.jpoint.vertx.mod.deploy.command.ExtractArtifact;
+import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.deploy.command.RunConsoleCommand;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
@@ -26,7 +30,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
 
     @Override
     public JsonObject deploy(DeployConfigRequest deployRequest) {
-
+        JsonObject deployResult = new JsonObject();
         if (deployRequest.isSnapshot()) {
             Command<ModuleRequest> resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_CONFIG_REQUEST);
             JsonObject result = resolveVersion.execute(deployRequest);
@@ -40,7 +44,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
         JsonObject downloadResult = downloadArtifact.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
-            return new JsonObject().putBoolean("result", false);
+            return deployResult.putBoolean("result", false);
         }
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
         ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false, LogConstants.DEPLOY_CONFIG_REQUEST);
@@ -51,7 +55,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             JsonObject testResult = consoleCommand.execute(artifactContextUtil.getTestCommand());
             if (!testResult.getBoolean(Constants.COMMAND_STATUS)) {
                 LOG.info("ERROR");
-                return new JsonObject().putBoolean("result", false);
+                return deployResult.putBoolean("result", false);
             }
         }
 
@@ -59,10 +63,11 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             RunConsoleCommand consoleCommand = new RunConsoleCommand(deployRequest.getId().toString());
             JsonObject restartResult = consoleCommand.execute(artifactContextUtil.getRestartCommand());
             if (!restartResult.getBoolean(Constants.COMMAND_STATUS)) {
-                return new JsonObject().putBoolean("result", false);
+                return deployResult.putBoolean("result", false);
             }
         }
+        deployResult.putBoolean("configChanged", extractResult.getBoolean("configChanged", false));
 
-        return new JsonObject().putBoolean("result", extractResult.getBoolean("success"));
+        return deployResult.putBoolean("result", extractResult.getBoolean("success"));
     }
 }

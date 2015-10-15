@@ -19,7 +19,7 @@ public class DeployRequest {
     private final String autoScalingGroup;
 
     private final String instanceId;
-    private final boolean restart;
+    private boolean restart;
     private DeployState state;
 
     @JsonCreator
@@ -92,5 +92,9 @@ public class DeployRequest {
     @JsonProperty("as_decrement_desired_capacity")
     public void setDecrementDesiredCapacity(boolean decrementDesiredCapacity) {
         this.decrementDesiredCapacity = decrementDesiredCapacity;
+    }
+
+    public void setRestart(boolean restart) {
+        this.restart = restart;
     }
 }

@@ -70,7 +70,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
                     deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
 
-            JsonObject deployOk;
+            JsonObject deployOk = null;
 
 
             if (deployRequest.withElb()) {
@@ -94,6 +94,11 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                         respondFailed(request);
                         return;
                     }
+                }
+
+                if (deployRequest.withRestart() && deployOk != null && deployOk.getBoolean("configChanged", false)) {
+                    ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
+                    deployRequest.setRestart(true);
                 }
             }
 
