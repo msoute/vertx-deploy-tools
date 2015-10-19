@@ -66,7 +66,7 @@ public class StopModule implements Command<ModuleRequest> {
     public void stopWithInit(ModuleRequest request) {
 
         for (String file : modRoot.list(new ModuleFileNameFilter(request))) {
-            LOG.info("[{} - {}]: Stopping module {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
+            LOG.info("[{} - {}]: Stopping module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), file);
             Process killProcess;
             try {
                 killProcess = Runtime.getRuntime().exec(new String[]{"sudo", "/etc/init.d/vertx", "stop-module", file});

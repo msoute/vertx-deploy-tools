@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,9 +32,10 @@ public class DeployRequest {
                          @JsonProperty("as_group_id") String autoScalingGroup,
                          @JsonProperty("instance_id") String instanceId,
                          @JsonProperty("restart") boolean restart) {
-        this.modules = modules;
-        this.artifacts = artifacts;
-        this.configs = configs;
+        this.modules = modules != null ? modules : Collections.emptyList();
+        this.artifacts = artifacts != null ? artifacts : Collections.emptyList();
+        this.configs = configs != null ? configs : Collections.emptyList();
+
         this.elb = elb;
         this.autoScaling = autoScaling;
         this.autoScalingGroup = autoScalingGroup;

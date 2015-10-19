@@ -26,10 +26,8 @@ public class UndeployModule implements Command<ModuleRequest> {
         final JsonObject result = new JsonObject();
 
         for (String file : modRoot.list(new ModuleFileNameFilter(request))) {
-            LOG.info("[{} - {}]: Undeploying module {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
-
+            LOG.info("[{} - {}]: Undeploying module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), file);
             vertx.fileSystem().deleteSync(modRoot + "/" + file, true);
-            LOG.info("[{} - {}]: Undeployed  module : {}", LogConstants.DEPLOY_REQUEST, request.getId(), file);
         }
         return result;
     }

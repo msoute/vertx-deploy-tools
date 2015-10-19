@@ -75,7 +75,7 @@ public class ProcessUtils {
                 ProcessUtils.removePidFile(new File(moduleId));
 
             } catch (IOException | InterruptedException e) {
-                LOG.error("[{} - {}]: Stopping module {} with pid {} failed with io exception {}", logAction, id, moduleId, pid, e.getMessage());
+                LOG.error("[{} - {}]: Stopping module '{}' with pid {} failed with io exception {}", logAction, id, moduleId, pid, e.getMessage());
             }
         }
 

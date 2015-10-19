@@ -131,7 +131,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                     LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
                     return ModuleVersion.INSTALLED;
                 }
-                LOG.info("[{} - {}]: Older version of Module {} already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
+                LOG.info("[{} - {}]: Older version of Module '{}' already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.getModuleId());
                 return ModuleVersion.OLDER_VERSION;
             }
         }

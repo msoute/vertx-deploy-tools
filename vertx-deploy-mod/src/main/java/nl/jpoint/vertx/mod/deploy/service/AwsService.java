@@ -4,6 +4,7 @@ import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsDeRegisterFactory;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsRegisterFactory;
 import nl.jpoint.vertx.mod.deploy.command.Command;
+import nl.jpoint.vertx.mod.deploy.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -73,27 +74,24 @@ public class AwsService {
     }
 
     public DeployRequest updateAndGetRequest(DeployState state, String buildId) {
-
         if (runningRequests.containsKey(buildId)) {
             LOG.info("[{} - {}]: Updating state to {}", LogConstants.AWS_ELB_REQUEST, buildId, state);
             runningRequests.get(buildId).setState(state);
             return runningRequests.get(buildId);
         }
         return null;
-
     }
 
     public DeployRequest updateRestartAndGetRequest(boolean restart, String buildId) {
-
         if (runningRequests.containsKey(buildId)) {
             LOG.info("[{} - {}]: Updating restart to {}", LogConstants.AWS_ELB_REQUEST, buildId, restart);
             runningRequests.get(buildId).setRestart(restart);
+            runningRequests.get(buildId).setState(DeployState.STOPPING_CONTAINER);
+            runningRequests.get(buildId).getModules().forEach(DeployModuleRequest::withRestart);
             return runningRequests.get(buildId);
         }
         return null;
-
     }
-
 
     public void failBuild(String buildId) {
         LOG.error("[{} - {}]: Failing build.", LogConstants.AWS_ELB_REQUEST, buildId);

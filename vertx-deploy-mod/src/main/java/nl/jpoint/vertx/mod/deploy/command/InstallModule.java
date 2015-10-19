@@ -31,7 +31,7 @@ public class InstallModule implements Command<ModuleRequest> {
     @Override
     public JsonObject execute(final ModuleRequest request) {
 
-        LOG.info("[{} - {}]: Installing module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        LOG.info("[{} - {}]: Installing module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
 
         if (deployInternal) {
             deployWithManager(request);

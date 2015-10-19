@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DeployModuleRequest extends ModuleRequest {
 
     private final int instances;
-    private final boolean restart;
+    private boolean restart;
 
     @JsonCreator
     public DeployModuleRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
@@ -21,6 +21,10 @@ public class DeployModuleRequest extends ModuleRequest {
 
     public int getInstances() {
         return instances;
+    }
+
+    public void withRestart() {
+        this.restart = true;
     }
 
     @Override

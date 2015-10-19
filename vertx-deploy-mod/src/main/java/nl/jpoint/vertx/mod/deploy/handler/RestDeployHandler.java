@@ -90,7 +90,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                         respondFailed(request);
                         return;
                     }
-                    if (deployRequest.withRestart() && deployOk.getBoolean("configChanged", false)) {
+                    if (!deployRequest.withRestart() && deployOk.getBoolean("configChanged", false)) {
                         deployRequest.setRestart(true);
                     }
                 }
