@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 
@@ -46,9 +47,9 @@ public class RestDeployModuleHandler implements Handler<HttpServerRequest> {
             }
 
             LOG.info("[{} - {}]: Received deploy module {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.toString());
-            boolean result = service.deploy(deployRequest);
+            JsonObject result = service.deploy(deployRequest);
 
-            if (!result) {
+            if (!result.getBoolean("result")) {
                 respondFailed(request);
                 return;
             }
