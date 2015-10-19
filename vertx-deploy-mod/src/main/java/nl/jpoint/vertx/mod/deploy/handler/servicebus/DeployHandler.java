@@ -66,7 +66,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
     private void deployArtifacts(String deployId) {
         DeployRequest deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployId);
 
-        boolean deployOk = false;
+        JsonObject deployOk = null;
 
         if (deployRequest.withRestart()) {
             deployModuleService.stopContainer(deployId);
@@ -75,10 +75,16 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
         if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
             for (DeployConfigRequest configRequests : deployRequest.getConfigs()) {
                 deployOk = deployConfigService.deploy(configRequests);
-                if (!deployOk) {
+                if (!deployOk.getBoolean("result")) {
                     awsService.failBuild(deployId);
                     return;
                 }
+            }
+
+            if (deployRequest.withRestart() && deployOk != null && deployOk.getBoolean("configChanged", false)) {
+                deployModuleService.stopContainer(deployRequest.getId().toString());
+                awsService.updateRestartAndGetRequest(true, deployId);
+                deployRequest.setRestart(true);
             }
         }
 
@@ -88,7 +94,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                 deployOk = deployArtifactService.deploy(artifactRequest);
 
-                if (!deployOk) {
+                if (!deployOk.getBoolean("result")) {
                     awsService.failBuild(deployId);
                     return;
                 }
@@ -101,7 +107,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
             for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                 deployOk = deployModuleService.deploy(moduleRequest);
 
-                if (!deployOk) {
+                if (!deployOk.getBoolean("result")) {
                     awsService.failBuild(deployId);
                     return;
                 }

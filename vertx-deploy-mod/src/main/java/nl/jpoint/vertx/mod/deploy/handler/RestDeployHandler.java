@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 
@@ -69,7 +70,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                     deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
                     deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
 
-            boolean deployOk;
+            JsonObject deployOk = null;
 
 
             if (deployRequest.withElb()) {
@@ -89,17 +90,22 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
             if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
                 for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
                     deployOk = configDeployService.deploy(configRequest);
-                    if (!deployOk) {
+                    if (!deployOk.getBoolean("result")) {
                         respondFailed(request);
                         return;
                     }
+                }
+
+                if (deployRequest.withRestart() && deployOk != null && deployOk.getBoolean("configChanged", false)) {
+                    ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
+                    deployRequest.setRestart(true);
                 }
             }
 
             if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
                 for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                     deployOk = artifactDeployService.deploy(artifactRequest);
-                    if (!deployOk) {
+                    if (!deployOk.getBoolean("result")) {
                         respondFailed(request);
                         return;
                     }
@@ -109,7 +115,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
             if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
                 for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                     deployOk = moduleDeployService.deploy(moduleRequest);
-                    if (!deployOk) {
+                    if (!deployOk.getBoolean("result")) {
                         respondFailed(request);
                         return;
                     }

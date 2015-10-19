@@ -40,7 +40,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         this.installedModules = this.vertx.sharedData().getMap("installed_modules");
     }
 
-    public boolean deploy(final DeployModuleRequest deployRequest) {
+    public JsonObject deploy(final DeployModuleRequest deployRequest) {
 
         if (deployRequest.isSnapshot()) {
             Command resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);
@@ -54,7 +54,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
         if (moduleInstalled.equals(ModuleVersion.ERROR)) {
-            return false;
+            return new JsonObject().putBoolean("result", false);
         }
 
         // If the module with the same version is already installed there is no need to take any further action.
@@ -63,7 +63,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                 RunModule runModCommand = new RunModule(platformManager, config);
                 runModCommand.execute(deployRequest);
             }
-            return true;
+            return new JsonObject().putBoolean("result", true);
         }
 
         if (!moduleInstalled.equals(ModuleVersion.INSTALLED)) {
@@ -74,7 +74,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                     JsonObject result = stopModuleCommand.execute(deployRequest);
 
                     if (!result.getBoolean(Constants.STOP_STATUS)) {
-                        return false;
+                        return new JsonObject().putBoolean("result", false);
                     }
                 }
 
@@ -92,7 +92,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
 
             // Respond failed if install did not complete.
             if (!installResult.getBoolean(Constants.STATUS_SUCCESS)) {
-                return false;
+                return new JsonObject().putBoolean("result", false);
             }
         }
 
@@ -101,13 +101,13 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         JsonObject runResult = runModCommand.execute(deployRequest);
 
         if (!runResult.getBoolean(Constants.STATUS_SUCCESS)) {
-            return false;
+            return new JsonObject().putBoolean("result", false);
         }
 
         installedModules.put(deployRequest.getMavenArtifactId(), deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
 
         LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
-        return true;
+        return new JsonObject().putBoolean("result", true);
     }
 
     private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {

@@ -3,6 +3,7 @@ package nl.jpoint.vertx.mod.deploy.command;
 
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
+import nl.jpoint.vertx.mod.deploy.util.FileDigestUtil;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +12,17 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class ExtractArtifact implements Command<ModuleRequest> {
@@ -23,14 +33,17 @@ public class ExtractArtifact implements Command<ModuleRequest> {
     private final Path basePath;
     private final boolean deleteBase;
     private final String logConstant;
+    private final FileDigestUtil fileDigestUtil;
+
+    private boolean configChanged = false;
 
     public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath, boolean deleteBase, String logConstant) {
         this.vertx = vertx;
         this.config = config;
         this.basePath = basePath;
         this.deleteBase = deleteBase;
-
         this.logConstant = logConstant;
+        this.fileDigestUtil = new FileDigestUtil();
     }
 
     @Override
@@ -51,7 +64,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
             return new JsonObject().putBoolean("success", false);
         }
-        return new JsonObject().putBoolean("success", true);
+        return new JsonObject().putBoolean("success", true).putBoolean("configChanged", configChanged);
     }
 
     private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath) {
@@ -62,7 +75,14 @@ public class ExtractArtifact implements Command<ModuleRequest> {
                     return FileVisitResult.CONTINUE;
                 }
                 final Path unpackFile = Paths.get(basePath.toString(), file.toString());
+                byte[] oldDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 Files.copy(file, unpackFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                byte[] newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
+
+                if (!configChanged && !Arrays.equals(oldDigest, newDigest)) {
+                    configChanged = true;
+                }
+
                 return FileVisitResult.CONTINUE;
             }
 
