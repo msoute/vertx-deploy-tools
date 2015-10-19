@@ -1,7 +1,5 @@
 package nl.jpoint.vertx.mod.deploy.util;
 
-import sun.misc.IOUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -28,7 +26,7 @@ public class FileDigestUtil {
         }
         try (InputStream is = Files.newInputStream(unpackFile)) {
             DigestInputStream dis = new DigestInputStream(is, md);
-            while ((dis.read()) != -1);
+            while ((dis.read()) != -1) ;
             byte[] digest = md.digest();
             md.reset();
             return digest;

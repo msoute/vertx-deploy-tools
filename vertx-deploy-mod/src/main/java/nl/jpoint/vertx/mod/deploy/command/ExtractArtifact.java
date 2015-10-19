@@ -79,7 +79,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
                 Files.copy(file, unpackFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
                 byte[] newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
 
-                if (!configChanged && !Arrays.equals(oldDigest, newDigest) ) {
+                if (!configChanged && !Arrays.equals(oldDigest, newDigest)) {
                     configChanged = true;
                 }
 

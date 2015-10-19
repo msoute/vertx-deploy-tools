@@ -3,7 +3,17 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
-import com.amazonaws.services.autoscaling.model.*;
+import com.amazonaws.services.autoscaling.model.AutoScalingInstanceDetails;
+import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
+import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
+import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesRequest;
+import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesResult;
+import com.amazonaws.services.autoscaling.model.DescribeLoadBalancersRequest;
+import com.amazonaws.services.autoscaling.model.DescribeLoadBalancersResult;
+import com.amazonaws.services.autoscaling.model.EnterStandbyRequest;
+import com.amazonaws.services.autoscaling.model.ExitStandbyRequest;
+import com.amazonaws.services.autoscaling.model.Instance;
+import com.amazonaws.services.autoscaling.model.LoadBalancerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
