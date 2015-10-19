@@ -32,7 +32,7 @@ public class RunModule implements Command<ModuleRequest> {
 
     @Override
     public JsonObject execute(final ModuleRequest request) {
-        LOG.info("[{} - {}]: Running module {}.", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
 
         if (deployInternal) {
             startFromContainer(request);

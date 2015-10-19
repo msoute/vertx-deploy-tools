@@ -68,9 +68,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
 
         JsonObject deployOk = null;
 
-        if (deployRequest.withRestart()) {
-            deployModuleService.stopContainer(deployId);
-        }
+
 
         if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
             for (DeployConfigRequest configRequests : deployRequest.getConfigs()) {
@@ -79,13 +77,15 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
                     awsService.failBuild(deployId);
                     return;
                 }
+                if (deployRequest.withRestart() && deployOk.getBoolean("configChanged", false)) {
+                    awsService.updateRestartAndGetRequest(true, deployId);
+                    deployRequest.setRestart(true);
+                }
             }
+        }
 
-            if (deployRequest.withRestart() && deployOk != null && deployOk.getBoolean("configChanged", false)) {
-                deployModuleService.stopContainer(deployRequest.getId().toString());
-                awsService.updateRestartAndGetRequest(true, deployId);
-                deployRequest.setRestart(true);
-            }
+        if (deployRequest.withRestart()) {
+            deployModuleService.stopContainer(deployId);
         }
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployId);

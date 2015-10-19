@@ -75,7 +75,7 @@ public class InstallModule implements Command<ModuleRequest> {
             BufferedReader output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
             String outputLine;
             while ((outputLine = output.readLine()) != null) {
-                if (!outputLine.contains("Downloading")) {
+                if (!outputLine.contains("Downloading") && !outputLine.isEmpty()) {
                     LOG.info("[{} - {}]: Install Module {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
                 }
             }

@@ -105,8 +105,6 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         }
 
         installedModules.put(deployRequest.getMavenArtifactId(), deployRequest.getSnapshotVersion() == null ? deployRequest.getVersion() : deployRequest.getSnapshotVersion());
-
-        LOG.info("[{} - {}]: Cleaning up after deploy", LogConstants.DEPLOY_REQUEST, deployRequest.getId());
         return new JsonObject().putBoolean("result", true);
     }
 

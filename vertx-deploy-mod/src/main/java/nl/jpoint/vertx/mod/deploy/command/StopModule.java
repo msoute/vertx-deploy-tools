@@ -74,7 +74,7 @@ public class StopModule implements Command<ModuleRequest> {
                 int exitValue = killProcess.exitValue();
                 BufferedReader output = new BufferedReader(new InputStreamReader(killProcess.getInputStream()));
                 String outputLine;
-                while ((outputLine = output.readLine()) != null) {
+                while ((outputLine = output.readLine()) != null && !outputLine.isEmpty()) {
                     LOG.info("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
                 }
 

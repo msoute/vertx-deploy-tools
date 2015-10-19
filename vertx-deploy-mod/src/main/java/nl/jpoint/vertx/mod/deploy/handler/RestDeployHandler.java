@@ -83,10 +83,6 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 return;
             }
 
-            if (deployRequest.withRestart()) {
-                ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
-            }
-
             if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
                 for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
                     deployOk = configDeployService.deploy(configRequest);
@@ -94,12 +90,14 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                         respondFailed(request);
                         return;
                     }
+                    if (deployRequest.withRestart() && deployOk.getBoolean("configChanged", false)) {
+                        deployRequest.setRestart(true);
+                    }
                 }
+            }
 
-                if (deployRequest.withRestart() && deployOk != null && deployOk.getBoolean("configChanged", false)) {
-                    ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
-                    deployRequest.setRestart(true);
-                }
+            if (deployRequest.withRestart()) {
+                ((DeployModuleService) moduleDeployService).stopContainer(deployRequest.getId().toString());
             }
 
             if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {

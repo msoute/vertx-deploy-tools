@@ -58,7 +58,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
             final Path zipRoot = zipFs.getPath("/");
 
-            Files.walkFileTree(zipRoot, CopyingFileVisitor(basePath));
+            Files.walkFileTree(zipRoot, CopyingFileVisitor(basePath, request));
             LOG.info("[{} - {}]: Extracted artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
         } catch (IOException | InvalidPathException e) {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
@@ -67,7 +67,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
         return new JsonObject().putBoolean("success", true).putBoolean("configChanged", configChanged);
     }
 
-    private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath) {
+    private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, ModuleRequest request) {
         return new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -80,6 +80,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
                 byte[] newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
 
                 if (!configChanged && !Arrays.equals(oldDigest, newDigest)) {
+                    LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", logConstant, request.getId(), request.getModuleId());
                     configChanged = true;
                 }
 
