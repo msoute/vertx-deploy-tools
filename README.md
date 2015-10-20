@@ -189,15 +189,33 @@ on the ELB's it is a member of. If the instance does not reach the inService sta
         <autoScaling>true</autoScaling>
         <autoScalingGroupId>autoscaling-group-id</autoScalingGroupId>
     </deployConfiguration>
+
+# Creating (config) artifacts.
+Artifacts other than vert.x modules can be constructed in a similar way by using the maven-assembly-plugin. These artifacts are extracted on the targeted instance. A
+config file in the artifact root dir (artifact_context.xml) instructs the module where and how to extract the artifact.
+
+    <?xml version="1.0"?>
+    <artifact>
+        <baselocation>...</baselocation>
+        <testCommand>...</testCommand>
+        <restartCommand>...</restartCommand>
+        <checkContent>true|false</checkContent>
+    </artifact>
     
+* **baselocation** : Instructs the module where to etract the artifact. All existing dir's and / or files wil be removed first *required* 
+* **testCommand** : Runs a console command after extraction, if the command failed the build wil fail (i.e. nginx -t)
+* **restartCommand** : Command to restart a service after extraction, runs after testCommand (i.e. service nginx restart)
+* **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart. 
+
 # Changelog
 ## 1.2-SNAPSHOT
 
-* [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to true
+* [Feature] Add support to check if config has changed and force a restart of the container.
+* [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to true.
 * [Feature] Add local run support `deploy.internal`.
-* [Feature] Add support to deploy to autoscaling groups
+* [Feature] Add support to deploy to autoscaling groups.
 * [Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.
-* [Feature] Make aws region configurable `aws.region` (defaults to eu-west-1) 
+* [Feature] Make aws region configurable `aws.region` (defaults to eu-west-1). 
 * [Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting `includeInStandby` to false in DeployConfiguration.
 * [Feature] Add configuration option `aws.as.deregister.decrementDesiredCapacity` to configure if desired capacity should be decremented if an instance is put in standby (defaults to true)
 
