@@ -59,7 +59,7 @@ public class ArtifactContextUtil {
 
     public boolean getCheckConfig() {
         try {
-            return Boolean.valueOf(document != null ? (String) xPath.compile(RESTART_COMMAND).evaluate(document, XPathConstants.STRING) : null);
+            return Boolean.valueOf(document != null ? (String) xPath.compile(RESTART_ON_CHANGED_CONTENT).evaluate(document, XPathConstants.STRING) : null);
         } catch (XPathExpressionException e) {
             return false;
         }

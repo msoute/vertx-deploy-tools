@@ -32,16 +32,18 @@ public class ExtractArtifact implements Command<ModuleRequest> {
     private final JsonObject config;
     private final Path basePath;
     private final boolean deleteBase;
+    private final boolean checkConfig;
     private final String logConstant;
     private final FileDigestUtil fileDigestUtil;
 
     private boolean configChanged = false;
 
-    public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath, boolean deleteBase, String logConstant) {
+    public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath, boolean deleteBase, boolean checkConfig, String logConstant) {
         this.vertx = vertx;
         this.config = config;
         this.basePath = basePath;
         this.deleteBase = deleteBase;
+        this.checkConfig = checkConfig;
         this.logConstant = logConstant;
         this.fileDigestUtil = new FileDigestUtil();
     }
@@ -64,7 +66,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
             return new JsonObject().putBoolean("success", false);
         }
-        return new JsonObject().putBoolean("success", true).putBoolean("configChanged", configChanged);
+        return new JsonObject().putBoolean("success", true).putBoolean("configChanged", checkConfig && configChanged);
     }
 
     private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, ModuleRequest request) {
@@ -79,7 +81,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
                 Files.copy(file, unpackFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
                 byte[] newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
 
-                if (!configChanged && !Arrays.equals(oldDigest, newDigest)) {
+                if (checkConfig && !configChanged && !Arrays.equals(oldDigest, newDigest)) {
                     LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", logConstant, request.getId(), request.getModuleId());
                     configChanged = true;
                 }
