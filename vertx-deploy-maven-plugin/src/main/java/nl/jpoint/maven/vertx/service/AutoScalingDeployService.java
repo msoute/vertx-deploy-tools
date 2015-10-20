@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.service;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import com.amazonaws.services.autoscaling.model.Instance;
 import nl.jpoint.maven.vertx.executor.AwsRequestExecutor;
 import nl.jpoint.maven.vertx.executor.RequestExecutor;
 import nl.jpoint.maven.vertx.executor.WaitForInstanceRequestExecutor;
@@ -18,6 +19,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AutoScalingDeployService extends DeployService {
 
@@ -45,10 +47,9 @@ public class AutoScalingDeployService extends DeployService {
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
+
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
-
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
-
         if ((activeConfiguration.useElbStatusCheck() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
                 || !activeConfiguration.useElbStatusCheck() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))) {
             getLog().info("No instances inService, using deploy strategy WHATEVER");
@@ -65,18 +66,16 @@ public class AutoScalingDeployService extends DeployService {
             asGroup = awsDeployUtils.getAutoScalingGroup();
             instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
         }
-
         instances.sort((o1, o2) -> o1.getState().ordinal() - o2.getState().ordinal());
-
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
-
         if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
             throw new MojoExecutionException("Auto scaling group is not in a deployable state.");
         }
-
         awsDeployUtils.suspendScheduledActions(getLog());
+
+        instances = checkInstances(awsDeployUtils, asGroup, instances);
 
         Integer originalMinSize = asGroup.getMinSize();
 
@@ -107,7 +106,6 @@ public class AutoScalingDeployService extends DeployService {
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-
                 AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), !DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()));
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
@@ -126,5 +124,20 @@ public class AutoScalingDeployService extends DeployService {
             awsDeployUtils.setDesiredCapacity(getLog(), asGroup, originalDesiredCapacity);
         }
         awsDeployUtils.resumeScheduledActions(getLog());
+    }
+
+    private List<Ec2Instance> checkInstances(AwsAutoScalingDeployUtils awsDeployUtils, AutoScalingGroup asGroup, List<Ec2Instance> instances) {
+        List<String> removedInstances = asGroup.getInstances().stream()
+                .filter(i -> i.getLifecycleState().equalsIgnoreCase(AwsState.STANDBY.name()))
+                .map(Instance::getInstanceId)
+                .filter(i -> awsDeployUtils.checkEc2Instance(i, getLog()))
+                .collect(Collectors.toList());
+
+        if (removedInstances != null && removedInstances.size() > 0) {
+            instances = instances.stream()
+                    .filter(i -> !removedInstances.contains(i.getInstanceId()))
+                    .collect(Collectors.toList());
+        }
+        return instances;
     }
 }

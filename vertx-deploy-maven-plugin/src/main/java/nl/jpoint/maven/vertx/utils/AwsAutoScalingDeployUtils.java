@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.utils;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -8,6 +9,7 @@ import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
+import com.amazonaws.services.autoscaling.model.DetachInstancesRequest;
 import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.ResumeProcessesRequest;
 import com.amazonaws.services.autoscaling.model.SetDesiredCapacityRequest;
@@ -66,7 +68,7 @@ public class AwsAutoScalingDeployUtils {
                 .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy", "AZRebalance")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
         log.info("Should a build fail the processes can be resumed using the AWS CLI.");
-        log.info("aws autoscaling resume-processes --auto-scaling-group-name "+activeConfiguration.getAutoScalingGroupId()+" --scaling-processes AZRebalance ReplaceUnhealthy Terminate ScheduledActions");
+        log.info("aws autoscaling resume-processes --auto-scaling-group-name " + activeConfiguration.getAutoScalingGroupId() + " --scaling-processes AZRebalance ReplaceUnhealthy Terminate ScheduledActions");
         log.info("Suspended auto scaling processes.");
     }
 
@@ -84,6 +86,7 @@ public class AwsAutoScalingDeployUtils {
 
     public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup) throws MojoFailureException, MojoExecutionException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
+
         activeConfiguration.getHosts().clear();
 
         log.debug("describing instances in auto scaling group");
@@ -158,6 +161,34 @@ public class AwsAutoScalingDeployUtils {
 
     public void enableAsGroup(String autoScalingGroupName) {
         awsAsClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest().withAutoScalingGroupName(autoScalingGroupName).withDesiredCapacity(1));
+    }
 
+    public boolean checkEc2Instance(String instanceId, Log log) {
+        boolean instanceTerminated = false;
+        try {
+            DescribeInstancesResult result = awsEc2Client.describeInstances(new DescribeInstancesRequest().withInstanceIds(instanceId));
+            List<com.amazonaws.services.ec2.model.Instance> instances = result.getReservations().stream()
+                    .flatMap(r -> r.getInstances().stream())
+                    .filter(i -> i.getInstanceId().equals(instanceId))
+                    .collect(Collectors.toList());
+            instanceTerminated = instances.isEmpty() || instances.stream()
+                    .map(com.amazonaws.services.ec2.model.Instance::getState)
+                    .filter(s -> s.getCode().equals(48))
+                    .findFirst().isPresent();
+        } catch (AmazonServiceException e) {
+            log.info(e.toString(), e);
+            if (e.getStatusCode() == 400) {
+                instanceTerminated = true;
+            }
+        }
+
+        if (instanceTerminated) {
+            log.warn("Invalid instance " + instanceId + " in group " + activeConfiguration.getAutoScalingGroupId() + ". Detaching instance.");
+            awsAsClient.detachInstances(new DetachInstancesRequest()
+                    .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId())
+                    .withInstanceIds(instanceId)
+                    .withShouldDecrementDesiredCapacity(false));
+        }
+        return instanceTerminated;
     }
 }

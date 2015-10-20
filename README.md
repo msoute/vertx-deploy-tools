@@ -210,6 +210,7 @@ config file in the artifact root dir (artifact_context.xml) instructs the module
 # Changelog
 ## 1.2-SNAPSHOT
 
+* [Feature] Auto remove InStandby instances from an autoscaling group if the instances has already been terminated (#11).
 * [Feature] Add support to check if config has changed and force a restart of the container.
 * [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to true.
 * [Feature] Add local run support `deploy.internal`.
