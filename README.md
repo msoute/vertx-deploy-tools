@@ -12,6 +12,41 @@ Tooling to deploy Vert.X modules, generic artifacts and (application) configurat
 
 # Installation / Configuration
 
+## Installation.
+Install as any other module in sys-mods with max 1 verticle instance.
+
+## Configuration
+
+    {
+        "vertx.home":"/opt/sw/vertx/current",
+        "mod.root": "/opt/sw/vertx/current/mods",
+        "artifact.repo": "/opt/data/repo/",
+        "http.authUser": "...",
+        "http.authPass": "...",
+        "http.authUri": "...",
+        "http.authSecure": true,
+        "aws.auth.access.key":"****************",
+        "aws.auth.secret.access.key":"**********************",
+        "aws.elb.region":"eu-west-1",
+        "aws.as.register.maxduration":10,
+        "aws.as.deregister.maxduration":10
+    }
+    
+* **vertx.home** : The Vertx installation directory.
+* **mod.root** : The Vert.x modules directory.
+* **artifact.repo** : Directory to download artifacts to.
+* **http.authUser** : Nexus repo user 
+* **http.authPass** : Nexus repo password
+* **http.authUri*** : Nexus repo url
+* **http.authSecure** : Use https to connect to nexus (boolean value) 
+* **aws.auth.access.key** : Aws access key
+* **aws.auth.secret.access.key** Aws secret access key
+* **aws.elb.region** : The Aws region
+* **aws.as.register.maxduration** : maximum register duration in minutes (default:4)
+* **aws.deregister.maxduration** : maximum deregister duration in minutes  (default:4)
+
+
+# Deploy configuration 
 ## Deploy artifacts.
 The plugin uses the projects pom to determine what artifacts need to be deployed. There are three types of artifacts (in the order of deployment)
 * config : configuration files, unpacked to a specified location
