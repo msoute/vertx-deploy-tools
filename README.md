@@ -17,7 +17,7 @@ Install as any other module in sys-mods with max 1 verticle instance.
 Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
 Place defaults in /etc/defaults/vertx and configure as needed.
 
-The configured system user needs sudo access to the init.d vertx script and any (test) command and directory configured for artifacts
+The configured system user needs sudo access to the init.d vertx script and any (test) command. The user also needs write access to directories configured for artifacts
 
 ## Configuration
 
