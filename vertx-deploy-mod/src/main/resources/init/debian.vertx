@@ -102,6 +102,14 @@ stop_module () {
 	fi
 }
 
+install_module () {
+    su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON install $VERTICLE &"
+}
+
+uninstall_module () {
+    su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON uninstall $VERTICLE &"
+}
+
 
 case "$1" in
     start)
@@ -109,6 +117,12 @@ case "$1" in
         ;;
     stop)
         stop_modules
+        ;;
+    install)
+        install_module
+        ;;
+    remove)
+        uninstall_module
         ;;
 	start-module)
 		start_module
