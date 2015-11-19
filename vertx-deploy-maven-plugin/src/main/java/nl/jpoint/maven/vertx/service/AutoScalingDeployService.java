@@ -50,6 +50,12 @@ public class AutoScalingDeployService extends DeployService {
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
+
+        if (instances.stream().anyMatch((i -> !i.isReachable(activeConfiguration.getAwsPrivateIp(), port, getLog())))) {
+            getLog().error("Error connecting to deploy module on some instances");
+            throw new MojoExecutionException("Error connecting to deploy module on some instances");
+        }
+
         if ((activeConfiguration.useElbStatusCheck() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
                 || !activeConfiguration.useElbStatusCheck() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))) {
             getLog().info("No instances inService, using deploy strategy WHATEVER");

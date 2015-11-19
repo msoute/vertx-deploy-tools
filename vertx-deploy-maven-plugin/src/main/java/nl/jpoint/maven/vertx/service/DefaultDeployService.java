@@ -4,6 +4,7 @@ import nl.jpoint.maven.vertx.executor.DefaultRequestExecutor;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
+import nl.jpoint.maven.vertx.utils.InstanceUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -37,6 +38,10 @@ public class DefaultDeployService extends DeployService {
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
         getLog().debug("Sending request -> " + deployRequest.toJson(true));
 
+        if (activeConfiguration.getHosts().stream().anyMatch(host -> !InstanceUtils.isReachable(host, port, getLog()))) {
+            getLog().error("Error connecting to deploy module on some instances");
+            throw new MojoExecutionException("Error connecting to deploy module on some instances");
+        }
         for (String host : activeConfiguration.getHosts()) {
             getLog().info("Sending deploy request to host : " + host);
             executor.executeRequest(deployRequest, host, false);

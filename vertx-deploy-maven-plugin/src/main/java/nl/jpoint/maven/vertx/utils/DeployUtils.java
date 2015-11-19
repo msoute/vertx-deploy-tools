@@ -5,6 +5,8 @@ import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
 import nl.jpoint.maven.vertx.request.DeployModuleRequest;
 import nl.jpoint.maven.vertx.request.Request;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
@@ -13,9 +15,14 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -71,15 +78,7 @@ public class DeployUtils {
 
         Iterator<Dependency> it = dependencies.iterator();
 
-        if (!activeConfiguration.isTestScope()) {
-            while (it.hasNext()) {
-                Dependency dependency = it.next();
-                if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
-                    log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
-                    it.remove();
-                }
-            }
-        }
+        FilterTestArtifacts(activeConfiguration, it);
 
         for (Dependency dependency : dependencies) {
 
@@ -103,15 +102,7 @@ public class DeployUtils {
 
         Iterator<Dependency> it = dependencies.iterator();
 
-        if (!activeConfiguration.isTestScope()) {
-            while (it.hasNext()) {
-                Dependency dependency = it.next();
-                if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
-                    log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
-                    it.remove();
-                }
-            }
-        }
+        FilterTestArtifacts(activeConfiguration, it);
 
         for (Dependency dependency : dependencies) {
 
@@ -140,4 +131,18 @@ public class DeployUtils {
         }
         return false;
     }
+
+    private void FilterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<Dependency> it) {
+        if (!activeConfiguration.isTestScope()) {
+            while (it.hasNext()) {
+                Dependency dependency = it.next();
+                if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
+                    log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
+                    it.remove();
+                }
+            }
+        }
+    }
+
+
 }
