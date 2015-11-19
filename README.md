@@ -273,7 +273,12 @@ config file in the artifact root dir (artifact_context.xml) instructs the module
 * **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart. 
 
 # Changelog
-## 1.2-SNAPSHOT
+
+## 1.2.1
+
+* [Feature] Fail build if module is not reachable on any host to deploy to.
+
+## 1.2.0
 
 * [Feature] Auto remove InStandby instances from an autoscaling group if the instances has already been terminated (#11).
 * [Feature] Add support to check if config has changed and force a restart of the container.
@@ -528,7 +533,12 @@ config file in the artifact root dir (artifact_context.xml) instructs the module
 * **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart. 
 
 # Changelog
-## 1.2-SNAPSHOT
+
+## 1.2.1
+
+* [Feature] Fail build if module is not reachable on any host to deploy to.
+
+## 1.2.0
 
 * [Feature] Auto remove InStandby instances from an autoscaling group if the instances has already been terminated (#11).
 * [Feature] Add support to check if config has changed and force a restart of the container.
