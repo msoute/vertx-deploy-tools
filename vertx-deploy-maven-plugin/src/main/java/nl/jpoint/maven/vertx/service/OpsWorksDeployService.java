@@ -6,6 +6,7 @@ import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.utils.AwsOpsWorksDeployUtils;
+import nl.jpoint.maven.vertx.utils.InstanceUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -42,6 +43,11 @@ public class OpsWorksDeployService extends DeployService {
                 .withElb(activeConfiguration.useElbStatusCheck())
                 .withRestart(activeConfiguration.doRestart())
                 .build();
+
+        if (activeConfiguration.getHosts().stream().anyMatch(host -> !InstanceUtils.isReachable(host, port, getLog()))) {
+            getLog().error("Error connecting to deploy module on some instances");
+            throw new MojoExecutionException("Error connecting to deploy module on some instances");
+        }
 
         for (String host : activeConfiguration.getHosts()) {
 
