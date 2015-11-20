@@ -25,10 +25,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=$VERTX_HOME/bin/vertx
 VERTICLE=$2
 SERVICENAME=$( echo $2 | cut -d '~' -f 1,2)
-INSTANCES=$3
-DAEMON_OPTS=" -instances 2 -cluster $"
+#INSTANCES=$3
+#DAEMON_OPTS=" -instances 4 -cluster $"
 PIDDIR=/var/run/vertx
 PIDFILE=$PIDDIR/$VERTICLE.pid
+
+unset VERTX_MODROOT
 
 set -e
 
@@ -39,14 +41,14 @@ if [ ! -d "$PIDDIR" ]; then
   chown $VERTX_USER:$VERTX_USER $PIDDIR
 fi
 
-if [ ! -d /var/log/vertx ]; then
-    mkdir /var/log/vertx
-    chown $VERTX_USER:$VERTX_USER /var/log/vertx
-fi
-
 if [ ! -d $VERTX_HOME/mods ]; then
     mkdir $VERTX_HOME/mods
     chown $VERTX_USER:$VERTX_USER $VERTX_HOME/mods
+fi
+
+if [ ! -d /var/log/vertx ]; then
+    mkdir /var/log/vertx
+    chown $VERTX_USER:$VERTX_USER /var/log/vertx
 fi
 
 if [ ! -d /var/run/vertx ]; then
@@ -57,7 +59,7 @@ fi
 create_pid () {
   touch $PIDFILE
   pid=`pgrep -f $1`
-  echo $pid >> $PIDFILE
+  echo $pid > $PIDFILE
 }
 
 start_modules () {
@@ -80,44 +82,66 @@ stop_modules () {
 
 
 start_module () {
+    INSTANCES="4"
+    unset CONFIG
+    unset JAVA_OPTS
+
+    [ -f /etc/default/vertx ] && . /etc/default/vertx
+
+    [ -f /etc/default/$SERVICENAME ] && . /etc/default/$SERVICENAME
+
+    DAEMON_OPTS=" -instances $INSTANCES -cluster $"
+
+    # -ne -e
+    if [ $CONFIG ] ; then
+        DAEMON_OPTS="$DAEMON_OPTS -conf $CONFIG"
+    fi
 
     if [ -f $1 ]; then
-		PID=$(cat $1)
-        log_failure_msg "Module $VERTICLE allready running on pid $PID."
-		exit 2
-	fi
+	echo $SERVICENAME allready running
+        return
+    fi
 
-	LIST=$(ls -l $VERTX_HOME/mods|grep $SERVICENAME |wc -l)
-	if [ "$LIST" -gt "0" ]; then
-		OTHER=$(ls $VERTX_HOME/mods | grep $SERVICENAME)
-		if [ $OTHER != $VERTICLE ]; then
-			log_failure_msg "Other version of service allready running, remove it first : $OTHER"
-			exit 3
-		fi
-	fi
-	log_success_msg "Starting $VERTICLE."
-	su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON runmod $VERTICLE $DAEMON_OPTS &"
-	create_pid $VERTICLE
+    LIST=$(ls -l $VERTX_HOME/mods|grep $SERVICENAME |wc -l)
+    if [ "$LIST" -gt "0" ]; then
+        OTHER=$(ls $VERTX_HOME/mods | grep $SERVICENAME)
+        if [ $OTHER != $VERTICLE ]; then
+            log_failure_msg "Other version of service already running, remove it first : $OTHER"
+            exit 3
+        fi
+    fi
+    log_success_msg "Starting $VERTICLE."
+    sudo su - $VERTX_USER -c "cd $VERTX_HOME; export JAVA_OPTS=\"$JAVA_OPTS\"; $DAEMON runmod $VERTICLE $DAEMON_OPTS &"
+    create_pid $VERTICLE
     log_success_msg
 }
 
 stop_module () {
-    log_success_msg "Stopping $VERTICLE"
-    if [ -f $1 ]; then
+   if [ -f $1 ]; then
+        log_success_msg "Stopping $VERTICLE"
         PID=$(cat $1)
         killproc -p $PIDFILE
         if [ -f $PIDFILE ]; then
-          rm $1
-         fi
+          sudo rm $1
+        fi
+    fi
+    kill_zombies
+}
+
+kill_zombies () {
+    ZOMBIE_PROC=`ps  -fC java | grep $SERVICENAME  | head -n 1| awk '{print $2}'`
+    if [ ! -z $ZOMBIE_PROC ]; then
+       kill -9 $ZOMBIE_PROC
+       log_success_msg "Killed zombie for $SERVICENAME"
     fi
 }
 
 install_module () {
-    su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON install $VERTICLE &"
+    sudo su - $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON install $VERTICLE"
 }
 
 uninstall_module () {
-    su $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON uninstall $VERTICLE &"
+    sudo su - $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON uninstall $VERTICLE"
 }
 
 
@@ -128,6 +152,12 @@ case "$1" in
     remove)
         uninstall_module
         ;;
+    start-module)
+        start_module $PIDFILE
+        ;;
+    stop-module)
+       stop_module $PIDFILE
+       ;;
     start)
         start_modules
         ;;
@@ -138,7 +168,7 @@ case "$1" in
         stop_modules
         start_modules
         ;;
-	*)
-		log_success_msg "Usage: $NAME {start|stop|restart|install_module|uninstall_module}"
-		;;
+    *)
+        log_success_msg "Usage: $NAME {start|stop|restart|install_module|uninstall_module} - you used: {$1}"
+        ;;
 esac
