@@ -50,7 +50,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
         activeConfiguration = this.createConfiguration();
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
-        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
+        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
 

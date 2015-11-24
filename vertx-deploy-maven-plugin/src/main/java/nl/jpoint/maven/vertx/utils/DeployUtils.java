@@ -41,8 +41,8 @@ public class DeployUtils {
         return createDeployListByClassifier(activeConfiguration, siteClassifier).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
     }
 
-    public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration, String classifier) throws MojoFailureException {
-        return createDeployListByClassifier(activeConfiguration, classifier).stream().map(dependency -> new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), 4, activeConfiguration.doRestart())).collect(Collectors.toList());
+    public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration) throws MojoFailureException {
+        return createDeployListByType(activeConfiguration, "jar").stream().map(dependency -> new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), 4, activeConfiguration.doRestart())).collect(Collectors.toList());
     }
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {

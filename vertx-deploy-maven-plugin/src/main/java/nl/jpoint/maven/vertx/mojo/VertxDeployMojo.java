@@ -23,7 +23,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
 
         final DeployUtils utils = new DeployUtils(getLog(), project);
 
-        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
+        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration);
         final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
 
