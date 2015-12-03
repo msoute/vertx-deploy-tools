@@ -1,8 +1,9 @@
 {
-  "vertx.home": "/tmp",
-  "mod.root": "/tmp",
-  "artifact.repo": "/tmp",
-  "http.authUser": "build",
+  "vertx.home": "",
+  "artifact.repo": "",
+  "config.location": "",
+  "http.authUser": "",
   "http.authPass": "",
+  "http.authSecure" : true,
   "http.authUri": ""
 }

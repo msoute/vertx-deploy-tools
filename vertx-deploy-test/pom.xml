@@ -19,11 +19,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
-            <artifactId>vertx-deploy-test-module</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
-            <classifier>mod</classifier>
-            <type>zip</type>
+            <groupId>nl.malmberg.edubase-reference-cfa.services</groupId>
+            <artifactId>api-endpoints-service</artifactId>
+            <version>EDUBASE-VERTX3X-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -32,24 +30,17 @@
             <plugin>
                 <groupId>nl.jpoint.vertx-deploy-tools</groupId>
                 <artifactId>vertx-deploy-maven-plugin</artifactId>
-                <version>1.2.0-SNAPSHOT</version>
+                <version>3.0.0-SNAPSHOT</version>
                 <configuration>
-                    <credentialsId>deploy-mod-test</credentialsId>
-                    <deployConfigurations>
-                        <deployConfiguration>
-                            <target>test</target>
-                            <testScope>true</testScope>
-                            <restart>false</restart>
-                            <hosts>
-                                <host>http://localhost:6789</host>
-                            </hosts>
-                        </deployConfiguration>
-                    </deployConfigurations>
+                    <remoteIp>localhost</remoteIp>
+                    <scopeTest>false</scopeTest>
+                    <withConfig>false</withConfig>
+                    <allowSnapshots>true</allowSnapshots>
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
+
 
     <pluginRepositories>
         <pluginRepository>

@@ -6,7 +6,8 @@ public class LogConstants {
     public final static String CLUSTER_MANAGER = "ClusterManager";
     public final static String DEPLOY_REQUEST = "DeployRequest";
     public final static String DEPLOY_CONFIG_REQUEST = "DeployConfigRequest";
-    public final static String DEPLOY_SITE_REQUEST = "DeploySiteRequest";
+    public final static String DEPLOY_SITE_REQUEST = "Deploy SiteRequest";
     public static final String AWS_ELB_REQUEST = "ConfigureAwsElb";
     public static final String AWS_AS_REQUEST = "ConfigureAwsAutoScaling";
+    public static final String STARTUP = "Startup";
 }

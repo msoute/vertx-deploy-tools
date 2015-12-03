@@ -1,10 +1,12 @@
 {
-  "vertx.home": "/opt/vertx",
-  "mod.root": "/opt/vertx/mods/",
-  "artifact.repo": "/tmp/",
+  "vertx.home": "",
+  "mod.root": "",
+  "artifact.repo": "",
+  "aws.auth.access.key": "",
+  "aws.auth.secret.access.key": "",
+  "config.location": "",
   "http.authUser": "",
   "http.authPass": "",
-  "http.authUri": "",
-  "deploy.internal": true,
-  "module.pid.dir": ""
+  "http.authSecure" : true,
+  "http.authUri": ""
 }

@@ -129,7 +129,7 @@ identified by classifier site
     <plugin>
         <groupId>nl.jpoint.vertx-deploy-tools</groupId>
         <artifactId>vertx-deploy-maven-plugin</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <configuration>
             <region>eu-west-1</region>
             <credentialsId>credentials</credentialsId>
@@ -274,6 +274,10 @@ config file in the artifact root dir (artifact_context.xml) instructs the module
 
 # Changelog
 
+## 3.0.0
+
+* [Feature] Move to vertx.3
+
 ## 1.2.1
 
 * [Feature] Fail build if module is not reachable on any host to deploy to.
@@ -389,7 +393,7 @@ identified by classifier site
     <plugin>
         <groupId>nl.jpoint.vertx-deploy-tools</groupId>
         <artifactId>vertx-deploy-maven-plugin</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <configuration>
             <region>eu-west-1</region>
             <credentialsId>credentials</credentialsId>

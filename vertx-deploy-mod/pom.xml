@@ -5,7 +5,7 @@
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
@@ -106,11 +106,11 @@
                     <systemProperties>
                         <systemProperty>
                             <name>vertx.home</name>
-                            <value>/opt/vertx</value>
+                            <value>/home/marcel/Java/Tools/vert.x-3.1.0</value>
                         </systemProperty>
                         <systemProperty>
                             <name>vertx.mods</name>
-                            <value>/opt/vertx/mods</value>
+                            <value>target/mods</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>
@@ -121,7 +121,7 @@
                 <version>2.0.7-final</version>
                 <configuration>
                     <configFile>src/test/runner/config.json</configFile>
-                    <modsDir>/opt/vertx/mods</modsDir>
+                    <modsDir>target/mods</modsDir>
                     <instances>1</instances>
                 </configuration>
             </plugin>

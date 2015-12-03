@@ -11,6 +11,7 @@ public abstract class ModuleRequest {
     private final String classifier;
     private final String type;
 
+
     private String snapshotVersion = null;
 
     ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier, final String type) {
@@ -18,7 +19,8 @@ public abstract class ModuleRequest {
         this.artifactId = artifactId;
         this.version = version;
         this.classifier = classifier;
-        this.type = type != null ? type : "zip";
+        this.type = type != null ? type : "jar";
+
     }
 
     ModuleRequest(final String groupId, final String artifactId, final String version, final String type) {
@@ -42,7 +44,7 @@ public abstract class ModuleRequest {
     }
 
     public String getModuleId() {
-        return this.groupId + "~" + this.artifactId + "~" + this.version;
+        return this.groupId + ":" + this.artifactId + ":" + this.version;
     }
 
     public String getMavenArtifactId() {
