@@ -39,7 +39,7 @@ public class DownloadArtifact implements Command<ModuleRequest> {
         CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
 
         boolean downloaded = false;
-        HttpGet get = new HttpGet(config.getNexusUrl().resolve(request.getRemoteLocation()));
+        HttpGet get = new HttpGet(config.getNexusUrl().resolve(config.getNexusUrl().getPath()+ "/" + request.getRemoteLocation()));
 
         try (CloseableHttpResponse response = httpclient.execute(get)) {
 

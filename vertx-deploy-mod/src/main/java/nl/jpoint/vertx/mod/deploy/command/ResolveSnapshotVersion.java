@@ -62,7 +62,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
     }
 
     private String retrieveAndParseMetadata(ModuleRequest request, CloseableHttpClient httpclient, URI repoUri) {
-        HttpGet getMetadata = new HttpGet(repoUri.resolve(request.getMetadataLocation()));
+        HttpGet getMetadata = new HttpGet(repoUri.resolve(repoUri.getPath()+ "/"+request.getMetadataLocation()));
         try (CloseableHttpResponse response = httpclient.execute(getMetadata)) {
             if (response.getStatusLine().getStatusCode() != HttpResponseStatus.OK.code()) {
                 LOG.error("[{} - {}]: No metadata found for module {} with error code {} with request {}", logId, request.getId(), request.getModuleId(), response.getStatusLine().getStatusCode(), getMetadata.getURI());

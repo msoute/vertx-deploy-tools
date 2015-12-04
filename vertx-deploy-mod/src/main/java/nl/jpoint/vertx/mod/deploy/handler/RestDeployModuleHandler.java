@@ -27,10 +27,10 @@ public class RestDeployModuleHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext context) {
-        context.addBodyEndHandler(aVoid -> {
-            String postData = context.getBodyAsString();
+        context.request().bodyHandler(buffer -> {
+            String postData = new String(buffer.getBytes());
 
-            if (postData == null || postData.isEmpty()) {
+            if (postData.isEmpty()) {
                 LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
                 context.request().response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 context.request().response().end();

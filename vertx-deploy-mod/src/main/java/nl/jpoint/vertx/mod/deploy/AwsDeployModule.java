@@ -44,7 +44,7 @@ public class AwsDeployModule extends AbstractVerticle {
 
         Router router = Router.router(getVertx());
 
-        router.post("/deploy/deploy*").handler(new RestDeployHandler(deployModuleService, deployArtifactService, deployConfigService, awsService));
+        router.post("/deploy/deploy").handler(new RestDeployHandler(deployModuleService, deployArtifactService, deployConfigService, awsService));
         router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployModuleService));
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
 

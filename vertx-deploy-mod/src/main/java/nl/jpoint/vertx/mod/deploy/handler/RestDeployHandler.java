@@ -44,13 +44,13 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext context) {
-        context.addBodyEndHandler(aVoid -> {
+        context.request().bodyHandler(buffer -> {
             ObjectReader reader = new ObjectMapper().readerFor(DeployRequest.class);
 
             DeployRequest deployRequest;
-            String eventBody = context.getBodyAsString();
+            String eventBody = new String(buffer.getBytes());
 
-            if (eventBody == null || eventBody.isEmpty()) {
+            if (eventBody.isEmpty()) {
                 LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
                 respondFailed(context.request());
                 return;
