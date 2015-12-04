@@ -9,6 +9,8 @@ import org.vertx.java.core.json.JsonObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 
 public class InvokeContainer implements Command<String> {
@@ -16,22 +18,29 @@ public class InvokeContainer implements Command<String> {
     private static final Logger LOG = LoggerFactory.getLogger(InvokeContainer.class);
 
     private final String deployId;
+    private String vertxHome;
+    private String[] args;
 
-    public InvokeContainer(String deployId) {
+    public InvokeContainer(String deployId, JsonObject config) {
         this.deployId = deployId;
+        this.vertxHome = config.getString("vertx.home");
     }
 
     @Override
-    public JsonObject execute(String command) {
+    public JsonObject execute(String method) {
         Process killProcess;
         final JsonObject result = new JsonObject();
         result.putBoolean(Constants.STOP_STATUS, false);
 
-
-        LOG.info("[{} - {}]: Invoking container {}", LogConstants.INVOKE_CONTAINER, deployId, command);
+        LOG.info("[{} - {}]: Invoking container {}", LogConstants.INVOKE_CONTAINER, deployId, method);
 
         try {
-            killProcess = Runtime.getRuntime().exec(new String[]{"sudo", "/etc/init.d/vertx", command});
+            String[] cmd = new String[]{vertxHome + "/bin/vertx", method};
+
+            String[] command = Stream.concat(Arrays.stream(cmd), Arrays.stream(args))
+                    .toArray(String[]::new);
+
+            killProcess = Runtime.getRuntime().exec(command);
             killProcess.waitFor();
             int exitValue = killProcess.exitValue();
             BufferedReader output = new BufferedReader(new InputStreamReader(killProcess.getInputStream()));
@@ -49,10 +58,15 @@ public class InvokeContainer implements Command<String> {
             }
             result.putBoolean(Constants.STOP_STATUS, true);
         } catch (IOException | InterruptedException e) {
-            LOG.error("[{} - {}]: Failed to {} container", LogConstants.INVOKE_CONTAINER, deployId, command);
+            LOG.error("[{} - {}]: Failed to {} container", LogConstants.INVOKE_CONTAINER, deployId, method);
             return result;
         }
 
         return result;
+    }
+
+    public InvokeContainer withArgs(String... args) {
+        this.args = args;
+        return this;
     }
 }

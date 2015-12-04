@@ -1,7 +1,10 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
 import nl.jpoint.vertx.mod.deploy.Constants;
-import nl.jpoint.vertx.mod.deploy.command.*;
+import nl.jpoint.vertx.mod.deploy.command.InvokeContainer;
+import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.mod.deploy.command.RunModule;
+import nl.jpoint.vertx.mod.deploy.command.StopModule;
 import nl.jpoint.vertx.mod.deploy.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -11,10 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 public class DeployModuleService implements DeployService<DeployModuleRequest> {
@@ -103,8 +104,11 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         return sameVersion ? ModuleVersion.INSTALLED : ModuleVersion.OLDER_VERSION;
     }
 
-    public void stopContainer(String deployId) {
-        Command<String> stopContainer = new InvokeContainer(deployId);
-        stopContainer.execute("stop");
+    public void stopContainer(String requestId) {
+        InvokeContainer invokeContainer = new InvokeContainer(requestId, config);
+        installedModules.entrySet().stream().map(Map.Entry::getValue).forEach(module -> {
+            invokeContainer.withArgs(module.getString(Constants.APPLICATION_ID));
+            invokeContainer.execute("stop");
+        });
     }
 }

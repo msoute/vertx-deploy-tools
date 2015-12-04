@@ -1,6 +1,5 @@
 {
   "vertx.home": "",
-  "mod.root": "",
   "artifact.repo": "",
   "aws.auth.access.key": "",
   "aws.auth.secret.access.key": "",
