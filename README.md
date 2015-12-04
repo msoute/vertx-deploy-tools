@@ -1,35 +1,6 @@
 vertx-deploy-mod
 ================
 # Introduction
-vertx-deploy-mod
-
-Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
-
-## TODO
-* Default AMI
-
-# Installation / Configuration
-
-## Installation.
-Install and start as any other module in sys-mods with max 1 verticle instance.
-Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
-Place defaults in /etc/defaults/vertx and configure as needed.
-
-The configured system user needs sudo access to the init.d vert.x script and any (test) command. The user also needs write access to directories configured for artifacts
-
-The vertx-deploy script can be used to start the deploy-mod on system boot, it asumes that the config file (deploy.json) for the module is located in /etc/vertx
-
-## Configuration
-
-    {
-        "vertx.home":"/opt/sw/vertx/current",
-        "mod.root": "/opt/sw/vertx/current/mods",
-        "artifact.repo": "/opt/data/repo/",
-        "http.authUser": "...",
-        "http.authPass": "..vertx-deploy-mod
-================
-# Introduction
-vertx-deploy-mod
 
 Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
@@ -49,31 +20,27 @@ The configured system user needs sudo access to the init.d vertx script and any 
 
     {
         "vertx.home":"/opt/sw/vertx/current",
-        "mod.root": "/opt/sw/vertx/current/mods",
-        "artifact.repo": "/opt/data/repo/",
+        "artifact.storage": "/opt/data/repo/",
         "http.authUser": "...",
         "http.authPass": "...",
-        "http.authUri": "...",
-        "http.authSecure": true,
+        "maven.repo.uri": "...",
         "aws.auth.access.key":"****************",
         "aws.auth.secret.access.key":"**********************",
         "aws.elb.region":"eu-west-1",
+        "aws.region", "eu-west-1",
         "aws.as.register.maxduration":10,
-        "aws.as.deregister.maxduration":10
     }
     
-* **vertx.home** : The Vertx installation directory.
-* **mod.root** : The Vert.x modules directory.
-* **artifact.repo** : Directory to download artifacts to.
+* **vertx.home** : The Vertx installation directory. (required)
+* **artifact.storage** : Directory to download artifacts to. (required)
 * **http.authUser** : Nexus repo user 
 * **http.authPass** : Nexus repo password
-* **http.authUri*** : Nexus repo url
-* **http.authSecure** : Use https to connect to nexus (boolean value) 
+* **maven.repo.uri*** : Maven repo url (required)
+* **config.location** : Location of config file (used for -conf when a verticle is instantiated)
 * **aws.auth.access.key** : Aws access key
 * **aws.auth.secret.access.key** Aws secret access key
-* **aws.elb.region** : The Aws region
-* **aws.as.register.maxduration** : maximum register duration in minutes (default:4)
-* **aws.deregister.maxduration** : maximum deregister duration in minutes  (default:4)
+* **aws.region** : The Aws region
+* **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 
 
 # Deploy configuration 
@@ -91,8 +58,6 @@ To instruct the plugin to deploy an artifact (module, artifact or config) it onl
         <groupId>[groupId]</groupId>
         <artifactId>[artifactId]</artifactId>
         <version>[version]</version>
-        <classifier>mod</classifier>
-        <type>zip</type>
     </dependency>
     ...
    

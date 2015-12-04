@@ -17,8 +17,9 @@ public class DeployConfig {
     private static final String ARTIFACT_REPO = "artifact.storage";
     private static final String AWS_AUTH_KEY = "aws.auth.access.key";
     private static final String AWS_SECRET_AUTH_KEY = "aws.auth.secret.access.key";
+    private static final String AWS_REGION = "aws.region";
     private static final String AWS_DEFAULT_REGION = "eu-west-1";
-    private static final String AWS_REGISTER_MAX_DURATION = "aws.as.deregister.maxduration";
+    private static final String AWS_REGISTER_MAX_DURATION = "aws.as.register.maxduration";
     private static final String CONFIG_LOCATION = "config.location";
     private static final String HTTP_AUTH_USER = "http.authUser";
     private static final String HTTP_AUTH_PASSWORD = "http.authPass";
@@ -63,10 +64,14 @@ public class DeployConfig {
     }
 
     private static String validateField(String field, JsonObject config) {
+        return validateField(field, config, "");
+    }
+
+    private static String validateField(String field, JsonObject config, String defaultValue) {
         if (config.containsKey(field) && !config.getString(field).isEmpty()) {
             return (String) config.remove(field);
         }
-        return "";
+        return defaultValue;
     }
 
     static DeployConfig fromJsonObject(JsonObject config) {
@@ -100,7 +105,7 @@ public class DeployConfig {
     private DeployConfig withAwsConfig(JsonObject config) {
         this.awsAccessKey = validateField(AWS_AUTH_KEY, config);
         this.awsSecretAccessKey = validateField(AWS_SECRET_AUTH_KEY, config);
-        this.awsRegion = validateField(AWS_DEFAULT_REGION, config);
+        this.awsRegion = validateField(AWS_REGION, config, AWS_DEFAULT_REGION);
         this.awsInstanceId = validateField(AWS_ELB_ID, config);
         this.awsLoadbalancerId = validateField(AWS_INSTANCE_ID, config);
 
