@@ -1,10 +1,11 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,16 +22,16 @@ public class InvokeContainer implements Command<String> {
     private String vertxHome;
     private String[] args;
 
-    public InvokeContainer(String deployId, JsonObject config) {
+    public InvokeContainer(String deployId, DeployConfig config) {
         this.deployId = deployId;
-        this.vertxHome = config.getString("vertx.home");
+        this.vertxHome = config.getVertxHome();
     }
 
     @Override
     public JsonObject execute(String method) {
         Process killProcess;
         final JsonObject result = new JsonObject();
-        result.putBoolean(Constants.STOP_STATUS, false);
+        result.put(Constants.STOP_STATUS, false);
 
         LOG.info("[{} - {}]: Invoking container {}", LogConstants.INVOKE_CONTAINER, deployId, method);
 
@@ -56,7 +57,7 @@ public class InvokeContainer implements Command<String> {
                     LOG.error("[{} - {}]: {}", LogConstants.INVOKE_CONTAINER, deployId, errorLine);
                 }
             }
-            result.putBoolean(Constants.STOP_STATUS, true);
+            result.put(Constants.STOP_STATUS, true);
         } catch (IOException | InterruptedException e) {
             LOG.error("[{} - {}]: Failed to {} container", LogConstants.INVOKE_CONTAINER, deployId, method);
             return result;

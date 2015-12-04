@@ -1,5 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.handler.internal;
 
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
 import nl.jpoint.vertx.mod.deploy.aws.AwsElbUtil;
 import nl.jpoint.vertx.mod.deploy.aws.AwsException;
@@ -8,9 +11,6 @@ import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,15 +51,15 @@ public class AwsAsRegistrationStatusPollingHandler implements Handler<Long> {
             LOG.info("[{} - {}]: Instance {} in auto scaling group {} in state {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), currentState.name());
             if (state.equals(currentState) && checkElbInService()) {
                 vertx.cancelTimer(timer);
-                vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", true)
-                        .putString("id", request.getId().toString())
-                        .putString("state", state.toString()));
+                vertx.eventBus().send("aws.service.deploy", new JsonObject().put("success", true)
+                        .put("id", request.getId().toString())
+                        .put("state", state.toString()));
             } else if (LocalDateTime.now().isAfter(timeout)) {
                 LOG.error("[{} - {}]: Error executing de-register, timeout while waiting for instance to reach {} ", LogConstants.AWS_AS_REQUEST, request.getId(), state.name());
                 vertx.cancelTimer(timer);
-                vertx.eventBus().send("aws.service.deploy", new JsonObject().putBoolean("success", false)
-                        .putString("id", request.getId().toString())
-                        .putString("state", state.toString()));
+                vertx.eventBus().send("aws.service.deploy", new JsonObject().put("success", false)
+                        .put("id", request.getId().toString())
+                        .put("state", state.toString()));
             }
         } catch (AwsException e) {
             LOG.error("[{} - {}]: Error executing de-register", LogConstants.AWS_AS_REQUEST, request.getId(), e.getMessage());

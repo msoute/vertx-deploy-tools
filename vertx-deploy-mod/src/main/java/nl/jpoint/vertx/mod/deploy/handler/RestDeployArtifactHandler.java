@@ -2,62 +2,60 @@ package nl.jpoint.vertx.mod.deploy.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import nl.jpoint.vertx.mod.deploy.Constants;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.service.DeployService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 
-public class RestDeployArtifactHandler implements Handler<HttpServerRequest> {
+public class RestDeployArtifactHandler implements Handler<RoutingContext> {
 
     private final DeployService service;
     private final Logger LOG = LoggerFactory.getLogger(RestDeployArtifactHandler.class);
 
     public RestDeployArtifactHandler(final DeployService service) {
-        MDC.put("service", Constants.SERVICE_ID);
         this.service = service;
     }
 
     @Override
-    public void handle(final HttpServerRequest request) {
-        request.bodyHandler(event -> {
-            byte[] postData = event.getBytes();
+    public void handle(final RoutingContext context) {
 
-            if (postData == null || postData.length == 0) {
+        context.addBodyEndHandler(aVoid -> {
+            String postData = context.getBodyAsString();
+
+            if (postData == null || postData.isEmpty()) {
                 LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_SITE_REQUEST);
-                request.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-                request.response().end();
+                context.request().response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
+                context.request().response().end();
                 return;
             }
 
             DeployArtifactRequest artifactRequest;
 
             try {
-                artifactRequest = new ObjectMapper().reader(DeployArtifactRequest.class).readValue(postData);
+                artifactRequest = new ObjectMapper().readerFor(DeployArtifactRequest.class).readValue(postData);
             } catch (IOException e) {
-                LOG.error("[{}]: Failed to read postdata {}", new String(postData));
-                respondFailed(request);
+                LOG.error("[{}]: Failed to read postdata {}", postData);
+                respondFailed(context.request());
                 return;
             }
 
 
-            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_SITE_REQUEST, artifactRequest.getId().toString(), new String(postData));
+            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_SITE_REQUEST, artifactRequest.getId().toString(), postData);
 
             JsonObject result = service.deploy(artifactRequest);
 
             if (!result.getBoolean("result")) {
-                respondFailed(request);
+                respondFailed(context.request());
                 return;
             }
-            respondOk(request);
-
+            respondOk(context.request());
         });
     }
 

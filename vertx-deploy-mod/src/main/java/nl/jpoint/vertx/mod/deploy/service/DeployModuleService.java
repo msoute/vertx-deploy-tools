@@ -1,6 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.command.InvokeContainer;
 import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
 import nl.jpoint.vertx.mod.deploy.command.RunModule;
@@ -12,23 +14,16 @@ import nl.jpoint.vertx.mod.deploy.util.ModuleVersion;
 import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
 
-import java.io.File;
 import java.util.Map;
 
 public class DeployModuleService implements DeployService<DeployModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployModuleService.class);
-    private final Vertx vertx;
-    private final JsonObject config;
-    private final File modRoot;
+    private final DeployConfig config;
     private final Map<String, JsonObject> installedModules;
 
-    public DeployModuleService(final Vertx vertx, JsonObject config) {
-        this.vertx = vertx;
+    public DeployModuleService(DeployConfig config) {
         this.config = config;
-        this.modRoot = new File(config.getString("mod.root"));
         this.installedModules = new ProcessUtils(config).listInstalledAndRunningModules();
     }
 
@@ -46,7 +41,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         final ModuleVersion moduleInstalled = moduleInstalled(deployRequest);
 
         if (moduleInstalled.equals(ModuleVersion.ERROR)) {
-            return new JsonObject().putBoolean("result", false);
+            return new JsonObject().put("result", false);
         }
 
         // If the module with the same version is already installed there is no need to take any further action.
@@ -55,7 +50,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                 RunModule runModCommand = new RunModule(config);
                 runModCommand.execute(deployRequest);
             }
-            return new JsonObject().putBoolean("result", true);
+            return new JsonObject().put("result", true);
         }
 
         if (!moduleInstalled.equals(ModuleVersion.INSTALLED)) {
@@ -68,7 +63,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
                     JsonObject result = stopModuleCommand.execute(deployRequest);
 
                     if (!result.getBoolean(Constants.STOP_STATUS)) {
-                        return new JsonObject().putBoolean("result", false);
+                        return new JsonObject().put("result", false);
                     }
                 }
                 installedModules.remove(deployRequest.getMavenArtifactId());
@@ -80,11 +75,11 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         JsonObject runResult = runModCommand.execute(deployRequest);
 
         if (!runResult.getBoolean(Constants.STATUS_SUCCESS)) {
-            return new JsonObject().putBoolean("result", false);
+            return new JsonObject().put("result", false);
         }
 
         installedModules.put(deployRequest.getMavenArtifactId(), runResult);
-        return new JsonObject().putBoolean("result", true);
+        return new JsonObject().put("result", true);
     }
 
     private ModuleVersion moduleInstalled(ModuleRequest deployRequest) {

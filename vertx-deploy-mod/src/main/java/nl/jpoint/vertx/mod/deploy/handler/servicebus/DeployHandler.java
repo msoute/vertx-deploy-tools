@@ -1,5 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.handler.servicebus;
 
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.aws.AwsState;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
@@ -13,9 +16,7 @@ import nl.jpoint.vertx.mod.deploy.service.DeployModuleService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+
 
 public class DeployHandler implements Handler<Message<JsonObject>> {
 
@@ -67,8 +68,6 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
         DeployRequest deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployId);
 
         JsonObject deployOk = null;
-
-
 
         if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
             for (DeployConfigRequest configRequests : deployRequest.getConfigs()) {

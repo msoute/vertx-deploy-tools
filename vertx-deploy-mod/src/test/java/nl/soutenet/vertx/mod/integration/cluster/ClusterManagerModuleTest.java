@@ -4,6 +4,7 @@ package nl.soutenet.vertx.mod.integration.cluster;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.request.DeployModuleRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -16,7 +17,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -129,31 +129,31 @@ public class ClusterManagerModuleTest {
 
     private JsonObject createDeployCommand() {
         return new JsonObject()
-                .putString("group_id", "nl.malmberg.edubase.utils")
-                .putString("artifact_id", "mongo-connector")
-                .putString("version", "1.3.0-SNAPSHOT")
-                .putBoolean("restart", true)
-                .putNumber("instances", 1);
+                .put("group_id", "nl.malmberg.edubase.utils")
+                .put("artifact_id", "mongo-connector")
+                .put("version", "1.3.0-SNAPSHOT")
+                .put("restart", true)
+                .put("instances", 1);
     }
 
     private JsonObject createDeploySiteCommand() {
 
         return new JsonObject()
-                .putString("group_id", "nl.malmberg.vooruit.frontend")
-                .putString("artifact_id", "vooruit")
-                .putString("version", "1.0.0-SNAPSHOT")
-                .putString("classifier", "site")
-                .putString("context", "/var/www/vooruit");
+                .put("group_id", "nl.malmberg.vooruit.frontend")
+                .put("artifact_id", "vooruit")
+                .put("version", "1.0.0-SNAPSHOT")
+                .put("classifier", "site")
+                .put("context", "/var/www/vooruit");
     }
 
     private JsonObject createDeploySiteCommand2() {
 
         return new JsonObject()
-                .putString("group_id", "nl.malmberg.vooruit")
-                .putString("artifact_id", "static")
-                .putString("version", "1.2.0-SNAPSHOT")
-                .putString("classifier", "site")
-                .putString("context", "/var/www/vooruit-assets");
+                .put("group_id", "nl.malmberg.vooruit")
+                .put("artifact_id", "static")
+                .put("version", "1.2.0-SNAPSHOT")
+                .put("classifier", "site")
+                .put("context", "/var/www/vooruit-assets");
     }
 
 

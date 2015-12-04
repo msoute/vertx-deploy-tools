@@ -1,5 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsDeRegisterFactory;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsRegisterFactory;
@@ -10,26 +13,23 @@ import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class AwsService {
     private static final Logger LOG = LoggerFactory.getLogger(AwsService.class);
-    private static final String DEFAULT_REGION = "eu-west-1";
     private final Vertx vertx;
-    private final JsonObject config;
+    private final DeployConfig config;
     private AwsContext awsContext;
 
     private final Map<String, DeployRequest> runningRequests = new HashMap<>();
 
-    public AwsService(Vertx vertx, JsonObject config) {
+    public AwsService(Vertx vertx, DeployConfig config) {
         this.vertx = vertx;
         this.config = config;
 
-        awsContext = AwsContext.build(config.getString("aws.auth.access.key"), config.getString("aws.auth.secret.access.key"), config.getString("aws.region", DEFAULT_REGION));
+        awsContext = AwsContext.build(config.getAwsAccessKey(), config.getAwsSecretAccessKey(), config.getAwsRegion());
     }
 
     public boolean registerRequest(DeployRequest deployRequest) {

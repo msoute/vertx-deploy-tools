@@ -1,16 +1,15 @@
 package nl.jpoint.vertx.mod.deploy.util;
 
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
-import org.omg.CORBA.Object;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +26,8 @@ public class ProcessUtils {
     private final String vertxHome;
     private final Pattern pattern;
 
-    public ProcessUtils(JsonObject config) {
-        vertxHome = config.getString("vertx.home");
+    public ProcessUtils(DeployConfig config) {
+        vertxHome = config.getVertxHome();
         pattern = Pattern.compile(MAVEN_PATTERN);
     }
 
@@ -69,9 +68,9 @@ public class ProcessUtils {
         if (moduleString != null && !moduleString.isEmpty()) {
             String[] vars = moduleString.split(":", 3);
             if (vars.length == 3) {
-                module.putString(Constants.MODULE_VERSION, vars[2]);
-                module.putString(Constants.MAVEN_ID, vars[0] + ":" + vars[1]);
-                module.putString(Constants.APPLICATION_ID, applicationId);
+                module.put(Constants.MODULE_VERSION, vars[2]);
+                module.put(Constants.MAVEN_ID, vars[0] + ":" + vars[1]);
+                module.put(Constants.APPLICATION_ID, applicationId);
             }
         }
     }

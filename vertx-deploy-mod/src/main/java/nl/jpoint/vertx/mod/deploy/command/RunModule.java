@@ -1,45 +1,38 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
+import com.sun.javafx.fxml.builder.URLBuilder;
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 public class RunModule implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RunModule.class);
     private static final String UUID_PATTERN = "[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}";
-    private final String vertxHome;
-    private final String mavenRepoUrl;
-    private final String mavenUser;
-    private final String mavenPassword;
-    private final String protocol;
-    private final String configFile;
-    private boolean success = false;
 
-    public RunModule(final JsonObject config) {
-        this.vertxHome = config.getString("vertx.home");
-        this.mavenRepoUrl = config.getString("http.authUri", null);
-        this.mavenUser = config.getString("http.authUser", null);
-        this.mavenPassword = config.getString("http.authPass", null);
-        this.protocol = config.getBoolean("http.authSecure", false) ? "https://" : "http://";
-        this.configFile = config.getString("config.location");
+    private boolean success = false;
+    private DeployConfig config;
+
+    public RunModule(final DeployConfig config) {
+        this.config = config;
     }
 
     public String buildRemoteRepo() {
-        if (mavenRepoUrl != null) {
-            StringBuilder builder = new StringBuilder(protocol);
-            if (mavenUser != null) {
-                builder.append(mavenUser).append(":").append(mavenPassword).append("@");
-            }
-            builder.append(mavenRepoUrl);
+        URI remoteRepo = config.getNexusUrl();
+        if (remoteRepo != null && config.isHttpAuthentication()) {
+            URIBuilder builder = new URIBuilder(remoteRepo);
+            builder.setUserInfo(config.getHttpAuthUser()+":"+config.getHttpAuthPassword());
             return builder.toString();
         }
         return null;
@@ -52,17 +45,17 @@ public class RunModule implements Command<ModuleRequest> {
         String applicationID = startWithInit(request);
 
         return new JsonObject()
-                .putString(Constants.DEPLOY_ID, request.getId().toString())
-                .putString(Constants.MAVEN_ID, request.getMavenArtifactId())
-                .putString(Constants.MODULE_VERSION, request.getSnapshotVersion() == null ? request.getVersion() : request.getSnapshotVersion())
-                .putString(Constants.APPLICATION_ID, applicationID)
-                .putBoolean(Constants.STATUS_SUCCESS, success);
+                .put(Constants.DEPLOY_ID, request.getId().toString())
+                .put(Constants.MAVEN_ID, request.getMavenArtifactId())
+                .put(Constants.MODULE_VERSION, request.getSnapshotVersion() == null ? request.getVersion() : request.getSnapshotVersion())
+                .put(Constants.APPLICATION_ID, applicationID)
+                .put(Constants.STATUS_SUCCESS, success);
     }
 
     public String startWithInit(final ModuleRequest request) {
         String applicationId = "";
         try {
-            final Process runProcess = Runtime.getRuntime().exec(new String[]{vertxHome + "/bin/vertx", "start", "maven:" + request.getModuleId(), "-conf=" + configFile, "-Dvertx.maven.remoteRepos=" + buildRemoteRepo()});
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome() + "bin/vertx", "start", "maven:" + request.getModuleId(), "-conf=" + config.getConfigLocation(), "-Dvertx.maven.remoteRepos=" + buildRemoteRepo()});
             runProcess.waitFor(1, TimeUnit.MINUTES);
 
             int exitValue = runProcess.exitValue();

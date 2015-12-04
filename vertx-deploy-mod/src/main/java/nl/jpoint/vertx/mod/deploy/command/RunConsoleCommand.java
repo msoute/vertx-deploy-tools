@@ -1,10 +1,10 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
+import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class RunConsoleCommand implements Command<String> {
 
         Process consoleCommand;
         final JsonObject result = new JsonObject();
-        result.putBoolean(Constants.COMMAND_STATUS, false);
+        result.put(Constants.COMMAND_STATUS, false);
         if (command == null || command.isEmpty()) {
             LOG.error("[{} - {}]: Failed to run empty command.", LogConstants.CONSOLE_COMMAND, deployId);
             return result;
@@ -51,7 +51,7 @@ public class RunConsoleCommand implements Command<String> {
                 }
             }
             LOG.info("[{} - {}]: result for  console command '{}' is {}", LogConstants.CONSOLE_COMMAND, deployId, command, exitValue);
-            result.putBoolean(Constants.COMMAND_STATUS, exitValue == 0);
+            result.put(Constants.COMMAND_STATUS, exitValue == 0);
         } catch (IOException | InterruptedException e) {
             LOG.error("[{} - {}]: Failed to run command {} with error {}", LogConstants.CONSOLE_COMMAND, deployId, command, e);
             return result;

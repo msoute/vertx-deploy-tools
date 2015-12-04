@@ -1,14 +1,15 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.deploy.util.FileDigestUtil;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,7 +30,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractArtifact.class);
 
     private final Vertx vertx;
-    private final JsonObject config;
+    private final DeployConfig config;
     private final Path basePath;
     private final boolean deleteBase;
     private final boolean checkConfig;
@@ -38,7 +39,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
     private boolean configChanged = false;
 
-    public ExtractArtifact(Vertx vertx, JsonObject config, Path basePath, boolean deleteBase, boolean checkConfig, String logConstant) {
+    public ExtractArtifact(Vertx vertx, DeployConfig config, Path basePath, boolean deleteBase, boolean checkConfig, String logConstant) {
         this.vertx = vertx;
         this.config = config;
         this.basePath = basePath;
@@ -51,7 +52,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
     @Override
     public JsonObject execute(ModuleRequest request) {
 
-        try (FileSystem zipFs = this.getFileSystem(config.getString("artifact.repo") + "/" + request.getFileName())) {
+        try (FileSystem zipFs = this.getFileSystem(config.getArtifactRepo() + request.getFileName())) {
 
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", logConstant, request.getId(), request.getModuleId(), basePath);
             if (deleteBase) {
@@ -64,9 +65,9 @@ public class ExtractArtifact implements Command<ModuleRequest> {
             LOG.info("[{} - {}]: Extracted artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
         } catch (IOException | InvalidPathException e) {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
-            return new JsonObject().putBoolean("success", false);
+            return new JsonObject().put("success", false);
         }
-        return new JsonObject().putBoolean("success", true).putBoolean("configChanged", checkConfig && configChanged);
+        return new JsonObject().put("success", true).put("configChanged", checkConfig && configChanged);
     }
 
     private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, ModuleRequest request) {
@@ -108,7 +109,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
         if (basePath.toFile().exists()) {
             LOG.info("[{} - {}]: Removing base path -> {}.", logConstant, request.getId(), basePath.toAbsolutePath());
-            vertx.fileSystem().deleteSync(basePath.toString(), true);
+            vertx.fileSystem().deleteBlocking(basePath.toString());
         }
     }
 

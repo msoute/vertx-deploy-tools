@@ -1,6 +1,9 @@
 package nl.jpoint.vertx.mod.deploy;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpServer;
+import io.vertx.ext.web.Router;
 import nl.jpoint.vertx.mod.deploy.handler.RestDeployArtifactHandler;
 import nl.jpoint.vertx.mod.deploy.handler.RestDeployAwsHandler;
 import nl.jpoint.vertx.mod.deploy.handler.RestDeployHandler;
@@ -14,11 +17,8 @@ import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.platform.Verticle;
 
-public class AwsDeployModule extends Verticle {
+public class AwsDeployModule extends AbstractVerticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsDeployModule.class);
 
@@ -27,26 +27,33 @@ public class AwsDeployModule extends Verticle {
     @Override
     public void start() {
         MDC.put("service", Constants.SERVICE_ID);
-
-        if (container.config() == null) {
+        DeployConfig deployconfig = DeployConfig.fromJsonObject(config());
+        if (config() == null) {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");
         }
-        final DeployModuleService deployModuleService = new DeployModuleService(getVertx(), container.config());
-        final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), container.config());
-        final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), container.config());
-        final AwsService awsService = (this.isLocal()) ? null : new AwsService(getVertx(), container.config());
-        vertx.eventBus().registerLocalHandler("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService, deployConfigService));
+        final DeployModuleService deployModuleService = new DeployModuleService(deployconfig);
+        final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(),deployconfig);
+        final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
 
-        HttpServer httpServer = getVertx().createHttpServer();
-        RouteMatcher matcher = new RouteMatcher();
+        AwsService awsService = null;
 
-        matcher.post("/deploy/deploy*", new RestDeployHandler(deployModuleService, deployArtifactService, deployConfigService, awsService));
-        matcher.post("/deploy/module*", new RestDeployModuleHandler(deployModuleService));
-        matcher.post("/deploy/artifact*", new RestDeployArtifactHandler(deployArtifactService));
-        matcher.get("/deploy/status/:id", new RestDeployAwsHandler(awsService));
+        if (deployconfig.isAwsEnabled()) {
+            awsService = (new AwsService(getVertx(), deployconfig));
+        }
 
-        matcher.get("/status", event -> {
+        Router router = Router.router(getVertx());
+
+        router.post("/deploy/deploy*").handler(new RestDeployHandler(deployModuleService, deployArtifactService, deployConfigService, awsService));
+        router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployModuleService));
+        router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
+
+        if (deployconfig.isAwsEnabled()) {
+            vertx.eventBus().consumer("aws.service.deploy", new DeployHandler(awsService, deployModuleService, deployArtifactService, deployConfigService));
+            router.get("/deploy/status/:id").handler(new RestDeployAwsHandler(awsService));
+        }
+
+        router.get("/status").handler(event -> {
             if (initiated) {
                 event.response().setStatusCode(HttpResponseStatus.FORBIDDEN.code());
             } else {
@@ -56,22 +63,11 @@ public class AwsDeployModule extends Verticle {
             event.response().close();
         });
 
-        matcher.noMatch(event -> {
-            LOG.error("{}: No match for request {}", LogConstants.CLUSTER_MANAGER, event.absoluteURI());
-            event.response().setStatusCode(HttpResponseStatus.FORBIDDEN.code());
-            event.response().end();
-            event.response().close();
-        });
-
-        httpServer.requestHandler(matcher);
-        httpServer.listen(getContainer().config().getInteger("http.port", 6789));
+        HttpServer server = vertx.createHttpServer().requestHandler(router::accept);
+        server.listen(config().getInteger("http.port", 6789));
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
 
     }
 
-    public boolean isLocal() {
-        return getContainer().config().getBoolean("deploy.internal", false);
-
-    }
 }

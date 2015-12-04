@@ -1,5 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.command.Command;
 import nl.jpoint.vertx.mod.deploy.command.DownloadArtifact;
 import nl.jpoint.vertx.mod.deploy.command.ExtractArtifact;
@@ -9,23 +12,22 @@ import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DeployArtifactService implements DeployService<DeployArtifactRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployArtifactService.class);
 
     private final Vertx vertx;
-    private final JsonObject config;
-    private final ConcurrentSharedMap<String, String> installedArtifacts;
+    private final DeployConfig config;
+    private final Map<String, String> installedArtifacts;
 
-    public DeployArtifactService(Vertx vertx, JsonObject config) {
+    public DeployArtifactService(Vertx vertx, DeployConfig config) {
         this.vertx = vertx;
         this.config = config;
-        this.installedArtifacts = vertx.sharedData().getMap("installedArtifacts");
+        this.installedArtifacts = new HashMap<>();
     }
 
     @Override
@@ -43,16 +45,16 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         if (installedArtifacts.containsKey(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId())
                 && installedArtifacts.get(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId()).equals(deployRequest.getSnapshotVersion())) {
             LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Artifact {} already installed.", LogConstants.DEPLOY_SITE_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
-            new JsonObject().putBoolean("result", true);
+            new JsonObject().put("result", true);
         }
 
         DownloadArtifact downloadArtifactCommand = new DownloadArtifact(config);
         JsonObject downloadResult = downloadArtifactCommand.execute(deployRequest);
 
         if (!downloadResult.getBoolean("success")) {
-            new JsonObject().putBoolean("result", false);
+            new JsonObject().put("result", false);
         }
-        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getArtifactRepo() + deployRequest.getFileName());
 
         ExtractArtifact extractSite = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), true, false, LogConstants.DEPLOY_SITE_REQUEST);
         JsonObject extractResult = extractSite.execute(deployRequest);
@@ -60,6 +62,6 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         if (deployRequest.getSnapshotVersion() != null) {
             installedArtifacts.put(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId(), deployRequest.getSnapshotVersion());
         }
-        return new JsonObject().putBoolean("result", extractResult.getBoolean("success"));
+        return new JsonObject().put("result", extractResult.getBoolean("success"));
     }
 }

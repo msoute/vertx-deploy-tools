@@ -3,6 +3,10 @@ package nl.jpoint.vertx.mod.deploy.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
@@ -15,13 +19,10 @@ import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 
-public class RestDeployHandler implements Handler<HttpServerRequest> {
+public class RestDeployHandler implements Handler<RoutingContext> {
 
     private final DeployService<DeployModuleRequest> moduleDeployService;
     private final DeployService<DeployArtifactRequest> artifactDeployService;
@@ -42,25 +43,24 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
     }
 
     @Override
-    public void handle(final HttpServerRequest request) {
-        request.bodyHandler(event -> {
-            ObjectReader reader = new ObjectMapper().reader(DeployRequest.class);
+    public void handle(final RoutingContext context) {
+        context.addBodyEndHandler(aVoid -> {
+            ObjectReader reader = new ObjectMapper().readerFor(DeployRequest.class);
 
             DeployRequest deployRequest;
+            String eventBody = context.getBodyAsString();
 
-            if (event.getBytes() == null || event.getBytes().length == 0) {
+            if (eventBody == null || eventBody.isEmpty()) {
                 LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
-                respondFailed(request);
+                respondFailed(context.request());
                 return;
             }
-            byte[] eventBody = event.getBytes();
-            LOG.debug("{}: received postdata size  -> {} ", LogConstants.DEPLOY_REQUEST, eventBody.length);
-            LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, new String(eventBody));
+            LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, eventBody);
             try {
-                deployRequest = reader.readValue(event.getBytes());
+                deployRequest = reader.readValue(eventBody);
             } catch (IOException e) {
                 LOG.error("{}: Error while reading postdata -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
-                respondFailed(request);
+                respondFailed(context.request());
                 return;
             }
 
@@ -74,11 +74,12 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
 
 
             if (deployRequest.withElb()) {
-                if (awsService.registerRequest(deployRequest)) {
-                    respondContinue(request, deployRequest.getId().toString());
+                if (awsService != null && awsService.registerRequest(deployRequest)) {
+                    respondContinue(context.request(), deployRequest.getId().toString());
                     awsService.deRegisterInstance(deployRequest.getId().toString());
                 } else {
-                    respondFailed(request);
+                    LOG.error("{}: Failed to register aws request or aws service disabled.", LogConstants.DEPLOY_REQUEST);
+                    respondFailed(context.request());
                 }
                 return;
             }
@@ -87,7 +88,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
                     deployOk = configDeployService.deploy(configRequest);
                     if (!deployOk.getBoolean("result")) {
-                        respondFailed(request);
+                        respondFailed(context.request());
                         return;
                     }
                     if (!deployRequest.withRestart() && deployOk.getBoolean("configChanged", false)) {
@@ -104,7 +105,7 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                     deployOk = artifactDeployService.deploy(artifactRequest);
                     if (!deployOk.getBoolean("result")) {
-                        respondFailed(request);
+                        respondFailed(context.request());
                         return;
                     }
                 }
@@ -114,13 +115,13 @@ public class RestDeployHandler implements Handler<HttpServerRequest> {
                 for (DeployModuleRequest moduleRequest : deployRequest.getModules()) {
                     deployOk = moduleDeployService.deploy(moduleRequest);
                     if (!deployOk.getBoolean("result")) {
-                        respondFailed(request);
+                        respondFailed(context.request());
                         return;
                     }
                 }
             }
 
-            respondOk(request);
+            respondOk(context.request());
         });
     }
 

@@ -1,6 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.json.JsonObject;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.MetadataXPathUtil;
 import nl.jpoint.vertx.mod.deploy.util.PlatformUtils;
@@ -15,7 +17,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -24,10 +25,10 @@ import java.util.List;
 public class ResolveSnapshotVersion implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResolveSnapshotVersion.class);
-    private final JsonObject config;
+    private final DeployConfig config;
     private final String logId;
 
-    public ResolveSnapshotVersion(JsonObject config, String logId) {
+    public ResolveSnapshotVersion(DeployConfig config, String logId) {
 
         this.config = config;
         this.logId = logId;
@@ -35,20 +36,15 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
 
     @Override
     public JsonObject execute(ModuleRequest request) {
-        List<String> repoList = PlatformUtils.initializeRepoList(logId, config.getString("vertx.home"));
+        List<String> repoList = PlatformUtils.initializeRepoList(logId, config.getVertxHome());
 
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
 
-        boolean secure = true;
-
-        if (config.containsField("http.authSecure")) {
-            secure = config.getBoolean("http.authSecure");
-            LOG.warn("[{} - {}]: Unsecure request to artifact repository.", logId, request.getId());
+        if (config.isHttpAuthentication()) {
+            credsProvider.setCredentials(
+                    new AuthScope(config.getNexusUrl().getHost(), "https".equals(config.getNexusUrl().getScheme()) ? 443 : 80),
+                    new UsernamePasswordCredentials(config.getHttpAuthUser(), config.getHttpAuthPassword()));
         }
-
-        credsProvider.setCredentials(
-                new AuthScope(config.getString("http.authUri"), secure ? 443 : 80),
-                new UsernamePasswordCredentials(config.getString("http.authUser"), config.getString("http.authPass")));
 
         boolean resolved = false;
         String realSnapshotVersion = request.isSnapshot() ? request.getVersion() : null;
@@ -70,7 +66,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
         } catch (IOException e) {
             LOG.error("[{} - {}]: IO Exception while downloading artifact {}. Reason '{}'.", logId, request.getId(), request.getArtifactId(), e.getMessage());
         }
-        return new JsonObject().putBoolean("success", resolved).putString("version", realSnapshotVersion);
+        return new JsonObject().put("success", resolved).put("version", realSnapshotVersion);
 
     }
 

@@ -1,35 +1,35 @@
 package nl.jpoint.vertx.mod.deploy.handler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import org.slf4j.MDC;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
 
-public class RestDeployAwsHandler implements Handler<HttpServerRequest> {
+public class RestDeployAwsHandler implements Handler<RoutingContext> {
     private final AwsService deployAwsService;
 
     public RestDeployAwsHandler(AwsService deployAwsService) {
-        MDC.put("service", Constants.SERVICE_ID);
         this.deployAwsService = deployAwsService;
     }
 
     @Override
-    public void handle(final HttpServerRequest request) {
-        DeployState state = deployAwsService.getDeployStatus(request.params().get("id"));
+    public void handle(final RoutingContext context) {
+        DeployState state = deployAwsService.getDeployStatus(context.request().params().get("id"));
 
         switch (state) {
             case SUCCESS:
-                respondOk(request);
+                respondOk(context.request());
                 break;
             case UNKNOWN:
             case FAILED:
-                respondFailed(request);
+                respondFailed(context.request());
                 break;
             default:
-                respondContinue(request, state, request.params().get("id"));
+                respondContinue(context.request(), state, context.request().params().get("id"));
         }
 
     }

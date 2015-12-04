@@ -17,7 +17,7 @@ public class AwsContext {
 
     public static AwsContext build(final String accessKey, final String secretAccessKey, final String region) {
 
-        if (accessKey == null || accessKey.isEmpty() || secretAccessKey == null || secretAccessKey.isEmpty()) {
+        if (accessKey != null &&  !accessKey.isEmpty() && (secretAccessKey == null || secretAccessKey.isEmpty())) {
             throw new IllegalStateException("Missing aws key config");
         }
         return new AwsContext(accessKey, secretAccessKey, region);

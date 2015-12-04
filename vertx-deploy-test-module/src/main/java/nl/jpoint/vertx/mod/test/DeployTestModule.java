@@ -1,16 +1,16 @@
 package nl.jpoint.vertx.mod.test;
 
-import org.vertx.java.platform.Verticle;
+import io.vertx.core.AbstractVerticle;
 
-public class DeployTestModule extends Verticle {
+public class DeployTestModule extends AbstractVerticle {
 
     @Override
     public void start() {
-        getContainer().logger().info("Verticle started");
+       System.out.println("Verticle Started");
     }
 
     @Override
     public void stop() {
-        getContainer().logger().info("Verticle Stopped");
+        System.out.println("Verticle Stopped");
     }
 }
