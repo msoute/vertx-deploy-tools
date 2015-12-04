@@ -36,7 +36,7 @@ public class StopModule implements Command<ModuleRequest> {
         LOG.info("[{} - {}]: Stopping module '{}' with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), applicationId);
         Process killProcess;
         try {
-            killProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome() + "bin/vertx", "stop", applicationId});
+            killProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", applicationId});
             killProcess.waitFor(1, TimeUnit.MINUTES);
             int exitValue = killProcess.exitValue();
             BufferedReader output = new BufferedReader(new InputStreamReader(killProcess.getInputStream()));

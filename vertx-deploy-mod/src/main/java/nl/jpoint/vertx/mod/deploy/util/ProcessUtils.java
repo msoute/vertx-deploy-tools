@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class ProcessUtils {
     private static final String UUID_PATTERN = "[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}";
     private static final String MAVEN_PATTERN = "maven:([^\\s]+)";
 
-    private final String vertxHome;
+    private final Path vertxHome;
     private final Pattern pattern;
 
     public ProcessUtils(DeployConfig config) {
@@ -78,7 +79,7 @@ public class ProcessUtils {
     private List<String> listModules() {
         List<String> result = new ArrayList<>();
         try {
-            final Process listProcess = Runtime.getRuntime().exec(new String[]{vertxHome + "/bin/vertx", "list"});
+            final Process listProcess = Runtime.getRuntime().exec(new String[]{vertxHome.resolve("bin/vertx").toString(), "list"});
             listProcess.waitFor(1, TimeUnit.MINUTES);
 
             int exitValue = listProcess.exitValue();

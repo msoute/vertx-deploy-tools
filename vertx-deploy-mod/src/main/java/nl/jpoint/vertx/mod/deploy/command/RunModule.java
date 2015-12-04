@@ -55,7 +55,7 @@ public class RunModule implements Command<ModuleRequest> {
     public String startWithInit(final ModuleRequest request) {
         String applicationId = "";
         try {
-            final Process runProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome() + "bin/vertx", "start", "maven:" + request.getModuleId(), "-conf=" + config.getConfigLocation(), "-Dvertx.maven.remoteRepos=" + buildRemoteRepo()});
+            final Process runProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + request.getModuleId(), "-conf=" + config.getConfigLocation(), "-Dvertx.maven.remoteRepos=" + buildRemoteRepo()});
             runProcess.waitFor(1, TimeUnit.MINUTES);
 
             int exitValue = runProcess.exitValue();

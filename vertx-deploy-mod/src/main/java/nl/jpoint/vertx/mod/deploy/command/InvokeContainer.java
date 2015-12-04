@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -19,7 +20,7 @@ public class InvokeContainer implements Command<String> {
     private static final Logger LOG = LoggerFactory.getLogger(InvokeContainer.class);
 
     private final String deployId;
-    private String vertxHome;
+    private Path vertxHome;
     private String[] args;
 
     public InvokeContainer(String deployId, DeployConfig config) {
@@ -36,7 +37,7 @@ public class InvokeContainer implements Command<String> {
         LOG.info("[{} - {}]: Invoking container {}", LogConstants.INVOKE_CONTAINER, deployId, method);
 
         try {
-            String[] cmd = new String[]{vertxHome + "/bin/vertx", method};
+            String[] cmd = new String[]{vertxHome.resolve("bin/vertx").toString(), method};
 
             String[] command = Stream.concat(Arrays.stream(cmd), Arrays.stream(args))
                     .toArray(String[]::new);

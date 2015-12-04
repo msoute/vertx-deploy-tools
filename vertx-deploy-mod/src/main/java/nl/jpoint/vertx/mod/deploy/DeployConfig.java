@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class DeployConfig {
@@ -12,7 +14,7 @@ public class DeployConfig {
     private static final Logger LOG = LoggerFactory.getLogger(AwsDeployModule.class);
 
     private static final String VERTX_HOME = "vertx.home";
-    private static final String ARTIFACT_REPO = "artifact.repo";
+    private static final String ARTIFACT_REPO = "artifact.storage";
     private static final String AWS_AUTH_KEY = "aws.auth.access.key";
     private static final String AWS_SECRET_AUTH_KEY = "aws.auth.secret.access.key";
     private static final String AWS_DEFAULT_REGION = "eu-west-1";
@@ -25,8 +27,8 @@ public class DeployConfig {
     private static final String AWS_ELB_ID = "aws.elb.loadbalancer";
     private static final String AWS_INSTANCE_ID = "aws.elb.instanceid";
 
-    private final String vertxHome;
-    private final String artifactRepo;
+    private final Path vertxHome;
+    private final Path artifactRepo;
     private final URI nexusUrl;
 
     private String configLocation;
@@ -45,8 +47,8 @@ public class DeployConfig {
     private int awsMaxRegistrationDuration;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
-        this.vertxHome = vertxHome.endsWith("/") ? vertxHome : vertxHome + "/";
-        this.artifactRepo = artifactRepo.endsWith("/") ? artifactRepo : artifactRepo + "/";
+        this.vertxHome = Paths.get(vertxHome);
+        this.artifactRepo = Paths.get(artifactRepo);
         this.nexusUrl =  URI.create(nexusUrl);
 
     }
@@ -128,11 +130,11 @@ public class DeployConfig {
         return this;
     }
 
-    public String getVertxHome() {
+    public Path getVertxHome() {
         return vertxHome;
     }
 
-    public String getArtifactRepo() {
+    public Path getArtifactRepo() {
         return artifactRepo;
     }
 
