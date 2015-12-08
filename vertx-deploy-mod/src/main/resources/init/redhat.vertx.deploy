@@ -26,7 +26,7 @@
 DEPLOY_MOD=nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~1.0.1.128
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=$VERTX_HOME/bin/vertx
-BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
+BOOTSTRAP_OPTS="start $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
 PIDDIR=/var/run/vertx
 PIDFILE=$PIDDIR/$VERTICLE.pid
 
