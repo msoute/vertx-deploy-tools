@@ -41,6 +41,7 @@ public class DeployConfig {
 
     private boolean awsEnabled = false;
     private boolean httpAuthentication = false;
+    private boolean mavenLocal = false;
 
     private String awsLoadbalancerId;
     private String awsInstanceId;
@@ -50,7 +51,12 @@ public class DeployConfig {
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
         this.artifactRepo = Paths.get(artifactRepo);
-        this.nexusUrl =  URI.create(nexusUrl);
+        if (nexusUrl == null || nexusUrl.isEmpty() ) {
+            this.mavenLocal = true;
+            this.nexusUrl = null;
+        } else {
+            this.nexusUrl = URI.create(nexusUrl);
+        }
 
     }
 
@@ -82,7 +88,7 @@ public class DeployConfig {
 
         String vertxHome = validateRequiredField(VERTX_HOME, config);
         String artifactRepo = validateRequiredField(ARTIFACT_REPO, config);
-        String mavenRepo = validateRequiredField(MAVEN_REPO_URI, config);
+        String mavenRepo = validateField(MAVEN_REPO_URI, config, "");
 
         DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)
                 .withConfigLocation(config)
@@ -189,5 +195,9 @@ public class DeployConfig {
 
     public boolean isHttpAuthentication() {
         return httpAuthentication;
+    }
+
+    public boolean isMavenLocal() {
+        return mavenLocal;
     }
 }

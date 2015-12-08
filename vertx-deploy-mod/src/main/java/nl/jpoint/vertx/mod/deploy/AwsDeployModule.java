@@ -32,7 +32,7 @@ public class AwsDeployModule extends AbstractVerticle {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");
         }
-        final DeployModuleService deployModuleService = new DeployModuleService(deployconfig);
+        final DeployModuleService deployModuleService = new DeployModuleService(deployconfig, getVertx().fileSystem());
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(),deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
 

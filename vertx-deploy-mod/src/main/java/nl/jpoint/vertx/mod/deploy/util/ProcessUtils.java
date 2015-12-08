@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
-    private static final String UUID_PATTERN = "[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}";
+    private static final String UUID_PATTERN = "([^\\s]+):([^\\s]+):([^\\s]+)";
     private static final String MAVEN_PATTERN = "maven:([^\\s]+)";
 
     private final Path vertxHome;
@@ -97,5 +97,10 @@ public class ProcessUtils {
             LOG.error("[{}]: -  Failed to list modules '{}'", LogConstants.STARTUP, e.getMessage());
         }
         return result;
+    }
+
+    public boolean checkModuleRunning(String moduleId) {
+        JsonObject module = describeModule(moduleId);
+        return !module.isEmpty();
     }
 }

@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
@@ -20,16 +21,18 @@ import java.util.Map;
 public class DeployModuleService implements DeployService<DeployModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployModuleService.class);
     private final DeployConfig config;
+    private FileSystem fs;
     private final Map<String, JsonObject> installedModules;
 
-    public DeployModuleService(DeployConfig config) {
+    public DeployModuleService(DeployConfig config, FileSystem fs) {
         this.config = config;
+        this.fs = fs;
         this.installedModules = new ProcessUtils(config).listInstalledAndRunningModules();
     }
 
     public JsonObject deploy(final DeployModuleRequest deployRequest) {
 
-        if (deployRequest.isSnapshot()) {
+        if (deployRequest.isSnapshot() && !config.isMavenLocal()) {
             ResolveSnapshotVersion resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);
             JsonObject result = resolveVersion.execute(deployRequest);
 
@@ -47,7 +50,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         // If the module with the same version is already installed there is no need to take any further action.
         if (moduleInstalled.equals(ModuleVersion.INSTALLED)) {
             if (deployRequest.restart()) {
-                RunModule runModCommand = new RunModule(config);
+                RunModule runModCommand = new RunModule(fs, config);
                 runModCommand.execute(deployRequest);
             }
             return new JsonObject().put("result", true);
@@ -71,7 +74,7 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         }
 
         // Run the newly installed module.
-        RunModule runModCommand = new RunModule(config);
+        RunModule runModCommand = new RunModule(fs, config);
         JsonObject runResult = runModCommand.execute(deployRequest);
 
         if (!runResult.getBoolean(Constants.STATUS_SUCCESS)) {
@@ -93,10 +96,18 @@ public class DeployModuleService implements DeployService<DeployModuleRequest> {
         boolean sameVersion = installedModule.getString(Constants.MODULE_VERSION).equals(deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion());
 
         if (sameVersion) {
+            if(!checkModuleRunning(deployRequest)) {
+                LOG.info("[{} - {}]: Module ({}) stopped externally.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getModuleId());
+                return ModuleVersion.NOT_INSTALLED;
+            }
             LOG.info("[{} - {}]: Module ({}) already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getModuleId());
         }
 
         return sameVersion ? ModuleVersion.INSTALLED : ModuleVersion.OLDER_VERSION;
+    }
+
+    private boolean checkModuleRunning(ModuleRequest deployRequest) {
+        return new ProcessUtils(config).checkModuleRunning(deployRequest.getModuleId());
     }
 
     public void stopContainer(String requestId) {

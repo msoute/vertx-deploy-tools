@@ -17,9 +17,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>nl.malmberg.edubase-reference-cfa.services</groupId>
-            <artifactId>api-endpoints-service</artifactId>
-            <version>EDUBASE-VERTX3X-SNAPSHOT</version>
+            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+            <artifactId>vertx-deploy-test-module</artifactId>
+            <version>3.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
