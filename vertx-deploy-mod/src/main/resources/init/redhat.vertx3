@@ -3,11 +3,11 @@
 ### BEGIN INIT INFO
 # Provides:          nginx
 # Required-Start:    $local_fs $remote_fs $network $syslog
-# Required-Stop:     $local_fs $remote_fs $network $syslog
-# Default-Start:     2 3 4 5
+# Required-Stop:    $local_fs $remote_fs $network $syslog
+# Default-Start:    2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts vert.x modules
-# Description:       starts vert.x modules using start-stop-daemon
+# Short-Description: starts vert.x deploy module
+# Description:      starts vert.x deploy module using start-stop-daemon
 ### END INIT INFO
 
 [ -f /etc/default/vertx ] && . /etc/default/vertx
@@ -21,154 +21,46 @@
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
+#sysconfig="/etc/sysconfig/$prog"
+
+DEPLOY_MOD=nl.jpoint.vertx-deploy-tools:vertx-deploy-mod:3.0.0-alpha3
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=$VERTX_HOME/bin/vertx
-VERTICLE=$2
-SERVICENAME=$( echo $2 | cut -d '~' -f 1,2)
-#INSTANCES=$3
-#DAEMON_OPTS=" -instances 4 -cluster $"
-PIDDIR=/var/run/vertx
-PIDFILE=$PIDDIR/$VERTICLE.pid
-
-unset VERTX_MODROOT
+BOOTSTRAP_OPTS="start maven:$DEPLOY_MOD -instances 1 -conf /etc/vertx/config.json -id $DEPLOY_MOD"
 
 set -e
 
 . /lib/lsb/init-functions
-
-if [ ! -d "$PIDDIR" ]; then
-  mkdir $PIDDIR
-  chown $VERTX_USER:$VERTX_USER $PIDDIR
-fi
-
-if [ ! -d $VERTX_HOME/mods ]; then
-    mkdir $VERTX_HOME/mods
-    chown $VERTX_USER:$VERTX_USER $VERTX_HOME/mods
-fi
 
 if [ ! -d /var/log/vertx ]; then
     mkdir /var/log/vertx
     chown $VERTX_USER:$VERTX_USER /var/log/vertx
 fi
 
-if [ ! -d /var/run/vertx ]; then
-    mkdir /var/run/vertx
-    chown $VERTX_USER:$VERTX_USER /var/run/vertx
-fi
-
-create_pid () {
-  touch $PIDFILE
-  pid=`pgrep -f $1`
-  echo $pid > $PIDFILE
+stop_deploy_mod () {
+    su $VERTX_USER -c "cd $VERTX_HOME; $DAEMON stop $DEPLOY_MOD"
 }
 
-start_modules () {
-     for i in $( ls $VERTX_HOME/mods ); do
-        VERTICLE=$i
-        PIDFILE=$PIDDIR/$VERTICLE.pid
-        SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
-        start_module $PIDFILE
-     done
+start_deploy_mod () {
+    su $VERTX_USER -c "cd $VERTX_HOME; $DAEMON $BOOTSTRAP_OPTS"
 }
-
-stop_modules () {
-    for i in $( ls $VERTX_HOME/mods ); do
-        VERTICLE=$i
-        PIDFILE=$PIDDIR/$VERTICLE.pid
-        SERVICENAME=$( echo $i | cut -d '~' -f 1,2)
-        stop_module $PIDFILE
-    done
-}
-
-
-start_module () {
-    INSTANCES="4"
-    unset CONFIG
-    unset JAVA_OPTS
-
-    [ -f /etc/default/vertx ] && . /etc/default/vertx
-
-    [ -f /etc/default/$SERVICENAME ] && . /etc/default/$SERVICENAME
-
-    DAEMON_OPTS=" -instances $INSTANCES -cluster $"
-
-    # -ne -e
-    if [ $CONFIG ] ; then
-        DAEMON_OPTS="$DAEMON_OPTS -conf $CONFIG"
-    fi
-
-    if [ -f $1 ]; then
-	echo $SERVICENAME allready running
-        return
-    fi
-
-    LIST=$(ls -l $VERTX_HOME/mods|grep $SERVICENAME |wc -l)
-    if [ "$LIST" -gt "0" ]; then
-        OTHER=$(ls $VERTX_HOME/mods | grep $SERVICENAME)
-        if [ $OTHER != $VERTICLE ]; then
-            log_failure_msg "Other version of service already running, remove it first : $OTHER"
-            exit 3
-        fi
-    fi
-    log_success_msg "Starting $VERTICLE."
-    sudo su - $VERTX_USER -c "cd $VERTX_HOME; export JAVA_OPTS=\"$JAVA_OPTS\"; $DAEMON runmod $VERTICLE $DAEMON_OPTS &"
-    create_pid $VERTICLE
-    log_success_msg
-}
-
-stop_module () {
-   if [ -f $1 ]; then
-        log_success_msg "Stopping $VERTICLE"
-        PID=$(cat $1)
-        killproc -p $PIDFILE
-        if [ -f $PIDFILE ]; then
-          sudo rm $1
-        fi
-    fi
-    kill_zombies
-}
-
-kill_zombies () {
-    ZOMBIE_PROC=`ps  -fC java | grep $SERVICENAME  | head -n 1| awk '{print $2}'`
-    if [ ! -z $ZOMBIE_PROC ]; then
-       kill -9 $ZOMBIE_PROC
-       log_success_msg "Killed zombie for $SERVICENAME"
-    fi
-}
-
-install_module () {
-    sudo su - $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON install $VERTICLE"
-}
-
-uninstall_module () {
-    sudo su - $VERTX_USER -c "cd $VERTX_HOME;  $DAEMON uninstall $VERTICLE"
-}
-
 
 case "$1" in
-    install)
-        install_module
-        ;;
-    remove)
-        uninstall_module
-        ;;
-    start-module)
-        start_module $PIDFILE
-        ;;
-    stop-module)
-       stop_module $PIDFILE
-       ;;
-    start)
-        start_modules
-        ;;
-    stop)
-        stop_modules
-        ;;
-    restart)
-        stop_modules
-        start_modules
-        ;;
-    *)
-        log_success_msg "Usage: $NAME {start|stop|restart|install_module|uninstall_module} - you used: {$1}"
-        ;;
-esac
+start)
+log_success_msg "Starting vertx deploy module"
+    start_deploy_mod
+    log_success_msg
+;;
+stop)
+    log_success_msg "Stopping vertx deploy module"
+    stop_deploy_mod
+    log_success_msg
+;;
+restart)
+    log_success_msg "Restarting vertx deploy module"
+    stop_deploy_mod
+    start_deploy_mod
+    ;;
+*)
+log_success_msg "Usage: $NAME {start|stop|restart}"
+;;
