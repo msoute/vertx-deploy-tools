@@ -8,7 +8,7 @@
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <description>Vert.x module for deploying of other Vert.x Modules with support for AWS based infrastructure.
+    <description>Vert.x application for deploying of other Vert.x applications with support for AWS based infrastructure.
     </description>
     <url>https://github.com/msoute/vertx-deploy-tools</url>
     <licenses>
@@ -21,10 +21,10 @@
     <name>Vert.x Deploy Tools</name>
 
     <modules>
-        <module>vertx-deploy-mod</module>
+        <module>vertx-deploy</module>
         <module>vertx-deploy-maven-plugin</module>
         <module>vertx-deploy-test</module>
-        <module>vertx-deploy-test-module</module>
+        <module>vertx-deploy-test-application</module>
     </modules>
 
     <scm>
@@ -38,7 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <vertx.platform.version>3.1.0</vertx.platform.version>
-        <aws.sdk.version>1.10.10</aws.sdk.version>
+        <aws.sdk.version>1.10.39</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>1.10.19</mockito.version>
     </properties>

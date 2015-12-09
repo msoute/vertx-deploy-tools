@@ -1,9 +1,0 @@
-{
-  "vertx.home": "",
-  "artifact.repo": "",
-  "config.location": "",
-  "http.authUser": "",
-  "http.authPass": "",
-  "http.authSecure" : true,
-  "http.authUri": ""
-}

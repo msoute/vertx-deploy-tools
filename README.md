@@ -1,16 +1,13 @@
-vertx-deploy-mod
+vertx-deploy
 ================
 # Introduction
 
-Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).
-
-## TODO
-* Default AMI
+Tooling to deploy Vert.X applications, generic artifacts and (application) configuration onto cloud based instances (Ec2).
 
 # Installation / Configuration
 
 ## Installation.
-Install as any other module in sys-mods with max 1 verticle instance.
+Install as any other application in with max 1 verticle instance.
 Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
 Place defaults in /etc/defaults/vertx and configure as needed.
 
@@ -26,7 +23,6 @@ The configured system user needs sudo access to the init.d vertx script and any 
         "maven.repo.uri": "...",
         "aws.auth.access.key":"****************",
         "aws.auth.secret.access.key":"**********************",
-        "aws.elb.region":"eu-west-1",
         "aws.region", "eu-west-1",
         "aws.as.register.maxduration":10,
     }
@@ -50,7 +46,7 @@ The plugin uses the projects pom to determine what artifacts need to be deployed
 * static artifacts : static content, sites etc that are extracted to a specified location on the target host
 * applications : Vert.x applications.
 
-To instruct the plugin to deploy an artifact (module, artifact or config) it only needs to be added as a dependency to the pom.xml. The plugin ignores all dependencies specified in parent poms or transitive.
+To instruct the plugin to deploy an artifact (application, artifact or config) it only needs to be added as a dependency to the pom.xml. The plugin ignores all dependencies specified in parent poms or transitive.
 
 ### Vert.x Application artifact
     ...
@@ -61,7 +57,7 @@ To instruct the plugin to deploy an artifact (module, artifact or config) it onl
     </dependency>
     ...
 
-Modules are started using the vert.x CLI start method. all non config or static artifacts are regarded as vert.x applications.
+Applications are started using the vert.x CLI start method. all non config or static artifacts are regarded as vert.x applications.
 
 ### Config artifact
 
@@ -73,7 +69,7 @@ Modules are started using the vert.x CLI start method. all non config or static 
         <type>config</type>
     </dependency>
 
-These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always before static artifacts or modules
+These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always before static artifacts or applications
 identified by type config
 
 ### Static artifact
@@ -86,7 +82,7 @@ identified by type config
         <type>zip</type>
     </dependency>
 
-These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always after config artifacts and before modules
+These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always after config artifacts and before applications
 identified by classifier site
 
 ## Maven Plugin Configuration
@@ -125,14 +121,14 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **deployConfig** : Indicates if config artifacts should also be deployed (default : *true*)
 * **exclusions** : List of artifacts that should be ignored 
 * **testScope** : Include artifacts in test scope (default : *false*) 
-* **restart** : Restart whole container or only deployed modules (default : *false*)    
+* **restart** : Restart whole container or only deployed applications (default : *false*)
 * **deploySnapshots** : Also deploy -SNAPSHOT artifacts (default : *false*)   
 
 #### Aws Configuration Options
-* **awsPrivateIp** : Use public or private ip's to connect to deploy mod. (default : *false*)    
+* **awsPrivateIp** : Use public or private ip's to connect to deploy application. (default : *false*)
 * **UseOpsWorks** : Use OpsWorks (Layers) to detect instances to deploy to. Cannot be use icw *useAutoScaling*. (default : *false*)    
 * **useAutoScaling** : Use auto scaling groups to detect instances to deploy to. Cannot be used icw *useOpsWorks*. (default : *false*)    
-* **elb** : When true the deploy module with wait for instances to come InService on attached elb's before continuing deploy. (default : *false*)    
+* **elb** : When true the deploy application with wait for instances to come InService on attached elb's before continuing deploy. (default : *false*)
 
 #### Aws AutoScaling Configuration Options
 * **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
@@ -144,11 +140,11 @@ Multiple targets can be configured. The target configuration can be selected wit
 
 #### Auto Scaling deploy strategies.
 
-* **KEEP_CAPACITY** : The deploy mod wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
+* **KEEP_CAPACITY** : The deploy applications wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
 configured maximum. If *maxCapacity** is configured the desired count wil never be greater than **maxCapacity**. If *elb** is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. 
-* **DEFAULT** : The deploy mod wil only deploy if the  InService count is greater than the groups minimum count. The deploy wil never continue after a failed deploy. The deploy mod
+* **DEFAULT** : The deploy applications wil only deploy if the  InService count is greater than the groups minimum count. The deploy wil never continue after a failed deploy. The deploy mod
 wil not guarantee at least one InService instance (i.e. if the groups minimum count is 0 with one InService instance)
-* **GUARANTEE_MINIMUM** : Yhe deploy mod does not care if a single instance deploy fails. As long as the InService count never drops below **minCapacity**. With **elb** the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.
+* **GUARANTEE_MINIMUM** : Yhe deploy applications does not care if a single instance deploy fails. As long as the InService count never drops below **minCapacity**. With **elb** the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.
 * **WHATEVER** : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)
 
 Note : When there are no InService instances (elb or auto scaling group) on start of the deploy the strategy wil set to **WHATEVER**
@@ -165,14 +161,14 @@ General Mojo parameters
 #### mvn deploy:deploy
 
 The default mojo. Based on configuration it wil deploy to a set of configured instances, instances in an OpWorks layer or instances in an auto scaling group.
-When deploying to an OpsWorks based set of instances the deploy module can be configured to wait for every instance to come InService on an elb before continuing.
+When deploying to an OpsWorks based set of instances the deploy application can be configured to wait for every instance to come InService on an elb before continuing.
 
 During deploys to an auto scaling group the plugin wil first try to deploy Standby instances and put those back into service. This can be overridden with **ignoreInStandby**
 
  When an instance is put InStandby for deployment it wil decrement the desired capacity of the auto scaling group with 1. This can be overridden (  **decrementDesiredCapacity** ). Note that an
 auto scaling group will always try to conform to the configured desired amount i.e. it wil launch a new instance.
 
- Note : During a deploy to an auto scaling group the deploy mod temporarily suspends the following auto scaling policies : *ScheduledActions* , *Terminate* and *ReplaceUnhealthy*. These processes are resumed
+ Note : During a deploy to an auto scaling group the deploy application temporarily suspends the following auto scaling policies : *ScheduledActions* , *Terminate* and *ReplaceUnhealthy*. These processes are resumed
 after the deploy finished (or fails). If the maven task is killed during the deploy those processes are not automatically. This can be fixed either by running a new deploy or with the AWS CLI  
 
  Note : The plugin assumes that a deploy is ready when an instance reaches the status *InService* on all elb's or when no elb's are attached in the auto scaling group. The default ELB health check
@@ -221,8 +217,8 @@ on the ELB's it is a member of. If the instance does not reach the inService sta
     </deployConfiguration>
 
 # Creating (config) artifacts.
-Artifacts other than vert.x modules can be constructed in a similar way by using the maven-assembly-plugin. These artifacts are extracted on the targeted instance. A
-config file in the artifact root dir (artifact_context.xml) instructs the module where and how to extract the artifact.
+Artifacts other than vert.x applications can be constructed in a similar way by using the maven-assembly-plugin. These artifacts are extracted on the targeted instance. A
+config file in the artifact root dir (artifact_context.xml) instructs the application where and how to extract the artifact.
 
     <?xml version="1.0"?>
     <artifact>
@@ -232,7 +228,7 @@ config file in the artifact root dir (artifact_context.xml) instructs the module
         <checkContent>true|false</checkContent>
     </artifact>
     
-* **baselocation** : Instructs the module where to etract the artifact. All existing dir's and / or files wil be removed first *required* 
+* **baselocation** : Instructs the application where to extract the artifact. All existing dir's and / or files wil be removed first *required*
 * **testCommand** : Runs a console command after extraction, if the command failed the build wil fail (i.e. nginx -t)
 * **restartCommand** : Command to restart a service after extraction, runs after testCommand (i.e. service nginx restart)
 * **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart. 
