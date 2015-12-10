@@ -9,6 +9,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.sisu.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private boolean ignoreInStandby;
     @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
     private boolean deploySnapshots;
+    @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
+    private String authToken;
 
 
 
@@ -75,6 +78,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withRestart(doRestart)
                 .withDecrementCapacity(decrementCapacity)
                 .withIgnoreInStandby(ignoreInStandby)
-                .withDeploySnapshots(deploySnapshots);
+                .withDeploySnapshots(deploySnapshots)
+                .withAuthToken(authToken);
     }
 }

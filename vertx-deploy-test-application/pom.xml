@@ -15,12 +15,6 @@
     <name>Vert.x Deploy Tools : Test Application</name>
     <description>Vert.x deploy test application.</description>
 
-    <properties>
-        <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-        <mods.directory>target/mods</mods.directory>
-    </properties>
-
-
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>

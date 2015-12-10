@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AwsRequestExecutor extends RequestExecutor {
 
-    public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port) {
-        super(log, requestTimeout, port);
+    public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
+        super(log, requestTimeout, port, authToken);
     }
 
     @Override

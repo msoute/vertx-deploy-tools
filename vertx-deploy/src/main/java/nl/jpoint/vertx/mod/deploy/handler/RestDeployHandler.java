@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.handler;
 
+import com.amazonaws.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -7,10 +8,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.Constants;
+import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
@@ -18,7 +18,6 @@ import nl.jpoint.vertx.mod.deploy.service.DeployService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import java.io.IOException;
 
@@ -28,18 +27,20 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private final DeployService<DeployArtifactRequest> artifactDeployService;
     private final DeployService<DeployConfigRequest> configDeployService;
     private final AwsService awsService;
+    private final String authToken;
 
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
     public RestDeployHandler(final DeployService<DeployApplicationRequest> moduleDeployService,
                              final DeployService<DeployArtifactRequest> artifactDeployService,
                              final DeployService<DeployConfigRequest> configDeployService,
-                             final AwsService awsService) {
-        MDC.put("service", Constants.SERVICE_ID);
+                             final AwsService awsService,
+                             final String authToken) {
         this.moduleDeployService = moduleDeployService;
         this.artifactDeployService = artifactDeployService;
         this.configDeployService = configDeployService;
         this.awsService = awsService;
+        this.authToken = authToken;
     }
 
     @Override
@@ -48,6 +49,14 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             ObjectReader reader = new ObjectMapper().readerFor(DeployRequest.class);
 
             DeployRequest deployRequest;
+            if (!StringUtils.isNullOrEmpty(context.request().getHeader("authToken")) && !authToken.equals(context.request().getHeader("authToken"))) {
+                LOG.error("{}: Invalid authToken in request.", LogConstants.DEPLOY_REQUEST);
+                respondFailed(context.request());
+                return;
+            } else {
+                LOG.warn("{}: No authentication token in request.", LogConstants.DEPLOY_REQUEST);
+            }
+
             String eventBody = new String(buffer.getBytes());
 
             if (eventBody.isEmpty()) {

@@ -25,6 +25,8 @@ public class DeployConfig {
     private static final String HTTP_AUTH_PASSWORD = "http.authPass";
     private static final String MAVEN_REPO_URI = "maven.repo.uri";
 
+    private static final String AUTH_TOKEN = "auth.token";
+
     private static final String AWS_ELB_ID = "aws.elb.loadbalancer";
     private static final String AWS_INSTANCE_ID = "aws.elb.instanceid";
 
@@ -47,6 +49,7 @@ public class DeployConfig {
     private String awsInstanceId;
 
     private int awsMaxRegistrationDuration;
+    private String authToken;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -93,12 +96,18 @@ public class DeployConfig {
         DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)
                 .withConfigLocation(config)
                 .withAwsConfig(config)
-                .withHttpAuth(config);
+                .withHttpAuth(config)
+                .withAuthToken(config);
 
         if (!config.isEmpty()) {
             config.fieldNames().forEach(s -> LOG.info("Unused variable in config '{}',", s));
         }
         return deployconfig;
+    }
+
+    private DeployConfig withAuthToken(JsonObject config) {
+        this.authToken = validateField(AUTH_TOKEN, config);
+        return this;
     }
 
 
@@ -199,5 +208,9 @@ public class DeployConfig {
 
     public boolean isMavenLocal() {
         return mavenLocal;
+    }
+
+    public String getAuthToken() {
+        return authToken;
     }
 }

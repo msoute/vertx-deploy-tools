@@ -96,7 +96,7 @@ public class AutoScalingDeployService extends DeployService {
                 throw new MojoExecutionException("auto scaling group is not in a deployable state.");
             }
 
-            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port);
+            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port, activeConfiguration.getAuthToken());
 
             DeployRequest deployRequest = new DeployRequest.Builder()
                     .withModules(deployModuleRequests)

@@ -4,10 +4,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployArtifactHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployAwsHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployModuleHandler;
+import nl.jpoint.vertx.mod.deploy.handler.*;
 import nl.jpoint.vertx.mod.deploy.handler.servicebus.DeployHandler;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
@@ -44,7 +41,7 @@ public class AwsDeployApplication extends AbstractVerticle {
 
         Router router = Router.router(getVertx());
 
-        router.post("/deploy/deploy").handler(new RestDeployHandler(deployApplicationService, deployArtifactService, deployConfigService, awsService));
+        router.post("/deploy/deploy").handler(new RestDeployHandler(deployApplicationService, deployArtifactService, deployConfigService, awsService, deployconfig.getAuthToken()));
         router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployApplicationService));
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
 
@@ -67,7 +64,6 @@ public class AwsDeployApplication extends AbstractVerticle {
         server.listen(config().getInteger("http.port", 6789));
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
-
     }
 
 }

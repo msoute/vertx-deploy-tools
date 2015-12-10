@@ -62,6 +62,12 @@ public class DeployConfiguration {
      **/
     private String opsWorksLayerId = null;
 
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    private String authToken;
+
 
     public String getAutoScalingGroupId() {
         return autoScalingGroupId;
@@ -213,5 +219,10 @@ public class DeployConfiguration {
 
     public void setDeploySnapshots(boolean deploySnapshots) {
         this.deploySnapshots = deploySnapshots;
+    }
+
+    public DeployConfiguration withAuthToken(String authToken) {
+        this.authToken = authToken;
+        return this;
     }
 }

@@ -10,8 +10,8 @@ import nl.jpoint.vertx.mod.deploy.command.RunApplication;
 import nl.jpoint.vertx.mod.deploy.command.StopApplication;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import nl.jpoint.vertx.mod.deploy.util.ApplicationVersion;
+import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +21,8 @@ import java.util.Map;
 public class DeployApplicationService implements DeployService<DeployApplicationRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployApplicationService.class);
     private final DeployConfig config;
-    private FileSystem fs;
     private final Map<String, JsonObject> installedModules;
+    private FileSystem fs;
 
     public DeployApplicationService(DeployConfig config, FileSystem fs) {
         this.config = config;
@@ -96,7 +96,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
         boolean sameVersion = installedModule.getString(Constants.MODULE_VERSION).equals(deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion());
 
         if (sameVersion) {
-            if(!checkModuleRunning(deployRequest)) {
+            if (!checkModuleRunning(deployRequest)) {
                 LOG.info("[{} - {}]: Module ({}) stopped externally.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getModuleId());
                 return ApplicationVersion.NOT_INSTALLED;
             }
