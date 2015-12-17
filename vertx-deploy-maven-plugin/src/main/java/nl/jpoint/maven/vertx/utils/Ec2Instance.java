@@ -66,6 +66,11 @@ public class Ec2Instance {
     }
 
     public boolean isReachable(boolean usePrivate, int port, Log log) {
+        if (usePrivate ? privateIp == null : publicIp == null) {
+            log.error("Instance has no IP, probably still booting");
+            return false;
+        }
+
         Socket socket = null;
         try {
             socket = new Socket();

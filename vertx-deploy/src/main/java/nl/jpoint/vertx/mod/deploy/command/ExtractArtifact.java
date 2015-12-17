@@ -52,7 +52,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
     @Override
     public JsonObject execute(ModuleRequest request) {
 
-        try (FileSystem zipFs = this.getFileSystem(config.getArtifactRepo() + request.getFileName())) {
+        try (FileSystem zipFs = this.getFileSystem(config.getArtifactRepo() + "/" + request.getFileName())) {
 
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", logConstant, request.getId(), request.getModuleId(), basePath);
             if (deleteBase) {

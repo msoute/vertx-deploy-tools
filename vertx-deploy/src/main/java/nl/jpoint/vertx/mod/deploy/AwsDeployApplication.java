@@ -38,7 +38,6 @@ public class AwsDeployApplication extends AbstractVerticle {
         if (deployconfig.isAwsEnabled()) {
             awsService = (new AwsService(getVertx(), deployconfig));
         }
-
         Router router = Router.router(getVertx());
 
         router.post("/deploy/deploy").handler(new RestDeployHandler(deployApplicationService, deployArtifactService, deployConfigService, awsService, deployconfig.getAuthToken()));

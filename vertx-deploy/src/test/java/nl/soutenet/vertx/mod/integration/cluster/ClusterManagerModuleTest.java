@@ -1,3 +1,4 @@
+/*
 package nl.soutenet.vertx.mod.integration.cluster;
 
 
@@ -158,3 +159,4 @@ public class ClusterManagerModuleTest {
 
 
 }
+*/

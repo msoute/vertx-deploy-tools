@@ -3,17 +3,12 @@ package nl.jpoint.maven.vertx.mojo;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
-import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.StringUtils;
-import org.eclipse.sisu.Parameters;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Mojo(name = "deploy-single-as")
 public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
@@ -44,7 +39,6 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private boolean deploySnapshots;
     @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
     private String authToken;
-
 
 
     @Override

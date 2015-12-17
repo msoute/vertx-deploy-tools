@@ -18,6 +18,7 @@ import nl.jpoint.vertx.mod.deploy.service.DeployService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.io.IOException;
 
@@ -92,6 +93,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 }
                 return;
             }
+
+           // Observable.from(deployRequest.getConfigs()).flatMap(deployConfigRequest -> configDeployService.deploy(deployConfigRequest))
 
             if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
                 for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {

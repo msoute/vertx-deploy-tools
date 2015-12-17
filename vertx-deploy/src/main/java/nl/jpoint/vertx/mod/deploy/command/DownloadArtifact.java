@@ -5,14 +5,14 @@ import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,25 +28,19 @@ public class DownloadArtifact implements Command<ModuleRequest> {
 
     @Override
     public JsonObject execute(ModuleRequest request) {
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        HttpGet get = new HttpGet(config.getNexusUrl().resolve(config.getNexusUrl().getPath() + "/" + request.getRemoteLocation()));
 
         if (config.isHttpAuthentication()) {
-            credsProvider.setCredentials(
-                    new AuthScope(config.getNexusUrl().getHost(), "https".equals(config.getNexusUrl().getScheme()) ? 443 : 80),
-                    new UsernamePasswordCredentials(config.getHttpAuthUser(), config.getHttpAuthPassword()));
+            setAuthorizationHeader(get);
         }
-
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-
+        HttpClient httpclient = new DefaultHttpClient();
         boolean downloaded = false;
-        HttpGet get = new HttpGet(config.getNexusUrl().resolve(config.getNexusUrl().getPath()+ "/" + request.getRemoteLocation()));
-
-        try (CloseableHttpResponse response = httpclient.execute(get)) {
+        try {
+            HttpResponse response = httpclient.execute(get);
 
             if (response.getStatusLine().getStatusCode() == HttpResponseStatus.OK.code()) {
-                OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(config.getArtifactRepo() + request.getFileName())));
+                OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(config.getArtifactRepo() + "/" + request.getFileName())));
                 response.getEntity().writeTo(fos);
-                response.close();
                 fos.close();
                 LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), config.getArtifactRepo() + request.getModuleId() + "." + request.getType());
                 downloaded = true;
@@ -58,5 +52,12 @@ public class DownloadArtifact implements Command<ModuleRequest> {
             LOG.error("[{} - {}]: IOException while Error downloading artifact {}. Reason '{}'", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getArtifactId(), e.getMessage());
         }
         return new JsonObject().put("success", downloaded);
+    }
+
+    private void setAuthorizationHeader(HttpGet httpClientRequest) {
+        String usernameAndPassword = config.getHttpAuthUser() + ":" + config.getHttpAuthPassword();
+        String authorizationHeaderName = "Authorization";
+        String authorizationHeaderValue = "Basic " + java.util.Base64.getEncoder().encodeToString(usernameAndPassword.getBytes());
+        httpClientRequest.addHeader(authorizationHeaderName, authorizationHeaderValue);
     }
 }
