@@ -17,17 +17,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>nl.malmberg.mathplus.config</groupId>
-            <artifactId>properties</artifactId>
-            <version>1.0.170</version>
-            <classifier>ft1</classifier>
-            <type>config</type>
-        </dependency>
-<!--        <dependency>
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
             <artifactId>vertx-deploy-test-application</artifactId>
             <version>3.0.0-SNAPSHOT</version>
-        </dependency>-->
+        </dependency>
     </dependencies>
 
     <build>
