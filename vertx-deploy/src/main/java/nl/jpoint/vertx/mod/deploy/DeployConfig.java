@@ -13,6 +13,8 @@ public class DeployConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsDeployApplication.class);
 
+    private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
+
     private static final String VERTX_HOME = "vertx.home";
     private static final String ARTIFACT_REPO = "artifact.storage";
     private static final String AWS_AUTH_KEY = "aws.auth.access.key";
@@ -92,6 +94,11 @@ public class DeployConfig {
         String vertxHome = validateRequiredField(VERTX_HOME, config);
         String artifactRepo = validateRequiredField(ARTIFACT_REPO, config);
         String mavenRepo = validateField(MAVEN_REPO_URI, config, "");
+
+        if (mavenRepo.isEmpty()) {
+            LOG.warn("'maven.repo.uri', using maven central");
+            mavenRepo = MAVEN_CENTRAL;
+        }
 
         DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)
                 .withConfigLocation(config)
