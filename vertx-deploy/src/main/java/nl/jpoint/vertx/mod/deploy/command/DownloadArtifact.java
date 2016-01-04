@@ -45,7 +45,7 @@ public class DownloadArtifact implements Command<ModuleRequest> {
                 LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), config.getArtifactRepo() + request.getModuleId() + "." + request.getType());
                 downloaded = true;
             } else {
-                LOG.error("[{} - {}]: Error downloading artifact {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId());
+                LOG.error("[{} - {}]: Error downloading artifact {} for url", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), get.getURI());
                 LOG.error("[{} - {}]: HttpClient Error [{}] -> {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
             }
         } catch (IOException e) {
