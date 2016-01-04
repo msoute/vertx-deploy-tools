@@ -4,7 +4,7 @@
     "author": "Marcel Soute",
     "homepage": "https://github.com/msoute/vertx-deploy-tools",
     "keywords": ["aws", "deploy"],
-    "main": "nl.jpoint.vertx.mod.deploy.AwsDeployModule",
+    "main": "nl.jpoint.vertx.mod.deploy.AwsDeployApplication",
     "system": true,
     "worker": true,
     "multi-threaded" : false
