@@ -43,6 +43,7 @@ public class ResolveSnapshotVersion implements Command<ModuleRequest> {
             realSnapshotVersion = this.retrieveAndParseMetadata(request, httpclient, config.getNexusUrl());
             if (realSnapshotVersion != null) {
                 LOG.info("[{} - {}]: Parsed metadata. Snapshot version is {} ", logId, request.getId(), realSnapshotVersion);
+                resolved = true;
             }
         }
         return new JsonObject().put("success", resolved).put("version", realSnapshotVersion);
