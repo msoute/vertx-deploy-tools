@@ -87,7 +87,7 @@ public class ProcessUtils {
                 BufferedReader out = new BufferedReader(new InputStreamReader(listProcess.getInputStream()));
                 String outLine;
                 while ((outLine = out.readLine()) != null) {
-                    if (outLine.matches(UUID_PATTERN)) {
+                    if (outLine.matches(UUID_PATTERN) && !result.contains(outLine)) {
                         result.add(outLine);
                     }
                 }

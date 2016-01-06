@@ -81,6 +81,10 @@ public class RunApplication implements Command<ModuleRequest> {
             command.add("--instances");
             command.add((String) serviceProperties.getOrDefault(INSTANCES, "1"));
 
+            if (config.asCluster()) {
+                command.add("-cluster");
+            }
+
             final Process runProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
             runProcess.waitFor(1, TimeUnit.MINUTES);
 

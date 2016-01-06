@@ -54,7 +54,7 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
         if (!downloadResult.getBoolean("success")) {
             new JsonObject().put("result", false);
         }
-        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getArtifactRepo() + deployRequest.getFileName());
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getArtifactRepo().resolve(deployRequest.getFileName()));
 
         ExtractArtifact extractSite = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), true, false, LogConstants.DEPLOY_SITE_REQUEST);
         JsonObject extractResult = extractSite.execute(deployRequest);

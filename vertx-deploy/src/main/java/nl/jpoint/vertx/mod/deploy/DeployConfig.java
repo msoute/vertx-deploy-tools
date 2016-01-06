@@ -52,6 +52,7 @@ public class DeployConfig {
 
     private int awsMaxRegistrationDuration;
     private String authToken;
+    private boolean asCluster = true;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -219,5 +220,9 @@ public class DeployConfig {
 
     public String getAuthToken() {
         return authToken;
+    }
+
+    public boolean asCluster() {
+        return asCluster;
     }
 }

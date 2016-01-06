@@ -33,8 +33,8 @@ public class ArtifactContextUtil {
 
     private Document document;
 
-    public ArtifactContextUtil(String file) {
-        try (FileSystem zipFs = this.getFileSystem(file)) {
+    public ArtifactContextUtil(Path location) {
+        try (FileSystem zipFs = this.getFileSystem(location.toString())) {
             Path path = zipFs.getPath(ARTIFACT_CONTEXT);
             byte[] data = Files.readAllBytes(path);
 

@@ -47,7 +47,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
         if (!downloadResult.getBoolean("success", false)) {
             return deployResult.put("result", false);
         }
-        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getArtifactRepo() + "/" + deployRequest.getFileName());
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getArtifactRepo().resolve(deployRequest.getFileName()));
         ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false, artifactContextUtil.getCheckConfig(), LogConstants.DEPLOY_CONFIG_REQUEST);
         JsonObject extractResult = extractConfig.execute(deployRequest);
 

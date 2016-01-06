@@ -109,7 +109,7 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
         if (basePath.toFile().exists()) {
             LOG.info("[{} - {}]: Removing base path -> {}.", logConstant, request.getId(), basePath.toAbsolutePath());
-            vertx.fileSystem().deleteBlocking(basePath.toString());
+            vertx.fileSystem().deleteRecursiveBlocking(basePath.toString(), true);
         }
     }
 
