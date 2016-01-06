@@ -26,6 +26,7 @@ public class DeployConfig {
     private static final String HTTP_AUTH_USER = "http.authUser";
     private static final String HTTP_AUTH_PASSWORD = "http.authPass";
     private static final String MAVEN_REPO_URI = "maven.repo.uri";
+    private static final String CLUSTER = "vertx.clustering";
 
     private static final String AUTH_TOKEN = "auth.token";
 
@@ -105,7 +106,8 @@ public class DeployConfig {
                 .withConfigLocation(config)
                 .withAwsConfig(config)
                 .withHttpAuth(config)
-                .withAuthToken(config);
+                .withAuthToken(config)
+                .withCluster(config);
 
         if (!config.isEmpty()) {
             config.fieldNames().forEach(s -> LOG.info("Unused variable in config '{}',", s));
@@ -122,6 +124,12 @@ public class DeployConfig {
     private DeployConfig withConfigLocation(JsonObject config) {
         this.configLocation = config.getString(CONFIG_LOCATION, "");
         config.remove(CONFIG_LOCATION);
+        return this;
+    }
+
+    private DeployConfig withCluster(JsonObject config) {
+        this.asCluster = config.getBoolean(CLUSTER, true);
+        config.remove(CLUSTER);
         return this;
     }
 
