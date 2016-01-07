@@ -69,6 +69,7 @@ public class RunApplication implements Command<ModuleRequest> {
             command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + request.getModuleId(), "-id", request.getModuleId()));
             if (!config.isMavenLocal()) {
                 command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
+                command.add("-Dvertx.maven.remoteSnapshotPolicy="+config.getRemoteRepoPolicy());
             }
             if (!config.getConfigLocation().isEmpty()) {
                 command.add("-conf");
@@ -84,6 +85,8 @@ public class RunApplication implements Command<ModuleRequest> {
             if (config.asCluster()) {
                 command.add("-cluster");
             }
+
+
 
             final Process runProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
             runProcess.waitFor(1, TimeUnit.MINUTES);

@@ -26,6 +26,7 @@ public class DeployConfig {
     private static final String HTTP_AUTH_USER = "http.authUser";
     private static final String HTTP_AUTH_PASSWORD = "http.authPass";
     private static final String MAVEN_REPO_URI = "maven.repo.uri";
+    private static final String MAVEN_SNAPSHOT_POLICY = "maven.repo.snapshot.policy";
     private static final String CLUSTER = "vertx.clustering";
 
     private static final String AUTH_TOKEN = "auth.token";
@@ -54,6 +55,7 @@ public class DeployConfig {
     private int awsMaxRegistrationDuration;
     private String authToken;
     private boolean asCluster = true;
+    private String remoteRepoPolicy;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -107,7 +109,8 @@ public class DeployConfig {
                 .withAwsConfig(config)
                 .withHttpAuth(config)
                 .withAuthToken(config)
-                .withCluster(config);
+                .withCluster(config)
+                .withRemoteRepoUpdatePolicy(config);
 
         if (!config.isEmpty()) {
             config.fieldNames().forEach(s -> LOG.info("Unused variable in config '{}',", s));
@@ -124,6 +127,12 @@ public class DeployConfig {
     private DeployConfig withConfigLocation(JsonObject config) {
         this.configLocation = config.getString(CONFIG_LOCATION, "");
         config.remove(CONFIG_LOCATION);
+        return this;
+    }
+
+    private DeployConfig withRemoteRepoUpdatePolicy(JsonObject config) {
+        this.remoteRepoPolicy = config.getString(MAVEN_SNAPSHOT_POLICY, "always");
+        config.remove(MAVEN_SNAPSHOT_POLICY);
         return this;
     }
 
@@ -232,5 +241,9 @@ public class DeployConfig {
 
     public boolean asCluster() {
         return asCluster;
+    }
+
+    public String getRemoteRepoPolicy() {
+        return remoteRepoPolicy;
     }
 }
