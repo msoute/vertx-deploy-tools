@@ -8,10 +8,11 @@ import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.List;
 
-@Mojo(name = "deploy")
+@Mojo(name = "deploy", requiresDependencyResolution = ResolutionScope.RUNTIME)
 class VertxDeployMojo extends AbstractDeployMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

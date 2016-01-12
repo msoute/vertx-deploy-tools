@@ -7,10 +7,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.List;
 
-@Mojo(name = "deploy-direct")
+@Mojo(name = "deploy-direct", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
     @Parameter(property = "deploy.remoteIp", required = true)

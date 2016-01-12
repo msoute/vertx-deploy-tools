@@ -7,10 +7,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.List;
 
-@Mojo(name = "deploy-single-as")
+@Mojo(name = "deploy-single-as", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
     @Parameter(required = true, property = "deploy.as.id")
