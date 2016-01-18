@@ -5,12 +5,12 @@
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
-        <version>1.2.2</version>
+        <version>1.2.3-SNAPSHOT</version>
     </parent>
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
     <artifactId>vertx-deploy-test-module</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3-SNAPSHOT</version>
 
     <name>Vert.x Deploy Tools : Test module</name>
     <description>Vert.x deploy test module.</description>
