@@ -22,6 +22,8 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
     private Boolean withConfig;
     @Parameter(property = "deploy.allowSnapshots", defaultValue = "false")
     private Boolean allowSnapshots;
+    @Parameter(property = "deploy.restart", defaultValue = "false")
+    private Boolean restart;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -32,6 +34,7 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.setTestScope(scopeTest);
         configuration.setWithConfig(withConfig);
         configuration.setDeploySnapshots(allowSnapshots);
+        configuration.withRestart(restart);
         configuration.getExclusions().addAll(utils.parseExclusions(exclusions));
         super.activeConfiguration = configuration;
         

@@ -62,7 +62,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     }
 
     private List<Request> createModuleRequest() {
-        return Collections.singletonList(new DeployModuleRequest(groupId, artifactId, version, type, 1, activeConfiguration.doRestart()));
+        return Collections.singletonList(new DeployModuleRequest(groupId, artifactId, version, type, activeConfiguration.doRestart()));
     }
 
     private List<Request> createArtifactRequest() {

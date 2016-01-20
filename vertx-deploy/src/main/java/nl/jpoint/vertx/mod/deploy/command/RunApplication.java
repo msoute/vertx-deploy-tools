@@ -44,29 +44,28 @@ public class RunApplication implements Command<ModuleRequest> {
             builder.setUserInfo(config.getHttpAuthUser() + ":" + config.getHttpAuthPassword());
             return builder.toString();
         }
-        return null;
+        return config.getNexusUrl().toString();
     }
 
     @Override
     public JsonObject execute(final ModuleRequest request) {
         LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
 
-        String applicationID = startWithInit(request);
+        startWithInit(request);
 
         return new JsonObject()
                 .put(Constants.DEPLOY_ID, request.getId().toString())
                 .put(Constants.MAVEN_ID, request.getMavenArtifactId())
                 .put(Constants.MODULE_VERSION, request.getSnapshotVersion() == null ? request.getVersion() : request.getSnapshotVersion())
-                .put(Constants.APPLICATION_ID, applicationID)
+                .put(Constants.APPLICATION_ID, request.getMavenArtifactId())
                 .put(Constants.STATUS_SUCCESS, success);
     }
 
-    public String startWithInit(final ModuleRequest request) {
-        String applicationId = request.getModuleId();
+    public void startWithInit(final ModuleRequest request) {
         Properties serviceProperties = readServiceDefaults(request);
         try {
             List<String> command = new ArrayList<>();
-            command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + request.getModuleId(), "-id", request.getModuleId()));
+            command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + request.getModuleId(), "-id", request.getMavenArtifactId()));
             if (!config.isMavenLocal()) {
                 command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
                 command.add("-Dvertx.maven.remoteSnapshotPolicy="+config.getRemoteRepoPolicy());
@@ -78,7 +77,7 @@ public class RunApplication implements Command<ModuleRequest> {
             if (serviceProperties.containsKey("JAVA_OPTS")) {
                 command.add("--java-opts");
                 command.add(serviceProperties.getProperty(JAVA_OPTS) + " " + config.getDefaultJavaOpts());
-            } else {
+            } else if (!config.getDefaultJavaOpts().isEmpty()) {
                 command.add(config.getDefaultJavaOpts());
             }
             command.add("--instances");
@@ -90,6 +89,7 @@ public class RunApplication implements Command<ModuleRequest> {
 
 
 
+           System.out.println(Arrays.toString(command.toArray()));
             final Process runProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
             runProcess.waitFor(1, TimeUnit.MINUTES);
 
@@ -105,20 +105,11 @@ public class RunApplication implements Command<ModuleRequest> {
 
             if (exitValue == 0) {
                 success = true;
-
-                BufferedReader out = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
-                String outLine;
-                while ((outLine = out.readLine()) != null) {
-                    if (outLine.matches(UUID_PATTERN)) {
-                        applicationId = outLine;
-                    }
-                }
-                LOG.info("[{} - {}]: Started module '{}' with applicationID '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), applicationId);
+                LOG.info("[{} - {}]: Started module '{}' with applicationID '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), request.getMavenArtifactId());
             }
         } catch (IOException | InterruptedException e) {
             LOG.error("[{} - {}]: Failed to initialize module {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         }
-        return applicationId;
     }
 
     private Properties readServiceDefaults(ModuleRequest request) {

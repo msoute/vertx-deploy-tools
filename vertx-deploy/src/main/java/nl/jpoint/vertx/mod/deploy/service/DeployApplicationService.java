@@ -41,7 +41,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
             }
         }
 
-        final ApplicationVersion moduleInstalled = moduleInstalled(deployRequest);
+        final ApplicationVersion moduleInstalled = ApplicationVersion.OLDER_VERSION;//moduleInstalled(deployRequest);
 
         if (moduleInstalled.equals(ApplicationVersion.ERROR)) {
             return new JsonObject().put("result", false);
@@ -60,11 +60,8 @@ public class DeployApplicationService implements DeployService<DeployApplication
             // If an older version (or SNAPSHOT) is installed undeploy it first.
             if (moduleInstalled.equals(ApplicationVersion.OLDER_VERSION)) {
                 if (!deployRequest.restart()) {
-                    StopApplication stopApplicationCommand = new StopApplication(config)
-                            .forApplicationId(installedModules.get(deployRequest.getMavenArtifactId())
-                                    .getString(Constants.APPLICATION_ID));
+                    StopApplication stopApplicationCommand = new StopApplication(config);
                     JsonObject result = stopApplicationCommand.execute(deployRequest);
-
                     if (!result.getBoolean(Constants.STOP_STATUS)) {
                         return new JsonObject().put("result", false);
                     }
@@ -107,7 +104,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     }
 
     private boolean checkModuleRunning(ModuleRequest deployRequest) {
-        return new ProcessUtils(config).checkModuleRunning(deployRequest.getModuleId());
+        return new ProcessUtils(config).checkModuleRunning(deployRequest.getMavenArtifactId());
     }
 
     public void stopContainer(String requestId) {

@@ -42,7 +42,7 @@ public class DeployUtils {
     }
 
     public List<Request> createDeployModuleList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, "jar").stream().map(dependency -> new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), 4, activeConfiguration.doRestart())).collect(Collectors.toList());
+        return createDeployListByType(activeConfiguration, "jar").stream().map(dependency -> new DeployModuleRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType(), activeConfiguration.doRestart())).collect(Collectors.toList());
     }
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {

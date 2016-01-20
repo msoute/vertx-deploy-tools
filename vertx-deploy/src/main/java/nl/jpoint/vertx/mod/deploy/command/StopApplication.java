@@ -5,38 +5,52 @@ import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class StopApplication implements Command<ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(StopApplication.class);
     final JsonObject result = new JsonObject();
-    private String applicationId;
     private DeployConfig config;
+    private ProcessUtils processUtils;
 
     public StopApplication(DeployConfig config) {
         this.config = config;
+        this.processUtils = new ProcessUtils(config);
     }
 
     @Override
     public JsonObject execute(ModuleRequest request) {
         result.put(Constants.STOP_STATUS, false);
-        stopWithInit(request, applicationId);
-
+        stopWithInit(request);
+        final CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            while (processUtils.checkModuleRunning(request.getMavenArtifactId())) {
+                // Wait for stop
+            }
+            return "42";
+        });
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.info("[{} - {}]: Error while Waiting for  module '{}' with applicationId '{}' to stop -> '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e);
+        }
         return result;
     }
 
-    public void stopWithInit(ModuleRequest request, String applicationId) {
-        LOG.info("[{} - {}]: Stopping module '{}' with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), applicationId);
+    public void stopWithInit(ModuleRequest request) {
+        LOG.info("[{} - {}]: Stopping module '{}' with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         Process killProcess;
         try {
-            killProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", applicationId});
+            killProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", request.getMavenArtifactId()});
             killProcess.waitFor(1, TimeUnit.MINUTES);
             int exitValue = killProcess.exitValue();
             BufferedReader output = new BufferedReader(new InputStreamReader(killProcess.getInputStream()));
@@ -57,10 +71,4 @@ public class StopApplication implements Command<ModuleRequest> {
             LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         }
     }
-
-    public StopApplication forApplicationId(String applicationId) {
-        this.applicationId = applicationId;
-        return this;
-    }
-
 }
