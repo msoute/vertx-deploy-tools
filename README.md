@@ -32,12 +32,14 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **http.authUser** : Nexus repo user 
 * **http.authPass** : Nexus repo password
 * **maven.repo.uri*** : Maven repo url
+* **maven.repo.snapshot.policy**  : Maven snapshot policy (default: always)
 * **config.location** : Location of config file (used for -conf when a verticle is instantiated)
 * **aws.auth.access.key** : Aws access key
 * **aws.auth.secret.access.key** Aws secret access key
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
-
+* **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
+* **vertx.clustering** : (boolean) Enables -cluster
 
 # Deploy configuration 
 ## Deploy artifacts.
@@ -122,7 +124,8 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **exclusions** : List of artifacts that should be ignored 
 * **testScope** : Include artifacts in test scope (default : *false*) 
 * **restart** : Restart whole container or only deployed applications (default : *false*)
-* **deploySnapshots** : Also deploy -SNAPSHOT artifacts (default : *false*)   
+* **deploySnapshots** : Also deploy -SNAPSHOT artifacts (default : *false*)
+
 
 #### Aws Configuration Options
 * **awsPrivateIp** : Use public or private ip's to connect to deploy application. (default : *false*)
