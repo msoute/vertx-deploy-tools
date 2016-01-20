@@ -41,7 +41,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
             }
         }
 
-        final ApplicationVersion moduleInstalled = ApplicationVersion.OLDER_VERSION;//moduleInstalled(deployRequest);
+        final ApplicationVersion moduleInstalled = moduleInstalled(deployRequest);
 
         if (moduleInstalled.equals(ApplicationVersion.ERROR)) {
             return new JsonObject().put("result", false);
