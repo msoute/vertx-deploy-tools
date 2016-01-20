@@ -77,7 +77,9 @@ public class RunApplication implements Command<ModuleRequest> {
             }
             if (serviceProperties.containsKey("JAVA_OPTS")) {
                 command.add("--java-opts");
-                command.add(serviceProperties.getProperty(JAVA_OPTS));
+                command.add(serviceProperties.getProperty(JAVA_OPTS) + " " + config.getDefaultJavaOpts());
+            } else {
+                command.add(config.getDefaultJavaOpts());
             }
             command.add("--instances");
             command.add((String) serviceProperties.getOrDefault(INSTANCES, "1"));

@@ -28,6 +28,7 @@ public class DeployConfig {
     private static final String MAVEN_REPO_URI = "maven.repo.uri";
     private static final String MAVEN_SNAPSHOT_POLICY = "maven.repo.snapshot.policy";
     private static final String CLUSTER = "vertx.clustering";
+    private static final String DEFAULT_JAVA_OPTS = "vertx.default.java.opts";
 
     private static final String AUTH_TOKEN = "auth.token";
 
@@ -56,6 +57,8 @@ public class DeployConfig {
     private String authToken;
     private boolean asCluster = true;
     private String remoteRepoPolicy;
+
+    private String defaultJavaOpts;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -110,6 +113,7 @@ public class DeployConfig {
                 .withHttpAuth(config)
                 .withAuthToken(config)
                 .withCluster(config)
+                .withLoggerFactoryName(config)
                 .withRemoteRepoUpdatePolicy(config);
 
         if (!config.isEmpty()) {
@@ -139,6 +143,12 @@ public class DeployConfig {
     private DeployConfig withCluster(JsonObject config) {
         this.asCluster = config.getBoolean(CLUSTER, true);
         config.remove(CLUSTER);
+        return this;
+    }
+
+    private DeployConfig withLoggerFactoryName(JsonObject config) {
+        this.defaultJavaOpts = config.getString(DEFAULT_JAVA_OPTS, "");
+        config.remove(DEFAULT_JAVA_OPTS);
         return this;
     }
 
@@ -245,5 +255,9 @@ public class DeployConfig {
 
     public String getRemoteRepoPolicy() {
         return remoteRepoPolicy;
+    }
+
+    public String getDefaultJavaOpts() {
+        return defaultJavaOpts;
     }
 }
