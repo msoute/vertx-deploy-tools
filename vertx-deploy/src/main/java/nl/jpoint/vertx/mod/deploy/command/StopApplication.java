@@ -32,6 +32,7 @@ public class StopApplication implements Command<ModuleRequest> {
     public JsonObject execute(ModuleRequest request) {
         result.put(Constants.STOP_STATUS, false);
         stopWithInit(request);
+        LOG.info("[{} - {}]: Waiting for module {} to stop.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
         final CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
             while (processUtils.checkModuleRunning(request.getMavenArtifactId())) {
                 // Wait for stop
@@ -43,6 +44,7 @@ public class StopApplication implements Command<ModuleRequest> {
         } catch (InterruptedException | ExecutionException e) {
             LOG.info("[{} - {}]: Error while Waiting for  module '{}' with applicationId '{}' to stop -> '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e);
         }
+        LOG.info("[{} - {}]: Module '{}' stopped.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
         return result;
     }
 
