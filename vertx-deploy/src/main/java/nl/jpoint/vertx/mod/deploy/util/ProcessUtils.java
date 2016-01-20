@@ -15,65 +15,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
-    private static final String UUID_PATTERN = "([^\\s]+):([^\\s]+):([^\\s]+)";
-    private static final String MAVEN_PATTERN = "maven:([^\\s]+)";
 
     private final Path vertxHome;
-    private final Pattern pattern;
 
     public ProcessUtils(DeployConfig config) {
         vertxHome = config.getVertxHome();
-        pattern = Pattern.compile(MAVEN_PATTERN);
     }
 
     public Map<String, JsonObject> listInstalledAndRunningModules() {
-
         List<String> moduleIds = this.listModules();
         return moduleIds.stream()
-                .map(this::describeModule)
+                .map(this::parseModuleString)
                 .collect(Collectors.toMap((Function<JsonObject, String>) jsonObject -> jsonObject.getString(Constants.MAVEN_ID), Function.identity()));
     }
 
-    private JsonObject describeModule(String applicationId) {
+    private JsonObject parseModuleString(String moduleString) {
         JsonObject module = new JsonObject();
-        String moduleString = "";
-        try {
-            final Process describeProcess = Runtime.getRuntime().exec(new String[]{"pgrep", "-a", "-f", applicationId});
-            describeProcess.waitFor(1, TimeUnit.MINUTES);
-
-            int exitValue = describeProcess.exitValue();
-            if (exitValue == 0) {
-                BufferedReader out = new BufferedReader(new InputStreamReader(describeProcess.getInputStream()));
-                String outLine;
-                while ((outLine = out.readLine()) != null) {
-                    Matcher matcher = pattern.matcher(outLine);
-                    if (matcher.find()) {
-                        moduleString = matcher.group(1);
-                    }
-                }
-            }
-        } catch (IOException | InterruptedException e) {
-            LOG.error("[{}]: -  Failed to list modules '{}'", LogConstants.STARTUP, e.getMessage());
-        }
-        parseModuleString(module, moduleString, applicationId);
-        return module;
-    }
-
-    private void parseModuleString(JsonObject module, String moduleString, String applicationId) {
         if (moduleString != null && !moduleString.isEmpty()) {
             String[] vars = moduleString.split(":", 3);
             if (vars.length == 3) {
                 module.put(Constants.MODULE_VERSION, vars[2]);
                 module.put(Constants.MAVEN_ID, vars[0] + ":" + vars[1]);
-                module.put(Constants.APPLICATION_ID, applicationId);
             }
         }
+        return module;
     }
 
     private List<String> listModules() {
@@ -92,7 +62,6 @@ public class ProcessUtils {
                     }
                 }
             }
-
         } catch (IOException | InterruptedException e) {
             LOG.error("[{}]: -  Failed to list modules '{}'", LogConstants.STARTUP, e.getMessage());
         }
@@ -100,7 +69,6 @@ public class ProcessUtils {
     }
 
     public boolean checkModuleRunning(String moduleId) {
-        JsonObject module = describeModule(moduleId);
-        return !module.isEmpty();
+        return listInstalledAndRunningModules().containsKey(moduleId);
     }
 }

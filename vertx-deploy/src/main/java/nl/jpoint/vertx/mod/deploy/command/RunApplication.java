@@ -57,7 +57,6 @@ public class RunApplication implements Command<ModuleRequest> {
                 .put(Constants.DEPLOY_ID, request.getId().toString())
                 .put(Constants.MAVEN_ID, request.getMavenArtifactId())
                 .put(Constants.MODULE_VERSION, request.getSnapshotVersion() == null ? request.getVersion() : request.getSnapshotVersion())
-                .put(Constants.APPLICATION_ID, request.getMavenArtifactId())
                 .put(Constants.STATUS_SUCCESS, success);
     }
 
@@ -65,7 +64,7 @@ public class RunApplication implements Command<ModuleRequest> {
         Properties serviceProperties = readServiceDefaults(request);
         try {
             List<String> command = new ArrayList<>();
-            command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + request.getModuleId(), "-id", request.getMavenArtifactId()));
+            command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + request.getModuleId(), "-id", request.getModuleId()));
             if (!config.isMavenLocal()) {
                 command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
                 command.add("-Dvertx.maven.remoteSnapshotPolicy="+config.getRemoteRepoPolicy());

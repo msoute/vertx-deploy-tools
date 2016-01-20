@@ -90,7 +90,8 @@ public class DeployApplicationService implements DeployService<DeployApplication
 
         JsonObject installedModule = installedModules.get(deployRequest.getMavenArtifactId());
 
-        boolean sameVersion = installedModule.getString(Constants.MODULE_VERSION).equals(deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion());
+        String requestedVersion = deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion();
+        boolean sameVersion = !deployRequest.isSnapshot() && installedModule.getString(Constants.MODULE_VERSION).equals(requestedVersion);
 
         if (sameVersion) {
             if (!checkModuleRunning(deployRequest)) {
@@ -110,7 +111,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     public void stopContainer(String requestId) {
         InvokeContainer invokeContainer = new InvokeContainer(requestId, config);
         installedModules.entrySet().stream().map(Map.Entry::getValue).forEach(module -> {
-            invokeContainer.withArgs(module.getString(Constants.APPLICATION_ID));
+            invokeContainer.withArgs(module.getString(Constants.MAVEN_ID));
             invokeContainer.execute("stop");
         });
     }
