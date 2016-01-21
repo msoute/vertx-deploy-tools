@@ -10,9 +10,10 @@ public abstract class ModuleRequest {
     private final String version;
     private final String classifier;
     private final String type;
-
+    private final boolean snapshot;
 
     private String snapshotVersion = null;
+
 
     ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier, final String type) {
         this.groupId = groupId;
@@ -20,7 +21,7 @@ public abstract class ModuleRequest {
         this.version = version;
         this.classifier = classifier;
         this.type = type != null ? type : "jar";
-
+        this.snapshot = version.endsWith("-SNAPSHOT");
     }
 
     ModuleRequest(final String groupId, final String artifactId, final String version, final String type) {
@@ -92,7 +93,7 @@ public abstract class ModuleRequest {
     }
 
     public boolean isSnapshot() {
-        return version.endsWith("-SNAPSHOT");
+        return snapshot;
     }
 
     public String getMetadataLocation() {

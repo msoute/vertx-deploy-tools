@@ -89,8 +89,9 @@ public class DeployApplicationService implements DeployService<DeployApplication
 
         JsonObject installedModule = installedModules.get(deployRequest.getMavenArtifactId());
 
+
         String requestedVersion = deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion();
-        boolean sameVersion = !deployRequest.isSnapshot() && installedModule.getString(Constants.MODULE_VERSION).equals(requestedVersion);
+        boolean sameVersion = installedModule.getString(Constants.MODULE_VERSION).equals(requestedVersion);
 
         if (sameVersion) {
             if (!checkModuleRunning(deployRequest)) {

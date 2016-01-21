@@ -15,18 +15,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
 
+
     private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy";
 
     private final Path vertxHome;
+    private static final String MAVEN_PATTERN = "maven:([^\\s]+)";
+    private final Pattern pattern;
+
 
     public ProcessUtils(DeployConfig config) {
         vertxHome = config.getVertxHome();
+        pattern = Pattern.compile(MAVEN_PATTERN);
     }
 
     public Map<String, JsonObject> listInstalledAndRunningModules() {
@@ -45,6 +51,7 @@ public class ProcessUtils {
                 module.put(Constants.MAVEN_ID, vars[0] + ":" + vars[1]);
             }
         }
+
         return module;
     }
 
@@ -53,14 +60,17 @@ public class ProcessUtils {
         try {
             final Process listProcess = Runtime.getRuntime().exec(new String[]{vertxHome.resolve("bin/vertx").toString(), "list"});
             listProcess.waitFor(1, TimeUnit.MINUTES);
-
             int exitValue = listProcess.exitValue();
             if (exitValue == 0) {
                 BufferedReader out = new BufferedReader(new InputStreamReader(listProcess.getInputStream()));
                 String outLine;
                 while ((outLine = out.readLine()) != null) {
-                    if (outLine.contains(":") && !result.contains(outLine) && !outLine.contains(SELF)) {
-                        result.add(outLine);
+                    Matcher matcher = pattern.matcher(outLine);
+                    if (matcher.find()) {
+                        String moduleString = matcher.group(1);
+                        if (moduleString.contains(":") && !result.contains(moduleString) && !moduleString.contains(SELF)) {
+                            result.add(moduleString);
+                        }
                     }
                 }
             }
