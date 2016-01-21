@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
+    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy-maven-plugin";
 
     private final Path vertxHome;
 
@@ -57,7 +58,7 @@ public class ProcessUtils {
                 BufferedReader out = new BufferedReader(new InputStreamReader(listProcess.getInputStream()));
                 String outLine;
                 while ((outLine = out.readLine()) != null) {
-                    if (outLine.contains(":") && !result.contains(outLine)) {
+                    if (outLine.contains(":") && !result.contains(outLine) && !outLine.contains(SELF)) {
                         result.add(outLine);
                     }
                 }
