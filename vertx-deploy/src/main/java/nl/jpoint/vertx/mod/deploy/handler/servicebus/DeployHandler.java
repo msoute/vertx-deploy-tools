@@ -84,7 +84,7 @@ public class DeployHandler implements Handler<Message<JsonObject>> {
         }
 
         if (deployRequest.withRestart()) {
-            deployApplicationService.stopContainer(deployId);
+            deployApplicationService.stopContainer();
         }
 
         deployRequest = awsService.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployId);

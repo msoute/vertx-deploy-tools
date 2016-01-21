@@ -74,14 +74,18 @@ public class ExtractArtifact implements Command<ModuleRequest> {
         return new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                byte[] oldDigest = null, newDigest = null;
                 if (ArtifactContextUtil.ARTIFACT_CONTEXT.equals(file.getFileName().toString())) {
                     return FileVisitResult.CONTINUE;
                 }
                 final Path unpackFile = Paths.get(basePath.toString(), file.toString());
-                byte[] oldDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
+                if (checkConfig) {
+                    oldDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
+                }
                 Files.copy(file, unpackFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-                byte[] newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
-
+                if (checkConfig) {
+                   newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
+                }
                 if (checkConfig && !configChanged && !Arrays.equals(oldDigest, newDigest)) {
                     LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", logConstant, request.getId(), request.getModuleId());
                     configChanged = true;

@@ -4,7 +4,6 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.command.InvokeContainer;
 import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
 import nl.jpoint.vertx.mod.deploy.command.RunApplication;
 import nl.jpoint.vertx.mod.deploy.command.StopApplication;
@@ -108,11 +107,11 @@ public class DeployApplicationService implements DeployService<DeployApplication
         return new ProcessUtils(config).checkModuleRunning(deployRequest.getMavenArtifactId());
     }
 
-    public void stopContainer(String requestId) {
-        InvokeContainer invokeContainer = new InvokeContainer(requestId, config);
+    public void stopContainer() {
         installedModules.entrySet().stream().map(Map.Entry::getValue).forEach(module -> {
-            invokeContainer.withArgs(module.getString(Constants.MAVEN_ID));
-            invokeContainer.execute("stop");
+            StopApplication stopApplication = new StopApplication(config);
+            String[] mavenIds = module.getString(Constants.MAVEN_ID).split(":", 2);
+            stopApplication.execute(new DeployApplicationRequest(mavenIds[0], mavenIds[1], module.getString(Constants.MODULE_VERSION), true, "jar"));
         });
     }
 }

@@ -27,7 +27,6 @@ public class RunApplication implements Command<ModuleRequest> {
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String INSTANCES = "INSTANCES";
     private static final Logger LOG = LoggerFactory.getLogger(RunApplication.class);
-    private static final String UUID_PATTERN = "[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}";
     private boolean success = false;
     private FileSystem fs;
     private DeployConfig config;

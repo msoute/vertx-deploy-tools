@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 
 public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
-    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy-maven-plugin";
+
+    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy";
 
     private final Path vertxHome;
 

@@ -2,6 +2,7 @@ package nl.jpoint.vertx.mod.deploy;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import nl.jpoint.vertx.mod.deploy.handler.*;
@@ -38,15 +39,15 @@ public class AwsDeployApplication extends AbstractVerticle {
         if (deployconfig.isAwsEnabled()) {
             awsService = (new AwsService(getVertx(), deployconfig));
         }
-        Router router = Router.router(getVertx());
 
+        Router router = Router.router(getVertx());
         router.post("/deploy/deploy").handler(new RestDeployHandler(deployApplicationService, deployArtifactService, deployConfigService, awsService, deployconfig.getAuthToken()));
         router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployApplicationService));
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
 
         if (deployconfig.isAwsEnabled()) {
             vertx.eventBus().consumer("aws.service.deploy", new DeployHandler(awsService, deployApplicationService, deployArtifactService, deployConfigService));
-            router.get("/deploy/status/:id").handler(new RestDeployAwsHandler(awsService));
+            router.get("/deploy/status/:id").blockingHandler(new RestDeployAwsHandler(awsService));
         }
 
         router.get("/status").handler(event -> {
@@ -65,4 +66,9 @@ public class AwsDeployApplication extends AbstractVerticle {
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
     }
 
+
+    @Override
+    public void stop() throws Exception {
+        LOG.warn("Stopping deploy application");
+    }
 }

@@ -101,7 +101,6 @@ public class AwsService {
     }
 
     public DeployState getDeployStatus(String deployId) {
-
         if (!runningRequests.containsKey(deployId)) {
             return DeployState.UNKNOWN;
         }
@@ -110,7 +109,6 @@ public class AwsService {
         if (state.equals(DeployState.SUCCESS) || state.equals(DeployState.FAILED)) {
             runningRequests.remove(deployId);
         }
-
         return state;
     }
 }
