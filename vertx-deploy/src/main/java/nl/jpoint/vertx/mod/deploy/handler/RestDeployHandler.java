@@ -49,27 +49,25 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             ObjectReader reader = new ObjectMapper().readerFor(DeployRequest.class);
 
             DeployRequest deployRequest;
-            if (!StringUtils.isNullOrEmpty(context.request().getHeader("authToken")) && !authToken.equals(context.request().getHeader("authToken"))) {
+            if (!StringUtils.isNullOrEmpty(context.request().getHeader("authToken")) || !authToken.equals(context.request().getHeader("authToken"))) {
                 LOG.error("{}: Invalid authToken in request.", LogConstants.DEPLOY_REQUEST);
-                respondFailed(context.request());
+                respondFailed(context.request(), "Invalid authToken in request.");
                 return;
-            } else {
-                LOG.warn("{}: No authentication token in request.", LogConstants.DEPLOY_REQUEST);
             }
 
             String eventBody = new String(buffer.getBytes());
 
             if (eventBody.isEmpty()) {
                 LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
-                respondFailed(context.request());
+                respondFailed(context.request(), "No postdata in request.");
                 return;
             }
             LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, eventBody);
             try {
                 deployRequest = reader.readValue(eventBody);
             } catch (IOException e) {
-                LOG.error("{}: Error while reading postdata -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
-                respondFailed(context.request());
+                LOG.error("{}: Error while reading post data -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
+                respondFailed(context.request(), "Error wile reading post data -> " + e.getMessage());
                 return;
             }
 
@@ -88,7 +86,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                     awsService.deRegisterInstance(deployRequest.getId().toString());
                 } else {
                     LOG.error("{}: Failed to register aws request or aws service disabled.", LogConstants.DEPLOY_REQUEST);
-                    respondFailed(context.request());
+                    respondFailed(context.request(),"");
                 }
                 return;
             }
@@ -99,10 +97,10 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
                     deployOk = configDeployService.deploy(configRequest);
                     if (!deployOk.getBoolean("result")) {
-                        respondFailed(context.request());
+                        respondFailed(context.request(), "Error deploying configs.");
                         return;
                     }
-                    if (!deployRequest.withRestart() && deployOk.getBoolean("configChanged", false)) {
+                    if (!deployRequest.withRestart() && deployOk.getBoolean("configChanged.", false)) {
                         deployRequest.setRestart(true);
                     }
                 }
@@ -116,7 +114,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
                     deployOk = artifactDeployService.deploy(artifactRequest);
                     if (!deployOk.getBoolean("result")) {
-                        respondFailed(context.request());
+                        respondFailed(context.request(), "Error deploying artifacts." );
                         return;
                     }
                 }
@@ -126,7 +124,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 for (DeployApplicationRequest moduleRequest : deployRequest.getModules()) {
                     deployOk = moduleDeployService.deploy(moduleRequest);
                     if (!deployOk.getBoolean("result")) {
-                        respondFailed(context.request());
+                        respondFailed(context.request(), "Error deploying modules." );
                         return;
                     }
                 }
@@ -147,8 +145,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         request.response().end(id);
     }
 
-    private void respondFailed(HttpServerRequest request) {
+    private void respondFailed(HttpServerRequest request, String message) {
         request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-        request.response().end();
+        request.response().end(message);
     }
 }

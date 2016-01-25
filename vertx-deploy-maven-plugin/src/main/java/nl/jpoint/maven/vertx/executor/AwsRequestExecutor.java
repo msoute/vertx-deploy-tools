@@ -60,7 +60,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                         case 500:
                             if (status.get() != 200) {
                                 status.set(500);
-                                log.error("Deploy request failed");
+                                log.error(EntityUtils.toString(response.getEntity()));
                                 waitFor.decrementAndGet();
                             }
                             break;

@@ -29,7 +29,7 @@ public class RestDeployAwsHandler implements Handler<RoutingContext> {
                 respondFailed(context.request());
                 break;
             default:
-                respondContinue(context.request(), state, context.request().params().get("id"));
+                respondContinue(context.request(), state);
         }
 
     }
@@ -39,7 +39,7 @@ public class RestDeployAwsHandler implements Handler<RoutingContext> {
         request.response().end();
     }
 
-    private void respondContinue(HttpServerRequest request, DeployState state, String id) {
+    private void respondContinue(HttpServerRequest request, DeployState state) {
         request.response().setStatusCode(HttpResponseStatus.ACCEPTED.code());
 
         request.response().setStatusMessage("Deploy in state : " + state.name());
