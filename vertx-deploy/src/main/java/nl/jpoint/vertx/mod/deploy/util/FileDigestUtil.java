@@ -29,7 +29,7 @@ public class FileDigestUtil {
 
     public byte[] getFileMd5Sum(Path unpackFile) {
         if (md == null || Files.notExists(unpackFile)) {
-            LOG.error("MD is null {}, or file does not exist {}", md, unpackFile);
+            LOG.debug("MD is null {}, or file does not exist {}", md, unpackFile);
             return null;
         }
         try (InputStream is = Files.newInputStream(unpackFile)) {
