@@ -18,14 +18,7 @@ public class AwsAutoScalingUtilTest {
     private final AwsContext context = AwsContext.build(ACCESS_KEY, SECRET_ACCESS_KEY, AWS_REGION);
 
     private AwsAutoScalingUtil util = new AwsAutoScalingUtil(context);
-    private AwsElbUtil elbUtil = new AwsElbUtil(context, INSTANCE_ID, ELB);
-
-    @Test
-    @Ignore
-    public void testElbInstanceState() throws AwsException {
-        AwsState state = elbUtil.getInstanceState();
-        Assert.assertEquals(AwsState.INSERVICE, state);
-    }
+    private AwsElbUtil elbUtil = new AwsElbUtil(context);
 
     @Test
     @Ignore
@@ -34,19 +27,7 @@ public class AwsAutoScalingUtilTest {
         Assert.assertEquals(1, result.size());
     }
 
-    @Test
-    @Ignore
-    public void testListLoadBalancersInGroup() throws AwsException {
-        List<String> result = util.listLoadBalancers(AS_GROUP_ID);
-        Assert.assertEquals(1, result.size());
-    }
 
-    @Test
-    @Ignore
-    public void testFetchInstanceState() throws AwsException {
-        AwsState result = util.getInstanceState(INSTANCE_ID, AS_GROUP_ID);
-        Assert.assertEquals(AwsState.INSERVICE, result);
-    }
 
     @Test
     @Ignore

@@ -2,34 +2,31 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClient;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
-import com.amazonaws.services.autoscaling.model.AutoScalingInstanceDetails;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesResult;
-import com.amazonaws.services.autoscaling.model.DescribeLoadBalancersRequest;
-import com.amazonaws.services.autoscaling.model.DescribeLoadBalancersResult;
-import com.amazonaws.services.autoscaling.model.EnterStandbyRequest;
-import com.amazonaws.services.autoscaling.model.ExitStandbyRequest;
-import com.amazonaws.services.autoscaling.model.Instance;
-import com.amazonaws.services.autoscaling.model.LoadBalancerState;
+import com.amazonaws.services.autoscaling.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static rx.Observable.just;
 
 public class AwsAutoScalingUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsAutoScalingUtil.class);
 
     private static final String IN_SERVICE = "InService";
     private final AmazonAutoScalingClient asClient;
+    private final AmazonAutoScalingAsyncClient asyncClient;
 
     public AwsAutoScalingUtil(final AwsContext context) {
         asClient = new AmazonAutoScalingClient(context.getCredentials());
         asClient.setRegion(context.getAwsRegion());
+        asyncClient = new AmazonAutoScalingAsyncClient(context.getCredentials());
+        asyncClient.setRegion(context.getAwsRegion());
     }
 
     public List<String> listInstancesInGroup(final String groupId) throws AwsException {
@@ -42,21 +39,24 @@ public class AwsAutoScalingUtil {
         }
     }
 
-    public AwsState getInstanceState(final String instanceId, final String groupId) throws AwsException {
+    public Observable<AwsState> pollForInstanceState(final String instanceId) throws AwsException {
         try {
-            DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(instanceId));
-            Optional<String> state = result.getAutoScalingInstances().stream().filter(i -> i.getInstanceId().equals(instanceId)).map(AutoScalingInstanceDetails::getLifecycleState).findFirst();
-            return state.isPresent() ? AwsState.map(state.get()) : AwsState.UNKNOWN;
+            return Observable.from(asyncClient.describeAutoScalingInstancesAsync(new DescribeAutoScalingInstancesRequest().withInstanceIds(instanceId)))
+                    .flatMap(result -> {
+                        Optional<String> optState = result.getAutoScalingInstances().stream().filter(i -> i.getInstanceId().equals(instanceId)).map(AutoScalingInstanceDetails::getLifecycleState).findFirst();
+                        return just(optState.isPresent() ? AwsState.map(optState.get()) : AwsState.UNKNOWN);
+                    });
         } catch (AmazonClientException e) {
             LOG.error("Error executing request {}.", e);
             throw new AwsException(e);
         }
     }
 
-    public List<String> listLoadBalancers(final String groupId) throws AwsException {
+    public Observable<String> listLoadBalancers(final String groupId) throws AwsException {
         try {
-            DescribeLoadBalancersResult result = asClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withAutoScalingGroupName(groupId));
-            return result.getLoadBalancers().stream().map(LoadBalancerState::getLoadBalancerName).collect(Collectors.toList());
+            return Observable.from(asyncClient.describeLoadBalancersAsync(new DescribeLoadBalancersRequest().withAutoScalingGroupName(groupId)))
+                    .map(result -> result.getLoadBalancers().stream().map(LoadBalancerState::getLoadBalancerName).collect(Collectors.toList()))
+                    .flatMap(Observable::from);
         } catch (AmazonClientException e) {
             LOG.error("Error executing request {}.", e);
             throw new AwsException(e);

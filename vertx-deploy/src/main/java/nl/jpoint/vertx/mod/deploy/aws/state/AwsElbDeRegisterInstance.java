@@ -1,55 +1,42 @@
 package nl.jpoint.vertx.mod.deploy.aws.state;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import nl.jpoint.vertx.mod.deploy.aws.AwsElbUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsException;
-import nl.jpoint.vertx.mod.deploy.aws.AwsState;
+import nl.jpoint.vertx.mod.deploy.aws.*;
 import nl.jpoint.vertx.mod.deploy.command.Command;
-import nl.jpoint.vertx.mod.deploy.handler.internal.AwsElbRegistrationStatusPollingHandler;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbDeRegisterInstance.class);
-    private final Vertx vertx;
     private final AwsElbUtil awsElbUtil;
+    private final AwsAutoScalingUtil awsAsUtil;
+    private final AwsPollingElbStateObservable poller;
 
-    protected AwsElbDeRegisterInstance(Vertx vertx, AwsElbUtil awsElbUtil) {
-        this.vertx = vertx;
-
-        this.awsElbUtil = awsElbUtil;
+    public AwsElbDeRegisterInstance(io.vertx.core.Vertx vertx, AwsContext awsContext, Integer maxDuration) {
+        this.awsElbUtil = new AwsElbUtil(awsContext);
+        this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
+        this.poller = new AwsPollingElbStateObservable(vertx, awsElbUtil, LocalDateTime.now().plusMinutes(maxDuration), AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
     }
 
     @Override
     public JsonObject execute(DeployRequest request) {
+        return null;
+    }
 
+    public Observable<DeployRequest> executeAsync(DeployRequest request) {
         try {
-            List<String> instances = awsElbUtil.listLBInstanceMembers();
-
-            if (!instances.contains(awsElbUtil.forInstanceId())) {
-                LOG.info("[{} - {}]: Instance {} not registered with loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-                vertx.eventBus().send("aws.service.deploy", new JsonObject().put("success", true)
-                        .put("id", request.getId().toString())
-                        .put("state", AwsState.NOTREGISTERED.name()));
-                return new JsonObject().put("success", true);
-            }
-            if (awsElbUtil.deRegisterInstanceFromLoadbalancer()) {
-                LOG.info("[{} - {}]: Failed to de-register Instance {} from loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-                return new JsonObject().put("success", false);
-            }
-            LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-            vertx.setPeriodic(3000L, new AwsElbRegistrationStatusPollingHandler(request, awsElbUtil, vertx, AwsState.OUTOFSERVICE));
-
+            return awsAsUtil.listLoadBalancers(request.getAutoScalingGroup())
+                    .flatMap(elb -> awsElbUtil.deRegisterInstanceFromLoadbalancer(request.getInstanceId(), elb))
+                    .flatMap(elb -> poller.poll(request, elb));
         } catch (AwsException e) {
-            LOG.error("[{} - {}]: Error de-register instance {} from loadbalancer {}.", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.forInstanceId(), awsElbUtil.forLoadbalancer());
-            return new JsonObject().put("success", false);
+            LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage());
+            throw new IllegalStateException();
         }
-
-        return new JsonObject().put("success", true);
     }
 }
+

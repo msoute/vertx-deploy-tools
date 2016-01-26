@@ -1,7 +1,10 @@
 package nl.jpoint.vertx.mod.deploy.aws;
 
-public class AwsException extends Exception {
-    public AwsException(Throwable e) {
-        super(e);
+public class AwsException extends RuntimeException {
+    public AwsException(Throwable t) {
+        super(t);
+    }
+    public AwsException(String message) {
+        super(message);
     }
 }

@@ -2,15 +2,16 @@ package nl.jpoint.vertx.mod.deploy;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import nl.jpoint.vertx.mod.deploy.handler.*;
-import nl.jpoint.vertx.mod.deploy.handler.servicebus.DeployHandler;
+import nl.jpoint.vertx.mod.deploy.handler.RestDeployArtifactHandler;
+import nl.jpoint.vertx.mod.deploy.handler.RestDeployAwsHandler;
+import nl.jpoint.vertx.mod.deploy.handler.RestDeployHandler;
+import nl.jpoint.vertx.mod.deploy.handler.RestDeployModuleHandler;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
+import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
-import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class AwsDeployApplication extends AbstractVerticle {
             throw new IllegalStateException("Unable to read config file");
         }
         final DeployApplicationService deployApplicationService = new DeployApplicationService(deployconfig, getVertx().fileSystem());
-        final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(),deployconfig);
+        final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
 
         AwsService awsService = null;
@@ -46,8 +47,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
 
         if (deployconfig.isAwsEnabled()) {
-            vertx.eventBus().consumer("aws.service.deploy", new DeployHandler(awsService, deployApplicationService, deployArtifactService, deployConfigService));
-            router.get("/deploy/status/:id").blockingHandler(new RestDeployAwsHandler(awsService));
+            router.get("/deploy/status/:id").handler(new RestDeployAwsHandler(awsService));
         }
 
         router.get("/status").handler(event -> {

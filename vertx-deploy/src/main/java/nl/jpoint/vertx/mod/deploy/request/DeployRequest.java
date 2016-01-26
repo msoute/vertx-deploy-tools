@@ -3,6 +3,7 @@ package nl.jpoint.vertx.mod.deploy.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.vertx.core.http.HttpServerRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -99,4 +100,5 @@ public class DeployRequest {
     public void setRestart(boolean restart) {
         this.restart = restart;
     }
+
 }

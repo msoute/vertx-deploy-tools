@@ -2,42 +2,42 @@ package nl.jpoint.vertx.mod.deploy.aws.state;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
-import nl.jpoint.vertx.mod.deploy.aws.AwsElbUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsState;
+import nl.jpoint.vertx.mod.deploy.aws.*;
 import nl.jpoint.vertx.mod.deploy.command.Command;
-import nl.jpoint.vertx.mod.deploy.handler.internal.AwsAsRegistrationStatusPollingHandler;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
+
+import java.time.LocalDateTime;
 
 
 public class AwsAsRegisterInstance implements Command<DeployRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbRegisterInstance.class);
-    private final Vertx vertx;
-    private final Integer maxDuration;
     private final AwsAutoScalingUtil awsAsUtil;
-    private final AwsElbUtil awsElbUtil;
+    private final AwsPollingAsStateObservable poller;
 
-    protected AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext, final Integer maxDuration) {
-        this.vertx = vertx;
-        this.maxDuration = maxDuration;
+    public AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext, final Integer maxDuration) {
         this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
-        this.awsElbUtil = new AwsElbUtil(awsContext);
+        this.poller = new AwsPollingAsStateObservable(vertx, awsAsUtil,  LocalDateTime.now().plusMinutes(maxDuration)
+                , AwsState.INSERVICE);
     }
 
     @Override
     public JsonObject execute(DeployRequest request) {
+        return null;
+    }
+
+    public Observable<DeployRequest> executeAsync(DeployRequest request) {
         if (!awsAsUtil.exitStandby(request.getInstanceId(), request.getAutoScalingGroup())) {
             LOG.error("[{} - {}]: InstanceId {} failed to exit standby in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
-            return new JsonObject().put("success", false);
+            throw new IllegalStateException();
         }
 
+        LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), AwsState.INSERVICE);
         LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
-        vertx.setPeriodic(3000L, new AwsAsRegistrationStatusPollingHandler(request, awsAsUtil, awsElbUtil, vertx, AwsState.INSERVICE, maxDuration));
 
-        return new JsonObject().put("success", true);
+        return poller.poll(request);
     }
 }

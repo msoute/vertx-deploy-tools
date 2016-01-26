@@ -1,7 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.request;
 
 public enum DeployState {
-    WAITING_FOR_DEREGISTER,
+    WAITING_FOR_AS_DEREGISTER,
+    WAITING_FOR_ELB_DEREGISTER,
     DEPLOYING_CONFIGS,
     STOPPING_CONTAINER,
     DEPLOYING_ARTIFACTS,
@@ -9,5 +10,6 @@ public enum DeployState {
     UNKNOWN,
     FAILED,
     SUCCESS,
-    WAITING_FOR_REGISTER
+    WAITING_FOR_AS_REGISTER,
+    WAITING_FOR_ELB_REGISTER
 }

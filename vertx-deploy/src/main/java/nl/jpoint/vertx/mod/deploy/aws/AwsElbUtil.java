@@ -2,42 +2,78 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsyncClient;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.DeregisterInstancesFromLoadBalancerRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthResult;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
-import com.amazonaws.services.elasticloadbalancing.model.Instance;
-import com.amazonaws.services.elasticloadbalancing.model.InstanceState;
-import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
+import com.amazonaws.services.elasticloadbalancing.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static rx.Observable.just;
+
 public class AwsElbUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbUtil.class);
-
-    private final String loadBalancer;
-    private final String instanceId;
     private final AmazonElasticLoadBalancingClient elbClient;
-
-    public AwsElbUtil(AwsContext context, String loadBalancer, String instanceId) {
-        this.loadBalancer = loadBalancer;
-        this.instanceId = instanceId;
-        this.elbClient = new AmazonElasticLoadBalancingClient(context.getCredentials());
-        this.elbClient.setRegion(context.getAwsRegion());
-    }
+    private final AmazonElasticLoadBalancingAsyncClient elbAsyncClient;
 
     public AwsElbUtil(AwsContext context) {
-        this(context, null, null);
+        this.elbClient = new AmazonElasticLoadBalancingClient(context.getCredentials());
+        this.elbClient.setRegion(context.getAwsRegion());
+        this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient(context.getCredentials());
+        this.elbAsyncClient.setRegion(context.getAwsRegion());
     }
 
-    public List<String> listLBInstanceMembers() throws AwsException {
+    public Observable<String> registerInstanceWithLoadBalancer(String instanceId, String loadBalancer) throws AwsException {
+        if (instanceId == null || loadBalancer == null) {
+            LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
+            throw new IllegalStateException();
+        }
+        try {
+            return Observable.from(elbAsyncClient.registerInstancesWithLoadBalancerAsync(new RegisterInstancesWithLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
+                    .flatMap(x -> Observable.just(loadBalancer));
+        } catch (AmazonClientException e) {
+            LOG.error("Error executing request {}.", e);
+            throw new AwsException(e);
+        }
+
+    }
+
+    public Observable<String> deRegisterInstanceFromLoadbalancer(String instanceId, String loadBalancer) throws AwsException {
+
+        if (instanceId == null || loadBalancer == null) {
+            LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
+            throw new IllegalStateException();
+        }
+
+        try {
+            return Observable.from(elbAsyncClient.deregisterInstancesFromLoadBalancerAsync(new DeregisterInstancesFromLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
+                    .flatMap(x -> Observable.just(loadBalancer));
+        } catch (AmazonClientException e) {
+            LOG.error("Error executing request {}.", e);
+            throw new AwsException(e);
+        }
+    }
+
+
+    public Observable<AwsState> pollForInstanceState(final String instanceId, final String loadBalancer) throws AwsException {
+        try {
+            return Observable.from(elbAsyncClient.describeInstanceHealthAsync(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
+                    .flatMap(result -> {
+                        Optional<InstanceState> state = result.getInstanceStates().stream().filter(i -> i.getInstanceId().equals(instanceId)).findFirst();
+                        return just(state.isPresent() ? AwsState.map(state.get().getState()) : AwsState.UNKNOWN);
+                    });
+        } catch (AmazonClientException e) {
+            LOG.error("Error executing request {}.", e);
+            throw new AwsException(e);
+        }
+    }
+
+    public List<String> listLBInstanceMembers(String loadBalancer) throws AwsException {
         if (loadBalancer != null) {
             try {
                 DescribeLoadBalancersResult result = elbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withLoadBalancerNames(loadBalancer));
@@ -50,57 +86,5 @@ public class AwsElbUtil {
         return Collections.emptyList();
     }
 
-    public boolean registerInstanceWithLoadbalancer() throws AwsException {
-        if (instanceId != null && loadBalancer != null) {
-            try {
-                elbClient.registerInstancesWithLoadBalancer(new RegisterInstancesWithLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId)));
-                return true;
-            } catch (AmazonClientException e) {
-                LOG.error("Error executing request 'registerInstanceWithLoadbalancer' -> {}", e);
-                throw new AwsException(e);
-            }
-        }
-        return false;
-    }
 
-    public boolean deRegisterInstanceFromLoadbalancer() throws AwsException {
-        if (instanceId != null && loadBalancer != null) {
-            try {
-                elbClient.deregisterInstancesFromLoadBalancer(new DeregisterInstancesFromLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId)));
-                return true;
-            } catch (AmazonClientException e) {
-                LOG.error("Error executing request 'deRegisterInstanceFromLoadbalancer' -> {}", e);
-                throw new AwsException(e);
-            }
-        }
-        return false;
-    }
-
-    public AwsState getInstanceState() throws AwsException {
-        return this.getInstanceState(instanceId, loadBalancer);
-    }
-
-    public AwsState getInstanceState(final String instanceId, final String loadBalancer) throws AwsException {
-        if (instanceId != null && loadBalancer != null) {
-            try {
-                DescribeInstanceHealthResult result = elbClient.describeInstanceHealth(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId)));
-                Optional<InstanceState> state = result.getInstanceStates().stream().filter(i -> i.getInstanceId().equals(instanceId)).findFirst();
-                if (state.isPresent()) {
-                    return AwsState.map(state.get().getState());
-                }
-            } catch (AmazonClientException e) {
-                LOG.error("Error executing request 'getInstanceState' -> {}", e);
-                throw new AwsException(e);
-            }
-        }
-        return AwsState.UNKNOWN;
-    }
-
-    public String forInstanceId() {
-        return instanceId;
-    }
-
-    public String forLoadbalancer() {
-        return loadBalancer;
-    }
 }
