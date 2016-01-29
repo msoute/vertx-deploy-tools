@@ -22,7 +22,7 @@ public class AwsService {
     private final Vertx vertx;
     private final DeployConfig config;
     private final Map<String, DeployRequest> runningRequests = new HashMap<>();
-    private AwsContext awsContext;
+    private final AwsContext awsContext;
 
     public AwsService(Vertx vertx, DeployConfig config) {
         this.vertx = vertx;
@@ -88,17 +88,6 @@ public class AwsService {
         if (runningRequests.containsKey(buildId)) {
             LOG.info("[{} - {}]: Updating state to {}", LogConstants.AWS_ELB_REQUEST, buildId, state);
             runningRequests.get(buildId).setState(state);
-            return runningRequests.get(buildId);
-        }
-        return null;
-    }
-
-    public DeployRequest updateRestartAndGetRequest(boolean restart, String buildId) {
-        if (runningRequests.containsKey(buildId)) {
-            LOG.info("[{} - {}]: Updating restart to {}", LogConstants.AWS_ELB_REQUEST, buildId, restart);
-            runningRequests.get(buildId).setRestart(restart);
-            runningRequests.get(buildId).setState(DeployState.STOPPING_CONTAINER);
-            runningRequests.get(buildId).getModules().forEach(r -> r.setRestart(true));
             return runningRequests.get(buildId);
         }
         return null;

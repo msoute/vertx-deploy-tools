@@ -20,14 +20,6 @@ public class AwsAutoScalingUtilTest {
     private AwsAutoScalingUtil util = new AwsAutoScalingUtil(context);
     private AwsElbUtil elbUtil = new AwsElbUtil(context);
 
-    @Test
-    @Ignore
-    public void testListInstancesInGroup() throws AwsException {
-        List<String> result = util.listInstancesInGroup("");
-        Assert.assertEquals(1, result.size());
-    }
-
-
 
     @Test
     @Ignore

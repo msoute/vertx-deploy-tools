@@ -1,7 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.command.RunApplication;
 import nl.jpoint.vertx.mod.deploy.command.StopApplication;
@@ -20,7 +19,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     private static final Logger LOG = LoggerFactory.getLogger(DeployApplicationService.class);
     private final DeployConfig config;
     private final Map<String, String> installedModules;
-    private Vertx vertx;
+    private final Vertx vertx;
 
     public DeployApplicationService(DeployConfig config, Vertx vertx) {
         this.config = config;
@@ -30,7 +29,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
 
     @Override
     public Observable<DeployApplicationRequest> deployAsync(DeployApplicationRequest deployApplicationRequest) {
-       return resolveSnapShotVersion(deployApplicationRequest)
+        return resolveSnapShotVersion(deployApplicationRequest)
                 .flatMap(this::checkInstalled)
                 .flatMap(this::checkRunning)
                 .flatMap(request -> {
@@ -104,7 +103,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     }
 
     public Observable<Boolean> stopContainer() {
-        LOG.info("Stopping all running modules");
+        LOG.info("[{}]: Stopping all running modules",LogConstants.INVOKE_CONTAINER);
         return Observable.from(installedModules.entrySet())
                 .flatMap(entry -> {
                     StopApplication stopApplication = new StopApplication(vertx, config);

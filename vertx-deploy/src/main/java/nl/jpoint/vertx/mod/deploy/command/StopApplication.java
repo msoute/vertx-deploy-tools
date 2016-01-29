@@ -22,9 +22,9 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(StopApplication.class);
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
     private final LocalDateTime timeout;
-    private DeployConfig config;
-    private ProcessUtils processUtils;
-    private Vertx rxVertx;
+    private final DeployConfig config;
+    private final ProcessUtils processUtils;
+    private final Vertx rxVertx;
 
     public StopApplication(io.vertx.core.Vertx vertx, DeployConfig config) {
         this.config = config;

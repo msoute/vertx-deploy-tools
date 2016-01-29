@@ -10,8 +10,6 @@ import rx.Observable;
 
 import java.time.LocalDateTime;
 
-;
-
 public class AwsElbRegisterInstance implements Command<DeployRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbRegisterInstance.class);
     private final AwsElbUtil awsElbUtil;

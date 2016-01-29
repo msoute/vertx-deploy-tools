@@ -85,7 +85,6 @@ public class ProcessUtils {
                         String moduleString = moduleMatcher.group(0);
                         if (moduleString.contains(":") && !result.contains(moduleString) && !moduleString.contains(SELF)) {
                             result.add(moduleString);
-                            continue;
                         }
                     }
                 }

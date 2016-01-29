@@ -92,10 +92,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                     .flatMap(this::registerInstanceInAutoScalingGroup)
                     .flatMap(this::checkElbStatus)
                     .doOnCompleted(() -> this.respond(deployRequest, context.request()))
-                    .doOnError(t -> {
-                        this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage());
-
-                    })
+                    .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
                     .subscribe();
         });
     }

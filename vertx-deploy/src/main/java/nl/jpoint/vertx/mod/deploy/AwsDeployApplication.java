@@ -26,7 +26,7 @@ public class AwsDeployApplication extends AbstractVerticle {
     @Override
     public void start() {
         MDC.put("service", Constants.SERVICE_ID);
-        DeployConfig deployconfig = DeployConfig.fromJsonObject(config(), getVertx());
+        DeployConfig deployconfig = DeployConfig.fromJsonObject(config());
         if (config() == null) {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");

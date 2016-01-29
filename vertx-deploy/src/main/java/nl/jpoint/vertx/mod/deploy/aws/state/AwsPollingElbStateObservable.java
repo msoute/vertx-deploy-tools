@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-public class AwsPollingElbStateObservable {
+class AwsPollingElbStateObservable {
     private static final Logger LOG = LoggerFactory.getLogger(AwsPollingElbStateObservable.class);
     private static final Long POLLING_INTERVAL_IN_MS = 3000L;
     private final io.vertx.rxjava.core.Vertx rxVertx;

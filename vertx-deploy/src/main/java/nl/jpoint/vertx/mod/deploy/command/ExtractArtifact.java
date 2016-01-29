@@ -27,7 +27,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
     private final Path basePath;
     private final FileDigestUtil fileDigestUtil;
 
-    private boolean configChanged = false;
+    private final boolean configChanged = false;
 
     public ExtractArtifact(io.vertx.core.Vertx vertx, DeployConfig config, Path basePath) {
         this.vertx = new Vertx(vertx);
@@ -69,7 +69,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
                 if (request.checkConfig()) {
                     newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 }
-                if (request.checkConfig() && !configChanged && !Arrays.equals(oldDigest, newDigest)) {
+                if (request.checkConfig() && !Arrays.equals(oldDigest, newDigest)) {
                     LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", request.getLogName(), request.getId(), request.getModuleId());
                     request.setRestart(true);
                 }

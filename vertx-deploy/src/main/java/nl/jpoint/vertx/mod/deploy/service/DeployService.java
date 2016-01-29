@@ -11,7 +11,7 @@ import rx.Observable;
 
 import static rx.Observable.just;
 
-public interface DeployService<T extends ModuleRequest, R> {
+interface DeployService<T extends ModuleRequest, R> {
     Observable<R> deployAsync(T deployRequest);
 
     DeployConfig getConfig();
@@ -19,7 +19,7 @@ public interface DeployService<T extends ModuleRequest, R> {
     Vertx getVertx();
 
     default Observable<T> resolveSnapShotVersion(T moduleRequest) {
-        if (moduleRequest.isSnapshot() && !getConfig().isMavenLocal()) {
+        if (moduleRequest.isSnapshot() && getConfig().isMavenRemote()) {
             ResolveSnapshotVersion<T> resolveVersion = new ResolveSnapshotVersion<>(getConfig(), getVertx());
             return resolveVersion.executeAsync(moduleRequest);
         } else {
@@ -34,7 +34,7 @@ public interface DeployService<T extends ModuleRequest, R> {
 
     default Observable<T> parseArtifactContext(T moduleRequest) {
         ArtifactContextUtil<T> artifactContextUtil = new ArtifactContextUtil<>(getConfig().getArtifactRepo().resolve(moduleRequest.getFileName()));
-        moduleRequest.setRestartCommand(artifactContextUtil.getTestCommand());
+        moduleRequest.setRestartCommand(artifactContextUtil.getRestartCommand());
         moduleRequest.setTestCommand(artifactContextUtil.getTestCommand());
         moduleRequest.setBaseLocation(artifactContextUtil.getBaseLocation());
         return just(moduleRequest);

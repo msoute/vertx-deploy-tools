@@ -61,15 +61,13 @@ public abstract class ModuleRequest {
     }
 
     public String getRemoteLocation() {
-        StringBuilder builder = new StringBuilder()
-                .append(getGroupId().replaceAll("\\.", "/"))
-                .append("/")
-                .append(getArtifactId())
-                .append("/")
-                .append(getVersion())
-                .append("/")
-                .append(getFileName());
-        return builder.toString();
+        return getGroupId().replaceAll("\\.", "/") +
+                "/" +
+                getArtifactId() +
+                "/" +
+                getVersion() +
+                "/" +
+                getFileName();
     }
 
     public String getFileName() {

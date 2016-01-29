@@ -16,7 +16,7 @@ import static rx.Observable.just;
 public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<T> {
 
     private final DeployConfig config;
-    private Vertx rxVertx;
+    private final Vertx rxVertx;
 
     public ResolveSnapshotVersion(DeployConfig config, io.vertx.core.Vertx vertx) {
         this.rxVertx = new Vertx(vertx);

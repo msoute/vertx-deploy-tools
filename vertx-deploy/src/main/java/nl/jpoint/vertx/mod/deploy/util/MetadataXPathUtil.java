@@ -39,8 +39,7 @@ public class MetadataXPathUtil {
             String buildNumber = (String) xPath.compile(BUILD_NUMBER).evaluate(document, XPathConstants.STRING);
 
             if (!timestamp.isEmpty() && !buildNumber.isEmpty() && request.isSnapshot()) {
-                String result = request.getVersion().substring(0, request.getVersion().length() - 8) + timestamp + "-" + buildNumber;
-                return result;
+                return request.getVersion().substring(0, request.getVersion().length() - 8) + timestamp + "-" + buildNumber;
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
             LOG.error("Error while parsing metadata", e);

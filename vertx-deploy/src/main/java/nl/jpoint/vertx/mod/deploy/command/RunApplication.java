@@ -27,8 +27,8 @@ public class RunApplication implements Command<DeployApplicationRequest> {
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String INSTANCES = "INSTANCES";
     private static final Logger LOG = LoggerFactory.getLogger(RunApplication.class);
-    private Vertx rxVertx;
-    private DeployConfig config;
+    private final Vertx rxVertx;
+    private final DeployConfig config;
 
     public RunApplication(final io.vertx.core.Vertx vertx, final DeployConfig config) {
         this.rxVertx = new Vertx(vertx);
@@ -69,7 +69,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         try {
             List<String> command = new ArrayList<>();
             command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + deployApplicationRequest.getModuleId(), "-id", deployApplicationRequest.getModuleId()));
-            if (!config.isMavenLocal()) {
+            if (config.isMavenRemote()) {
                 command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
                 command.add("-Dvertx.maven.remoteSnapshotPolicy=" + config.getRemoteRepoPolicy());
             }

@@ -3,7 +3,6 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsyncClient;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +14,9 @@ import static rx.Observable.just;
 
 public class AwsElbUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbUtil.class);
-    private final AmazonElasticLoadBalancingClient elbClient;
     private final AmazonElasticLoadBalancingAsyncClient elbAsyncClient;
 
     public AwsElbUtil(AwsContext context) {
-        this.elbClient = new AmazonElasticLoadBalancingClient(context.getCredentials());
-        this.elbClient.setRegion(context.getAwsRegion());
         this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient(context.getCredentials());
         this.elbAsyncClient.setRegion(context.getAwsRegion());
     }

@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -18,7 +17,6 @@ import static rx.Observable.just;
 public class AwsAutoScalingUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsAutoScalingUtil.class);
 
-    private static final String IN_SERVICE = "InService";
     private final AmazonAutoScalingClient asClient;
     private final AmazonAutoScalingAsyncClient asyncClient;
 
@@ -27,16 +25,6 @@ public class AwsAutoScalingUtil {
         asClient.setRegion(context.getAwsRegion());
         asyncClient = new AmazonAutoScalingAsyncClient(context.getCredentials());
         asyncClient.setRegion(context.getAwsRegion());
-    }
-
-    public List<String> listInstancesInGroup(final String groupId) throws AwsException {
-        try {
-            DescribeAutoScalingGroupsResult result = asClient.describeAutoScalingGroups(new DescribeAutoScalingGroupsRequest().withAutoScalingGroupNames(groupId));
-            return result.getAutoScalingGroups().stream().flatMap(g -> g.getInstances().stream()).filter(i -> IN_SERVICE.equals(i.getLifecycleState())).map(Instance::getInstanceId).collect(Collectors.toList());
-        } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
-            throw new AwsException(e);
-        }
     }
 
     public Observable<AwsState> pollForInstanceState(final String instanceId) throws AwsException {

@@ -1,7 +1,6 @@
 package nl.jpoint.vertx.mod.deploy;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.rxjava.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +39,6 @@ public class DeployConfig {
     private final Path vertxHome;
     private final Path artifactRepo;
     private final URI nexusUrl;
-    private final Vertx rxVertx;
     private String configLocation;
     private String awsAccessKey;
     private String awsSecretAccessKey;
@@ -50,7 +48,7 @@ public class DeployConfig {
     private String httpAuthPassword;
     private boolean awsEnabled = false;
     private boolean httpAuthentication = false;
-    private boolean mavenLocal = false;
+    private boolean mavenRemote = true;
     private String awsLoadbalancerId;
     private String awsInstanceId;
     private int awsMaxRegistrationDuration;
@@ -59,14 +57,14 @@ public class DeployConfig {
     private String remoteRepoPolicy;
     private String defaultJavaOpts;
 
-    private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl, io.vertx.core.Vertx vertx) {
-        this.rxVertx = new Vertx(vertx);
+    private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
         this.artifactRepo = Paths.get(artifactRepo);
         if (nexusUrl == null || nexusUrl.isEmpty()) {
-            this.mavenLocal = true;
+            this.mavenRemote = false;
             this.nexusUrl = null;
         } else {
+            this.mavenRemote = true;
             this.nexusUrl = URI.create(nexusUrl);
         }
 
@@ -92,7 +90,7 @@ public class DeployConfig {
         return defaultValue;
     }
 
-    static DeployConfig fromJsonObject(JsonObject config, io.vertx.core.Vertx vertx) {
+    static DeployConfig fromJsonObject(JsonObject config) {
         if (config == null) {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");
@@ -107,7 +105,7 @@ public class DeployConfig {
             // mavenRepo = MAVEN_CENTRAL;
         }
 
-        DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo, vertx)
+        DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)
                 .withConfigLocation(config)
                 .withHttpPort(config)
                 .withAwsConfig(config)
@@ -247,8 +245,8 @@ public class DeployConfig {
         return httpAuthentication;
     }
 
-    public boolean isMavenLocal() {
-        return mavenLocal;
+    public boolean isMavenRemote() {
+        return mavenRemote;
     }
 
     public String getAuthToken() {
@@ -269,9 +267,5 @@ public class DeployConfig {
 
     public Integer getHttpPort() {
         return this.httpPort;
-    }
-
-    public Vertx getRxVertx() {
-        return rxVertx;
     }
 }
