@@ -2,7 +2,7 @@ package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
-import nl.jpoint.maven.vertx.request.DeployModuleRequest;
+import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
@@ -43,9 +43,9 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
 
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
 
-        final List<Request> deployModuleRequests = "jar".equals(type) ? createModuleRequest() : Collections.emptyList();
-        final List<Request> deployArtifactRequests = SITE_CLASSIFIER.equals(type) ? createArtifactRequest() : Collections.emptyList();
-        final List<Request> deployConfigRequests = CONFIG_TYPE.equals(type) ? createConfigRequest() : Collections.emptyList();
+        final List<Request> deployModuleRequests = DeployUtils.APPLICATION_TYPE.equals(type) ? createModuleRequest() : Collections.emptyList();
+        final List<Request> deployArtifactRequests = DeployUtils.ARTIFACT_TYPE.equals(type) ? createArtifactRequest() : Collections.emptyList();
+        final List<Request> deployConfigRequests = DeployUtils.CONFIG_TYPE.equals(type) ? createConfigRequest() : Collections.emptyList();
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
@@ -63,7 +63,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     }
 
     private List<Request> createModuleRequest() {
-        return Collections.singletonList(new DeployModuleRequest(groupId, artifactId, version, type, activeConfiguration.doRestart()));
+        return Collections.singletonList(new DeployApplicationRequest(groupId, artifactId, version, classifier, type, activeConfiguration.doRestart()));
     }
 
     private List<Request> createArtifactRequest() {

@@ -47,6 +47,9 @@ public class AutoScalingDeployService extends DeployService {
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
+        if(asGroup == null) {
+            throw new MojoFailureException("Invalid auto-scaling group");
+        }
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);

@@ -16,8 +16,6 @@ public class TestRunner {
         config.put("auth.token","token");
         config.put("maven.repo.uri", "https://oss.sonatype.org/content/repositories/snapshots/");
         DeploymentOptions deployConf = new DeploymentOptions().setConfig(config);
-
-
         vertx.deployVerticle("nl.jpoint.vertx.mod.deploy.AwsDeployApplication", deployConf);
     }
 }

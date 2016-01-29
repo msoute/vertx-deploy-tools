@@ -6,14 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties({"endpoint"})
-public class DeployModuleRequest extends Request {
+public class DeployApplicationRequest extends Request {
 
     private static final String ENDPOINT = "/deploy/module";
     @JsonProperty
     private final boolean restart;
 
-    public DeployModuleRequest(String group_id, String artifact_id, String version, String type, boolean restart) {
-        super(group_id, artifact_id, version, null, type);
+    public DeployApplicationRequest(String group_id, String artifact_id, String version, String classifier, String type, boolean restart) {
+        super(group_id, artifact_id, version, classifier, type);
         this.restart = restart;
     }
 

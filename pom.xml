@@ -25,6 +25,8 @@
         <module>vertx-deploy-maven-plugin</module>
         <module>vertx-deploy-test</module>
         <module>vertx-deploy-test-application</module>
+        <module>vertx-deploy-test-artifact</module>
+        <module>vertx-deploy-test-config</module>
     </modules>
 
     <scm>
