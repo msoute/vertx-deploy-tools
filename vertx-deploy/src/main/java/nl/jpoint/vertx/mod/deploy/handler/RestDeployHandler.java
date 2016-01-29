@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.request.*;
+import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
+import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
-import nl.jpoint.vertx.mod.deploy.service.DeployService;
+import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
+import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,22 +21,24 @@ import rx.Observable;
 import java.io.IOException;
 import java.util.Optional;
 
+import static rx.Observable.just;
+
 public class RestDeployHandler implements Handler<RoutingContext> {
 
-    private final DeployService<DeployApplicationRequest> moduleDeployService;
-    private final DeployService<DeployArtifactRequest> artifactDeployService;
-    private final DeployService<DeployConfigRequest> configDeployService;
+    private final DeployApplicationService applicationApplicationService;
+    private final DeployArtifactService artifactDeployService;
+    private final DeployConfigService configDeployService;
     private final Optional<AwsService> awsService;
     private final String authToken;
 
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployHandler(final DeployService<DeployApplicationRequest> moduleDeployService,
-                             final DeployService<DeployArtifactRequest> artifactDeployService,
-                             final DeployService<DeployConfigRequest> configDeployService,
+    public RestDeployHandler(final DeployApplicationService deployApplicationService,
+                             final DeployArtifactService artifactDeployService,
+                             final DeployConfigService configDeployService,
                              final AwsService awsService,
                              final String authToken) {
-        this.moduleDeployService = moduleDeployService;
+        this.applicationApplicationService = deployApplicationService;
         this.artifactDeployService = artifactDeployService;
         this.configDeployService = configDeployService;
         this.awsService = Optional.ofNullable(awsService);
@@ -77,19 +80,23 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                     deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
                     deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
 
-            Observable.just(deployRequest)
+            just(deployRequest)
                     .flatMap(this::registerRequest)
                     .flatMap(r -> respondContinue(r, context.request()))
                     .flatMap(this::deRegisterInstanceFromAutoScalingGroup)
                     .flatMap(this::deRegisterInstanceFromLoadBalancer)
-                    .flatMap(this::doDeploy)
+                    .flatMap(this::deployConfigs)
+                    .flatMap(this::deployArtifacts)
+                    .flatMap(this::stopContainer)
+                    .flatMap(this::deployApplications)
                     .flatMap(this::registerInstanceInAutoScalingGroup)
                     .flatMap(this::checkElbStatus)
                     .doOnCompleted(() -> this.respond(deployRequest, context.request()))
-                    .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
-                    .subscribe();
-            // Observable.from(deployRequest.getConfigs()).flatMap(deployConfigRequest -> configDeployService.deploy(deployConfigRequest))
+                    .doOnError(t -> {
+                        this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage());
 
+                    })
+                    .subscribe();
         });
     }
 
@@ -97,7 +104,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         if (deployRequest.withElb() && !deployRequest.withAutoScaling() && awsService.isPresent()) {
             return awsService.get().loadBalancerDeRegisterInstance(deployRequest);
         } else {
-            return Observable.just(deployRequest);
+            return just(deployRequest);
         }
     }
 
@@ -108,7 +115,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                     service.registerRequest(deployRequest)
             );
         }
-        return Observable.just(deployRequest);
+        return just(deployRequest);
     }
 
     private Observable<DeployRequest> respondContinue(DeployRequest deployRequest, HttpServerRequest request) {
@@ -116,23 +123,71 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             request.response().setStatusMessage(deployRequest.getId().toString());
             request.response().end(deployRequest.getId().toString());
         }
-        return Observable.just(deployRequest);
+        return just(deployRequest);
     }
 
     private Observable<DeployRequest> deRegisterInstanceFromAutoScalingGroup(DeployRequest deployRequest) {
-
         if (deployRequest.withAutoScaling() && awsService.isPresent()) {
             return awsService.get().autoScalingDeRegisterInstance(deployRequest);
         } else {
-            return Observable.just(deployRequest);
+            return just(deployRequest);
         }
     }
+
+    private Observable<DeployRequest> deployConfigs(DeployRequest deployRequest) {
+        awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployRequest.getId().toString()));
+        if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
+            return Observable.from(deployRequest.getConfigs())
+                    .flatMap(configDeployService::deployAsync)
+                    .toList()
+                    .flatMap(list -> {
+                        if (list.contains(Boolean.TRUE)) {
+                            deployRequest.setRestart(true);
+                        }
+                        return just(deployRequest);
+                    });
+        } else {
+            return just(deployRequest);
+        }
+    }
+
+    private Observable<DeployRequest> deployArtifacts(DeployRequest deployRequest) {
+        awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployRequest.getId().toString()));
+        if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
+            return Observable.from(deployRequest.getArtifacts())
+                    .flatMap(artifactDeployService::deployAsync)
+                    .toList()
+                    .flatMap(x -> just(deployRequest));
+        } else {
+            return just(deployRequest);
+        }
+    }
+
+    private Observable<DeployRequest> stopContainer(DeployRequest deployRequest) {
+        awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.STOPPING_CONTAINER, deployRequest.getId().toString()));
+        if (deployRequest.withRestart()) {
+            return applicationApplicationService.stopContainer().flatMap(x -> just(deployRequest));
+        }
+        return just(deployRequest);
+    }
+
+    private Observable<DeployRequest> deployApplications(DeployRequest deployRequest) {
+        awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_APPLICATIONS, deployRequest.getId().toString()));
+        if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
+            return Observable.from(deployRequest.getModules())
+                    .flatMap(applicationApplicationService::deployAsync)
+                    .toList()
+                    .flatMap(x -> just(deployRequest));
+        }
+        return just(deployRequest);
+    }
+
 
     private Observable<DeployRequest> registerInstanceInAutoScalingGroup(DeployRequest deployRequest) {
         if (deployRequest.withAutoScaling() && awsService.isPresent()) {
             return awsService.get().autoScalingRegisterInstance(deployRequest);
         } else {
-            return Observable.just(deployRequest);
+            return just(deployRequest);
         }
     }
 
@@ -140,48 +195,10 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         if (deployRequest.withElb() && awsService.isPresent()) {
             return awsService.get().loadBalancerRegisterInstance(deployRequest);
         } else {
-            return Observable.just(deployRequest);
+            return just(deployRequest);
         }
     }
 
-
-    private Observable<DeployRequest> doDeploy(DeployRequest deployRequest) {
-        JsonObject deployOk = null;
-        if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
-            for (DeployConfigRequest configRequest : deployRequest.getConfigs()) {
-                deployOk = configDeployService.deploy(configRequest);
-                if (!deployOk.getBoolean("result")) {
-                    throw new IllegalStateException("Error deploying configs.");
-                }
-                if (!deployRequest.withRestart() && deployOk.getBoolean("configChanged.", false)) {
-                    deployRequest.setRestart(true);
-                }
-            }
-        }
-
-        if (deployRequest.withRestart()) {
-            ((DeployApplicationService) moduleDeployService).stopContainer();
-        }
-
-        if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
-            for (DeployArtifactRequest artifactRequest : deployRequest.getArtifacts()) {
-                deployOk = artifactDeployService.deploy(artifactRequest);
-                if (!deployOk.getBoolean("result")) {
-                    throw new IllegalStateException("Error deploying artifacts.");
-                }
-            }
-        }
-
-        if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
-            for (DeployApplicationRequest moduleRequest : deployRequest.getModules()) {
-                deployOk = moduleDeployService.deploy(moduleRequest);
-                if (!deployOk.getBoolean("result")) {
-                    throw new IllegalStateException("Error deploying modules.");
-                }
-            }
-        }
-        return Observable.just(deployRequest);
-    }
 
     private void respond(DeployRequest deployRequest, HttpServerRequest request) {
         request.response().setStatusCode(HttpResponseStatus.OK.code());
@@ -193,7 +210,11 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
     private void respondFailed(String id, HttpServerRequest request, String message) {
         request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-        request.response().end(message);
+        if (message != null) {
+            request.response().end(message);
+        } else {
+            request.response().end();
+        }
         if (id != null) {
             awsService.ifPresent(aws -> aws.failBuild(id));
         }

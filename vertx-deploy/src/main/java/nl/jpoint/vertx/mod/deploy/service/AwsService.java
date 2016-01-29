@@ -7,7 +7,6 @@ import nl.jpoint.vertx.mod.deploy.aws.state.AwsAsDeRegisterInstance;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsAsRegisterInstance;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsElbDeRegisterInstance;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsElbRegisterInstance;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -99,7 +98,7 @@ public class AwsService {
             LOG.info("[{} - {}]: Updating restart to {}", LogConstants.AWS_ELB_REQUEST, buildId, restart);
             runningRequests.get(buildId).setRestart(restart);
             runningRequests.get(buildId).setState(DeployState.STOPPING_CONTAINER);
-            runningRequests.get(buildId).getModules().forEach(DeployApplicationRequest::withRestart);
+            runningRequests.get(buildId).getModules().forEach(r -> r.setRestart(true));
             return runningRequests.get(buildId);
         }
         return null;
@@ -123,7 +122,6 @@ public class AwsService {
         }
         return state;
     }
-
 
 
 }

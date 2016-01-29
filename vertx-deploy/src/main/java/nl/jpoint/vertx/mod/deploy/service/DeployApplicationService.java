@@ -1,118 +1,120 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
-import io.vertx.core.file.FileSystem;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
 import nl.jpoint.vertx.mod.deploy.command.RunApplication;
 import nl.jpoint.vertx.mod.deploy.command.StopApplication;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
-import nl.jpoint.vertx.mod.deploy.util.ApplicationVersion;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.util.Map;
 
-public class DeployApplicationService implements DeployService<DeployApplicationRequest> {
+import static rx.Observable.just;
+
+public class DeployApplicationService implements DeployService<DeployApplicationRequest, DeployApplicationRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(DeployApplicationService.class);
     private final DeployConfig config;
-    private final Map<String, JsonObject> installedModules;
-    private FileSystem fs;
+    private final Map<String, String> installedModules;
+    private Vertx vertx;
 
-    public DeployApplicationService(DeployConfig config, FileSystem fs) {
+    public DeployApplicationService(DeployConfig config, Vertx vertx) {
         this.config = config;
-        this.fs = fs;
+        this.vertx = vertx;
         this.installedModules = new ProcessUtils(config).listInstalledAndRunningModules();
     }
 
-    public JsonObject deploy(final DeployApplicationRequest deployRequest) {
-
-        if (deployRequest.isSnapshot() && !config.isMavenLocal()) {
-            ResolveSnapshotVersion resolveVersion = new ResolveSnapshotVersion(config, LogConstants.DEPLOY_REQUEST);
-            JsonObject result = resolveVersion.execute(deployRequest);
-
-            if (result.getBoolean("success")) {
-                deployRequest.setSnapshotVersion(result.getString("version"));
-            }
-        }
-
-        final ApplicationVersion moduleInstalled = moduleInstalled(deployRequest);
-
-        if (moduleInstalled.equals(ApplicationVersion.ERROR)) {
-            return new JsonObject().put("result", false);
-        }
-
-        // If the module with the same version is already installed there is no need to take any further action.
-        if (moduleInstalled.equals(ApplicationVersion.INSTALLED)) {
-            if (deployRequest.restart()) {
-                RunApplication runModCommand = new RunApplication(fs, config);
-                runModCommand.execute(deployRequest);
-            }
-            return new JsonObject().put("result", true);
-        }
-
-        if (!moduleInstalled.equals(ApplicationVersion.INSTALLED)) {
-            // If an older version (or SNAPSHOT) is installed undeploy it first.
-            if (moduleInstalled.equals(ApplicationVersion.OLDER_VERSION)) {
-                if (!deployRequest.restart()) {
-                    StopApplication stopApplicationCommand = new StopApplication(config);
-                    JsonObject result = stopApplicationCommand.execute(deployRequest);
-                    if (!result.getBoolean(Constants.STOP_STATUS)) {
-                        return new JsonObject().put("result", false);
+    @Override
+    public Observable<DeployApplicationRequest> deployAsync(DeployApplicationRequest deployApplicationRequest) {
+       return resolveSnapShotVersion(deployApplicationRequest)
+                .flatMap(this::checkInstalled)
+                .flatMap(this::checkRunning)
+                .flatMap(request -> {
+                    if (deployApplicationRequest.isInstalled()) {
+                        return this.startApplication(request);
+                    } else {
+                        return this.stopApplication(request)
+                                .flatMap(this::startApplication)
+                                .flatMap(this::registerApplication);
                     }
-                }
-                installedModules.remove(deployRequest.getMavenArtifactId());
+                });
+    }
+
+    private Observable<DeployApplicationRequest> checkInstalled(DeployApplicationRequest deployApplicationRequest) {
+        if (!installedModules.containsKey(deployApplicationRequest.getMavenArtifactId())) {
+            LOG.info("[{} - {}]: Module ({}) not installed.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId());
+            deployApplicationRequest.setInstalled(false);
+        } else {
+            String installedModuleVersion = installedModules.get(deployApplicationRequest.getMavenArtifactId());
+            String requestedVersion = deployApplicationRequest.getSnapshotVersion() != null ? deployApplicationRequest.getSnapshotVersion() : deployApplicationRequest.getVersion();
+            boolean sameVersion = installedModuleVersion.equals(requestedVersion);
+            if (sameVersion) {
+                LOG.info("[{} - {}]: Module ({}) already installed.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId());
             }
+            deployApplicationRequest.setInstalled(sameVersion);
         }
-
-        // Run the newly installed module.
-        RunApplication runModCommand = new RunApplication(fs, config);
-        JsonObject runResult = runModCommand.execute(deployRequest);
-
-        if (!runResult.getBoolean(Constants.STATUS_SUCCESS)) {
-            return new JsonObject().put("result", false);
-        }
-
-        installedModules.put(deployRequest.getMavenArtifactId(), runResult);
-        return new JsonObject().put("result", true);
+        return just(deployApplicationRequest);
     }
 
-    private ApplicationVersion moduleInstalled(ModuleRequest deployRequest) {
-        if (!installedModules.containsKey(deployRequest.getMavenArtifactId())) {
-            LOG.info("[{} - {}]: Module ({}) not installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getModuleId());
-            return ApplicationVersion.NOT_INSTALLED;
+    private Observable<DeployApplicationRequest> checkRunning(DeployApplicationRequest deployApplicationRequest) {
+        new ProcessUtils(config).checkModuleRunning(deployApplicationRequest);
+        if (!deployApplicationRequest.isRunning()) {
+            LOG.info("[{} - {}]: Module ({}) stopped externally.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId());
         }
-
-        JsonObject installedModule = installedModules.get(deployRequest.getMavenArtifactId());
-
-
-        String requestedVersion = deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion();
-        boolean sameVersion = installedModule.getString(Constants.MODULE_VERSION).equals(requestedVersion);
-
-        if (sameVersion) {
-            if (!checkModuleRunning(deployRequest)) {
-                LOG.info("[{} - {}]: Module ({}) stopped externally.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getModuleId());
-                return ApplicationVersion.NOT_INSTALLED;
-            }
-            LOG.info("[{} - {}]: Module ({}) already installed.", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest.getModuleId());
-        }
-
-        return sameVersion ? ApplicationVersion.INSTALLED : ApplicationVersion.OLDER_VERSION;
+        return just(deployApplicationRequest);
     }
 
-    private boolean checkModuleRunning(ModuleRequest deployRequest) {
-        return new ProcessUtils(config).checkModuleRunning(deployRequest.getMavenArtifactId());
+    private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest deployApplicationRequest) {
+        if (deployApplicationRequest.isRunning()) {
+            StopApplication stopApplicationCommand = new StopApplication(vertx, config);
+            return stopApplicationCommand.executeAsync(deployApplicationRequest);
+        } else {
+            return just(deployApplicationRequest);
+        }
     }
 
-    public void stopContainer() {
-        installedModules.entrySet().stream().map(Map.Entry::getValue).forEach(module -> {
-            StopApplication stopApplication = new StopApplication(config);
-            String[] mavenIds = module.getString(Constants.MAVEN_ID).split(":", 2);
-            stopApplication.execute(new DeployApplicationRequest(mavenIds[0], mavenIds[1], module.getString(Constants.MODULE_VERSION), true, "jar"));
-        });
+    private Observable<DeployApplicationRequest> startApplication(DeployApplicationRequest deployApplicationRequest) {
+        if (!deployApplicationRequest.isRunning()) {
+            RunApplication runModCommand = new RunApplication(vertx, config);
+            return runModCommand.executeAsync(deployApplicationRequest);
+        } else {
+            return just(deployApplicationRequest);
+        }
+    }
+
+
+    private Observable<DeployApplicationRequest> registerApplication(DeployApplicationRequest
+                                                                             deployApplicationRequest) {
+        installedModules.put(deployApplicationRequest.getMavenArtifactId(), deployApplicationRequest.getSnapshotVersion() != null ? deployApplicationRequest.getSnapshotVersion() : deployApplicationRequest.getVersion());
+        return just(deployApplicationRequest);
+    }
+
+    @Override
+    public DeployConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public Vertx getVertx() {
+        return vertx;
+    }
+
+    public Observable<Boolean> stopContainer() {
+        LOG.info("Stopping all running modules");
+        return Observable.from(installedModules.entrySet())
+                .flatMap(entry -> {
+                    StopApplication stopApplication = new StopApplication(vertx, config);
+                    String[] mavenIds = entry.getKey().split(":", 2);
+                    DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), "jar");
+                    request.setRunning(false);
+                    request.setInstalled(false);
+                    return stopApplication.executeAsync(request);
+                })
+                .toList()
+                .flatMap(x -> Observable.just(true));
     }
 }

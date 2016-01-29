@@ -3,8 +3,10 @@ package nl.jpoint.vertx.mod.deploy.util;
 import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,27 +21,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static rx.Observable.just;
+
 public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
 
 
-    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy";
-
-    private final Path vertxHome;
+    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy:";
     private static final String MAVEN_PATTERN = "maven:([^\\s]+)";
-    private final Pattern pattern;
+    private static final String MODULE_PATTERN = "([^\\s]+):([^\\s]+):([^\\s]+)";
+    private final Path vertxHome;
+    private final Pattern mavenPattern;
+    private final Pattern modulePattern;
 
 
     public ProcessUtils(DeployConfig config) {
         vertxHome = config.getVertxHome();
-        pattern = Pattern.compile(MAVEN_PATTERN);
+        mavenPattern = Pattern.compile(MAVEN_PATTERN);
+        modulePattern = Pattern.compile(MODULE_PATTERN);
     }
 
-    public Map<String, JsonObject> listInstalledAndRunningModules() {
+    public Map<String, String> listInstalledAndRunningModules() {
         List<String> moduleIds = this.listModules();
         return moduleIds.stream()
                 .map(this::parseModuleString)
-                .collect(Collectors.toMap((Function<JsonObject, String>) jsonObject -> jsonObject.getString(Constants.MAVEN_ID), Function.identity()));
+                .collect(Collectors.toMap((Function<JsonObject, String>) jsonObject -> jsonObject.getString(Constants.MAVEN_ID),
+                        (Function<JsonObject, String>) jsonObject -> jsonObject.getString(Constants.MODULE_VERSION)));
     }
 
     private JsonObject parseModuleString(String moduleString) {
@@ -65,11 +72,20 @@ public class ProcessUtils {
                 BufferedReader out = new BufferedReader(new InputStreamReader(listProcess.getInputStream()));
                 String outLine;
                 while ((outLine = out.readLine()) != null) {
-                    Matcher matcher = pattern.matcher(outLine);
-                    if (matcher.find()) {
-                        String moduleString = matcher.group(1);
+                    Matcher mavenMatcher = mavenPattern.matcher(outLine);
+                    if (mavenMatcher.find()) {
+                        String moduleString = mavenMatcher.group(1);
                         if (moduleString.contains(":") && !result.contains(moduleString) && !moduleString.contains(SELF)) {
                             result.add(moduleString);
+                            continue;
+                        }
+                    }
+                    Matcher moduleMatcher = modulePattern.matcher(outLine);
+                    if (moduleMatcher.find()) {
+                        String moduleString = moduleMatcher.group(0);
+                        if (moduleString.contains(":") && !result.contains(moduleString) && !moduleString.contains(SELF)) {
+                            result.add(moduleString);
+                            continue;
                         }
                     }
                 }
@@ -80,7 +96,8 @@ public class ProcessUtils {
         return result;
     }
 
-    public boolean checkModuleRunning(String moduleId) {
-        return listInstalledAndRunningModules().containsKey(moduleId);
+    public Observable<DeployApplicationRequest> checkModuleRunning(DeployApplicationRequest request) {
+        request.setRunning(listInstalledAndRunningModules().containsKey(request.getMavenArtifactId()));
+        return just(request);
     }
 }

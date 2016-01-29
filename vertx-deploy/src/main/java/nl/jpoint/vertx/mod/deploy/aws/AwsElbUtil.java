@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static rx.Observable.just;
 
@@ -72,19 +69,4 @@ public class AwsElbUtil {
             throw new AwsException(e);
         }
     }
-
-    public List<String> listLBInstanceMembers(String loadBalancer) throws AwsException {
-        if (loadBalancer != null) {
-            try {
-                DescribeLoadBalancersResult result = elbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withLoadBalancerNames(loadBalancer));
-                return result.getLoadBalancerDescriptions().stream().flatMap(d -> d.getInstances().stream()).map(Instance::getInstanceId).collect(Collectors.toList());
-            } catch (AmazonClientException e) {
-                LOG.error("Error executing request 'listLBInstanceMembers' -> {}", e);
-                throw new AwsException(e);
-            }
-        }
-        return Collections.emptyList();
-    }
-
-
 }

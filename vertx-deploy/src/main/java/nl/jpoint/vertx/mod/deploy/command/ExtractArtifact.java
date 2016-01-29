@@ -1,76 +1,59 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.deploy.util.FileDigestUtil;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class ExtractArtifact implements Command<ModuleRequest> {
+import static rx.Observable.just;
+
+public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractArtifact.class);
 
     private final Vertx vertx;
     private final DeployConfig config;
     private final Path basePath;
-    private final boolean deleteBase;
-    private final boolean checkConfig;
-    private final String logConstant;
     private final FileDigestUtil fileDigestUtil;
 
     private boolean configChanged = false;
 
-    public ExtractArtifact(Vertx vertx, DeployConfig config, Path basePath, boolean deleteBase, boolean checkConfig, String logConstant) {
-        this.vertx = vertx;
+    public ExtractArtifact(io.vertx.core.Vertx vertx, DeployConfig config, Path basePath) {
+        this.vertx = new Vertx(vertx);
         this.config = config;
         this.basePath = basePath;
-        this.deleteBase = deleteBase;
-        this.checkConfig = checkConfig;
-        this.logConstant = logConstant;
         this.fileDigestUtil = new FileDigestUtil();
     }
 
     @Override
-    public JsonObject execute(ModuleRequest request) {
-
+    public Observable<T> executeAsync(T request) {
         try (FileSystem zipFs = this.getFileSystem(config.getArtifactRepo() + "/" + request.getFileName())) {
-
-            LOG.info("[{} - {}]: Extracting artifact {} to {}.", logConstant, request.getId(), request.getModuleId(), basePath);
-            if (deleteBase) {
+            LOG.info("[{} - {}]: Extracting artifact {} to {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath);
+            if (request.deleteBase()) {
                 removeBasePath(request, basePath);
             }
-
             final Path zipRoot = zipFs.getPath("/");
-
             Files.walkFileTree(zipRoot, CopyingFileVisitor(basePath, request));
-            LOG.info("[{} - {}]: Extracted artifact {} to {}.", LogConstants.DEPLOY_SITE_REQUEST, request.getId(), request.getModuleId(), basePath);
+            LOG.info("[{} - {}]: Extracted artifact {} to {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath);
+            return just(request);
         } catch (IOException | InvalidPathException e) {
-            LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", logConstant, request.getId(), request.getModuleId(), e.getMessage());
-            return new JsonObject().put("success", false);
+            LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", request.getLogName(), request.getId(), request.getModuleId(), e.getMessage());
+            throw new IllegalStateException();
         }
-        return new JsonObject().put("success", true).put("configChanged", checkConfig && configChanged);
     }
 
-    private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, ModuleRequest request) {
+    private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, T request) {
         return new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -79,16 +62,16 @@ public class ExtractArtifact implements Command<ModuleRequest> {
                     return FileVisitResult.CONTINUE;
                 }
                 final Path unpackFile = Paths.get(basePath.toString(), file.toString());
-                if (checkConfig) {
+                if (request.checkConfig()) {
                     oldDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 }
                 Files.copy(file, unpackFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-                if (checkConfig) {
-                   newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
+                if (request.checkConfig()) {
+                    newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 }
-                if (checkConfig && !configChanged && !Arrays.equals(oldDigest, newDigest)) {
-                    LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", logConstant, request.getId(), request.getModuleId());
-                    configChanged = true;
+                if (request.checkConfig() && !configChanged && !Arrays.equals(oldDigest, newDigest)) {
+                    LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", request.getLogName(), request.getId(), request.getModuleId());
+                    request.setRestart(true);
                 }
 
                 return FileVisitResult.CONTINUE;
@@ -107,12 +90,12 @@ public class ExtractArtifact implements Command<ModuleRequest> {
 
     private void removeBasePath(ModuleRequest request, Path basePath) {
         if (!basePath.getParent().toFile().exists() || !basePath.getParent().toFile().canWrite()) {
-            LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", logConstant, request.getId(), request.getModuleId(), basePath.getParent().toString());
-            LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", logConstant, request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
+            LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", request.getLogName(), request.getId(), request.getModuleId(), basePath.getParent().toString());
+            LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
         }
 
         if (basePath.toFile().exists()) {
-            LOG.info("[{} - {}]: Removing base path -> {}.", logConstant, request.getId(), basePath.toAbsolutePath());
+            LOG.info("[{} - {}]: Removing base path -> {}.", request.getLogName(), request.getId(), basePath.toAbsolutePath());
             vertx.fileSystem().deleteRecursiveBlocking(basePath.toString(), true);
         }
     }

@@ -3,7 +3,6 @@ package nl.jpoint.vertx.mod.deploy.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.vertx.core.http.HttpServerRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,10 +16,9 @@ public class DeployRequest {
     private final List<DeployArtifactRequest> artifacts;
     private final boolean elb;
     private final boolean autoScaling;
-    private boolean decrementDesiredCapacity = true;
     private final String autoScalingGroup;
-
     private final String instanceId;
+    private boolean decrementDesiredCapacity = true;
     private boolean restart;
     private DeployState state;
 
@@ -80,12 +78,12 @@ public class DeployRequest {
         return restart;
     }
 
-    public void setState(DeployState state) {
-        this.state = state;
-    }
-
     public DeployState getState() {
         return this.state;
+    }
+
+    public void setState(DeployState state) {
+        this.state = state;
     }
 
     public boolean isDecrementDesiredCapacity() {

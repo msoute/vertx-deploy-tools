@@ -4,15 +4,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.Constants;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
-import org.slf4j.MDC;
 
-public class RestDeployAwsHandler implements Handler<RoutingContext> {
+public class RestDeployStatusHandler implements Handler<RoutingContext> {
     private final AwsService deployAwsService;
 
-    public RestDeployAwsHandler(AwsService deployAwsService) {
+    public RestDeployStatusHandler(AwsService deployAwsService) {
         this.deployAwsService = deployAwsService;
     }
 

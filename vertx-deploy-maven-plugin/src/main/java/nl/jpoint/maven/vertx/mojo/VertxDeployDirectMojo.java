@@ -24,6 +24,8 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
     private Boolean allowSnapshots;
     @Parameter(property = "deploy.restart", defaultValue = "false")
     private Boolean restart;
+    @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
+    private String authToken;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -36,6 +38,7 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.setDeploySnapshots(allowSnapshots);
         configuration.withRestart(restart);
         configuration.getExclusions().addAll(utils.parseExclusions(exclusions));
+        configuration.withAuthToken(authToken);
         super.activeConfiguration = configuration;
         
         final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration);

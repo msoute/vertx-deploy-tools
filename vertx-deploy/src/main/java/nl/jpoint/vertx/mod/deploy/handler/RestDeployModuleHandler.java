@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
-import nl.jpoint.vertx.mod.deploy.service.DeployService;
+import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +15,10 @@ import java.io.IOException;
 
 public class RestDeployModuleHandler implements Handler<RoutingContext> {
 
-    private final DeployService service;
+    private final DeployApplicationService service;
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployModuleHandler(final DeployService service) {
+    public RestDeployModuleHandler(final DeployApplicationService service) {
         this.service = service;
     }
 
@@ -45,16 +44,11 @@ public class RestDeployModuleHandler implements Handler<RoutingContext> {
             }
 
             LOG.info("[{} - {}]: Received deploy module {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.toString());
-            JsonObject result = service.deploy(deployRequest);
 
-            if (!result.getBoolean("result")) {
-                respondFailed(context.request());
-                return;
-            }
-            respondOk(context.request());
+            service.deployAsync(deployRequest)
+                    .doOnCompleted(() -> respondOk(context.request()))
+                    .doOnError(t -> respondFailed(context.request()));
         });
-
-
     }
 
     private void respondOk(HttpServerRequest request) {

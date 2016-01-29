@@ -1,5 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.request;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.UUID;
 
 public abstract class ModuleRequest {
@@ -13,6 +16,11 @@ public abstract class ModuleRequest {
     private final boolean snapshot;
 
     private String snapshotVersion = null;
+    private boolean restart = false;
+
+    private Optional<String> restartCommand;
+    private Optional<String> testCommand;
+    private Path baseLocation;
 
 
     ModuleRequest(final String groupId, final String artifactId, final String version, final String classifier, final String type) {
@@ -105,7 +113,41 @@ public abstract class ModuleRequest {
         return type;
     }
 
-    public abstract boolean restart();
+    public boolean restart() {
+        return restart;
+    }
 
+    public void setRestart(boolean restart) {
+        this.restart = restart;
+    }
 
+    public Optional<String> getRestartCommand() {
+        return restartCommand;
+    }
+
+    public void setRestartCommand(String restartCommand) {
+        this.restartCommand = (restartCommand == null || restartCommand.isEmpty()) ? Optional.empty() : Optional.of(restartCommand);
+    }
+
+    public Optional<String> getTestCommand() {
+        return testCommand;
+    }
+
+    public void setTestCommand(String testCommand) {
+        this.testCommand = (testCommand == null || testCommand.isEmpty()) ? Optional.empty() : Optional.of(testCommand);
+    }
+
+    public Path getBaseLocation() {
+        return baseLocation;
+    }
+
+    public void setBaseLocation(String baseLocation) {
+        this.baseLocation = Paths.get(baseLocation);
+    }
+
+    public abstract boolean deleteBase();
+
+    public abstract boolean checkConfig();
+
+    public abstract String getLogName();
 }

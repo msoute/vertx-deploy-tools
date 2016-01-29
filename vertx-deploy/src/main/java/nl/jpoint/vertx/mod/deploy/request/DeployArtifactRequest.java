@@ -3,6 +3,7 @@ package nl.jpoint.vertx.mod.deploy.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployArtifactRequest extends ModuleRequest {
@@ -15,7 +16,18 @@ public class DeployArtifactRequest extends ModuleRequest {
     }
 
     @Override
-    public boolean restart() {
+    public boolean deleteBase() {
+        return true;
+    }
+
+    @Override
+    public boolean checkConfig() {
         return false;
     }
+
+    @Override
+    public String getLogName() {
+        return LogConstants.DEPLOY_ARTIFACT_REQUEST;
+    }
+
 }

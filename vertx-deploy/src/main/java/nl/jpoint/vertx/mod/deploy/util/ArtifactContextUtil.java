@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.util;
 
+import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -13,14 +14,10 @@ import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.HashMap;
 
-public class ArtifactContextUtil {
+public class ArtifactContextUtil<T extends ModuleRequest> {
 
     public static final String ARTIFACT_CONTEXT = "artifact_context.xml";
 

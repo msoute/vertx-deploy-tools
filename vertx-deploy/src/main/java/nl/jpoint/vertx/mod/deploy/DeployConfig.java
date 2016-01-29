@@ -1,6 +1,7 @@
 package nl.jpoint.vertx.mod.deploy;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +14,7 @@ public class DeployConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsDeployApplication.class);
 
- //   private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
+    //   private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
 
     private static final String VERTX_HOME = "vertx.home";
     private static final String ARTIFACT_REPO = "artifact.storage";
@@ -24,6 +25,7 @@ public class DeployConfig {
     private static final String AWS_REGISTER_MAX_DURATION = "aws.as.register.maxduration";
     private static final String CONFIG_LOCATION = "config.location";
     private static final String HTTP_AUTH_USER = "http.authUser";
+    private static final String HTTP_PORT = "http.port";
     private static final String HTTP_AUTH_PASSWORD = "http.authPass";
     private static final String MAVEN_REPO_URI = "maven.repo.uri";
     private static final String MAVEN_SNAPSHOT_POLICY = "maven.repo.snapshot.policy";
@@ -38,32 +40,30 @@ public class DeployConfig {
     private final Path vertxHome;
     private final Path artifactRepo;
     private final URI nexusUrl;
-
+    private final Vertx rxVertx;
     private String configLocation;
     private String awsAccessKey;
     private String awsSecretAccessKey;
     private String awsRegion;
+    private Integer httpPort;
     private String httpAuthUser;
     private String httpAuthPassword;
-
     private boolean awsEnabled = false;
     private boolean httpAuthentication = false;
     private boolean mavenLocal = false;
-
     private String awsLoadbalancerId;
     private String awsInstanceId;
-
     private int awsMaxRegistrationDuration;
     private String authToken;
     private boolean asCluster = true;
     private String remoteRepoPolicy;
-
     private String defaultJavaOpts;
 
-    private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
+    private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl, io.vertx.core.Vertx vertx) {
+        this.rxVertx = new Vertx(vertx);
         this.vertxHome = Paths.get(vertxHome);
         this.artifactRepo = Paths.get(artifactRepo);
-        if (nexusUrl == null || nexusUrl.isEmpty() ) {
+        if (nexusUrl == null || nexusUrl.isEmpty()) {
             this.mavenLocal = true;
             this.nexusUrl = null;
         } else {
@@ -92,7 +92,7 @@ public class DeployConfig {
         return defaultValue;
     }
 
-    static DeployConfig fromJsonObject(JsonObject config) {
+    static DeployConfig fromJsonObject(JsonObject config, io.vertx.core.Vertx vertx) {
         if (config == null) {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");
@@ -104,11 +104,12 @@ public class DeployConfig {
 
         if (mavenRepo.isEmpty()) {
             LOG.warn("'maven.repo.uri', using maven central");
-           // mavenRepo = MAVEN_CENTRAL;
+            // mavenRepo = MAVEN_CENTRAL;
         }
 
-        DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)
+        DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo, vertx)
                 .withConfigLocation(config)
+                .withHttpPort(config)
                 .withAwsConfig(config)
                 .withHttpAuth(config)
                 .withAuthToken(config)
@@ -181,8 +182,13 @@ public class DeployConfig {
         } else {
             LOG.info("Disabled http authentication.");
         }
-
         return this;
+    }
+
+    private DeployConfig withHttpPort(JsonObject config) {
+        this.httpPort = Integer.valueOf(validateField(HTTP_PORT, config, "6789"));
+        return this;
+
     }
 
     public Path getVertxHome() {
@@ -259,5 +265,13 @@ public class DeployConfig {
 
     public String getDefaultJavaOpts() {
         return defaultJavaOpts;
+    }
+
+    public Integer getHttpPort() {
+        return this.httpPort;
+    }
+
+    public Vertx getRxVertx() {
+        return rxVertx;
     }
 }

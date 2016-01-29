@@ -31,6 +31,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     @Parameter(property = "deploy.single.version", required = true)
     private String version;
 
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         final DeployUtils utils = new DeployUtils(getLog(), project);

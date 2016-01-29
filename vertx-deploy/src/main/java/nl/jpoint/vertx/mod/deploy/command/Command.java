@@ -1,8 +1,7 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
-import io.vertx.core.json.JsonObject;
+import rx.Observable;
 
 public interface Command<T> {
-    JsonObject execute(T request);
-
+    Observable<T> executeAsync(T request);
 }

@@ -3,26 +3,66 @@ package nl.jpoint.vertx.mod.deploy.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployApplicationRequest extends ModuleRequest {
 
-    private boolean restart;
+    private boolean running = false;
+    private String javaOpts = "";
+    private String instances = "1";
+    private boolean installed = false;
 
     @JsonCreator
     public DeployApplicationRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
-                                    @JsonProperty("version") final String version,
-                                    @JsonProperty("restart") final boolean restart, @JsonProperty("type") final String type) {
+                                    @JsonProperty("version") final String version, @JsonProperty("type") final String type) {
         super(groupId, artifactId, version, type);
-        this.restart = restart;
-    }
-
-    public void withRestart() {
-        this.restart = true;
     }
 
     @Override
-    public boolean restart() {
-        return restart;
+    public boolean deleteBase() {
+        return false;
+    }
+
+    @Override
+    public boolean checkConfig() {
+        return false;
+    }
+
+    @Override
+    public String getLogName() {
+        return LogConstants.DEPLOY_ARTIFACT_REQUEST;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public void withJavaOpts(String javaOpts) {
+        this.javaOpts = javaOpts != null ? javaOpts : "";
+    }
+
+    public void withInstances(String instances) {
+        this.instances = instances;
+    }
+
+    public String getJavaOpts() {
+        return javaOpts;
+    }
+
+    public String getInstances() {
+        return instances;
+    }
+
+    public boolean isInstalled() {
+        return installed;
+    }
+
+    public void setInstalled(boolean installed) {
+        this.installed = installed;
     }
 }

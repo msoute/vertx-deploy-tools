@@ -5,9 +5,9 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import nl.jpoint.vertx.mod.deploy.handler.RestDeployArtifactHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployAwsHandler;
 import nl.jpoint.vertx.mod.deploy.handler.RestDeployHandler;
 import nl.jpoint.vertx.mod.deploy.handler.RestDeployModuleHandler;
+import nl.jpoint.vertx.mod.deploy.handler.RestDeployStatusHandler;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
@@ -26,12 +26,12 @@ public class AwsDeployApplication extends AbstractVerticle {
     @Override
     public void start() {
         MDC.put("service", Constants.SERVICE_ID);
-        DeployConfig deployconfig = DeployConfig.fromJsonObject(config());
+        DeployConfig deployconfig = DeployConfig.fromJsonObject(config(), getVertx());
         if (config() == null) {
             LOG.error("Unable to read config file");
             throw new IllegalStateException("Unable to read config file");
         }
-        final DeployApplicationService deployApplicationService = new DeployApplicationService(deployconfig, getVertx().fileSystem());
+        final DeployApplicationService deployApplicationService = new DeployApplicationService(deployconfig, getVertx());
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
 
@@ -47,7 +47,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
 
         if (deployconfig.isAwsEnabled()) {
-            router.get("/deploy/status/:id").handler(new RestDeployAwsHandler(awsService));
+            router.get("/deploy/status/:id").handler(new RestDeployStatusHandler(awsService));
         }
 
         router.get("/status").handler(event -> {
@@ -61,7 +61,8 @@ public class AwsDeployApplication extends AbstractVerticle {
         });
 
         HttpServer server = vertx.createHttpServer().requestHandler(router::accept);
-        server.listen(config().getInteger("http.port", 6789));
+
+        server.listen(deployconfig.getHttpPort());
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
     }

@@ -1,6 +1,5 @@
 package nl.jpoint.vertx.mod.deploy.aws.state;
 
-import io.vertx.core.json.JsonObject;
 import nl.jpoint.vertx.mod.deploy.aws.*;
 import nl.jpoint.vertx.mod.deploy.command.Command;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
@@ -21,11 +20,6 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
         this.awsElbUtil = new AwsElbUtil(awsContext);
         this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
         this.poller = new AwsPollingElbStateObservable(vertx, awsElbUtil, LocalDateTime.now().plusMinutes(maxDuration), AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
-    }
-
-    @Override
-    public JsonObject execute(DeployRequest request) {
-        return null;
     }
 
     public Observable<DeployRequest> executeAsync(DeployRequest request) {

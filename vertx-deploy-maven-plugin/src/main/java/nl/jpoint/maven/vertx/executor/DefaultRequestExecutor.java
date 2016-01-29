@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 public class DefaultRequestExecutor extends RequestExecutor {
 
-    public DefaultRequestExecutor(Log log, Integer requestTimeout, Integer port) {
-        super(log, requestTimeout, port, null);
+    public DefaultRequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
+        super(log, requestTimeout, port, authToken);
     }
 
 

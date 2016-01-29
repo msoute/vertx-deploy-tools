@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
-import nl.jpoint.vertx.mod.deploy.service.DeployService;
+import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +15,10 @@ import java.io.IOException;
 
 public class RestDeployArtifactHandler implements Handler<RoutingContext> {
 
-    private final DeployService service;
+    private final DeployArtifactService service;
     private final Logger LOG = LoggerFactory.getLogger(RestDeployArtifactHandler.class);
 
-    public RestDeployArtifactHandler(final DeployService service) {
+    public RestDeployArtifactHandler(final DeployArtifactService service) {
         this.service = service;
     }
 
@@ -30,7 +29,7 @@ public class RestDeployArtifactHandler implements Handler<RoutingContext> {
             String postData = new String(buffer.getBytes());
 
             if (postData.isEmpty()) {
-                LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_SITE_REQUEST);
+                LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_ARTIFACT_REQUEST);
                 context.request().response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 context.request().response().end();
                 return;
@@ -46,16 +45,11 @@ public class RestDeployArtifactHandler implements Handler<RoutingContext> {
                 return;
             }
 
+            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, artifactRequest.getId().toString(), postData);
 
-            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_SITE_REQUEST, artifactRequest.getId().toString(), postData);
-
-            JsonObject result = service.deploy(artifactRequest);
-
-            if (!result.getBoolean("result")) {
-                respondFailed(context.request());
-                return;
-            }
-            respondOk(context.request());
+            service.deployAsync(artifactRequest)
+                    .doOnCompleted(() -> respondOk(context.request()))
+                    .doOnError(t -> respondFailed(context.request()));
         });
     }
 
