@@ -27,8 +27,6 @@ public class DeployUtils {
     private final Log log;
     private final MavenProject project;
 
-
-
     public DeployUtils(Log log, MavenProject project) {
 
         this.log = log;

@@ -41,16 +41,15 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
 
     private boolean versionInstalled(DeployArtifactRequest deployRequest) {
         if (installedArtifacts.containsKey(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId())
-                && installedArtifacts.get(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId()).equals(deployRequest.getSnapshotVersion() != null ? deployRequest.getSnapshotVersion() : deployRequest.getVersion())) {
-            LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Artifact {} already installed.", LogConstants.DEPLOY_ARTIFACT_REQUEST, deployRequest.getId(), deployRequest.getSnapshotVersion(), deployRequest.getModuleId());
+                && installedArtifacts.get(deployRequest.getGroupId() + ":" + deployRequest.getArtifactId()).equals(deployRequest.getVersion())) {
+            LOG.info("[{} - {}]: Same SNAPSHOT version ({}) of Artifact {} already installed.", LogConstants.DEPLOY_ARTIFACT_REQUEST, deployRequest.getId(), deployRequest.getVersion(), deployRequest.getModuleId());
             return true;
         }
         return false;
     }
 
     private Observable<DeployArtifactRequest> addInstalledVersion(DeployArtifactRequest deployArtifactRequest) {
-        String installedVersion = deployArtifactRequest.getSnapshotVersion() != null ? deployArtifactRequest.getSnapshotVersion() : deployArtifactRequest.getVersion();
-        installedArtifacts.put(deployArtifactRequest.getGroupId() + ":" + deployArtifactRequest.getArtifactId(), installedVersion);
+        installedArtifacts.put(deployArtifactRequest.getGroupId() + ":" + deployArtifactRequest.getArtifactId(), deployArtifactRequest.getVersion());
         return Observable.just(deployArtifactRequest);
     }
 

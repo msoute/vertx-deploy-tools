@@ -10,12 +10,11 @@ public abstract class ModuleRequest {
     private final UUID id = UUID.randomUUID();
     private final String groupId;
     private final String artifactId;
-    private final String version;
     private final String classifier;
     private final String type;
     private final boolean snapshot;
+    private String version;
 
-    private String snapshotVersion = null;
     private boolean restart = false;
 
     private Optional<String> restartCommand;
@@ -30,10 +29,6 @@ public abstract class ModuleRequest {
         this.classifier = classifier;
         this.type = type != null ? type : "jar";
         this.snapshot = version.endsWith("-SNAPSHOT");
-    }
-
-    ModuleRequest(final String groupId, final String artifactId, final String version, final String type) {
-        this(groupId, artifactId, version, null, type);
     }
 
     public String getGroupId() {
@@ -74,11 +69,6 @@ public abstract class ModuleRequest {
         StringBuilder builder = new StringBuilder()
                 .append(getArtifactId()).append("-");
 
-        if (snapshotVersion != null) {
-            builder.append(getSnapshotVersion());
-        } else {
-            builder.append(getVersion());
-        }
         if (classifier != null && !classifier.isEmpty()) {
             builder.append("-")
                     .append(classifier);
@@ -90,12 +80,8 @@ public abstract class ModuleRequest {
 
     }
 
-    public String getSnapshotVersion() {
-        return snapshotVersion;
-    }
-
-    public void setSnapshotVersion(String snapshotVersion) {
-        this.snapshotVersion = snapshotVersion;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public boolean isSnapshot() {

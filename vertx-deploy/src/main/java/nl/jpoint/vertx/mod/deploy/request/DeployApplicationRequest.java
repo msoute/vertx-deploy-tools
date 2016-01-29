@@ -15,8 +15,8 @@ public class DeployApplicationRequest extends ModuleRequest {
 
     @JsonCreator
     public DeployApplicationRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
-                                    @JsonProperty("version") final String version, @JsonProperty("type") final String type) {
-        super(groupId, artifactId, version, type);
+                                    @JsonProperty("version") final String version,@JsonProperty("classifier") final String classifier, @JsonProperty("type") final String type) {
+        super(groupId, artifactId, version, classifier, type);
     }
 
     @Override

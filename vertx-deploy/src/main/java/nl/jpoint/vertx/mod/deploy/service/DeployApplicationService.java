@@ -49,8 +49,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
             deployApplicationRequest.setInstalled(false);
         } else {
             String installedModuleVersion = installedModules.get(deployApplicationRequest.getMavenArtifactId());
-            String requestedVersion = deployApplicationRequest.getSnapshotVersion() != null ? deployApplicationRequest.getSnapshotVersion() : deployApplicationRequest.getVersion();
-            boolean sameVersion = installedModuleVersion.equals(requestedVersion);
+            boolean sameVersion = installedModuleVersion.equals(deployApplicationRequest.getVersion());
             if (sameVersion) {
                 LOG.info("[{} - {}]: Module ({}) already installed.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId());
             }
@@ -88,7 +87,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
 
     private Observable<DeployApplicationRequest> registerApplication(DeployApplicationRequest
                                                                              deployApplicationRequest) {
-        installedModules.put(deployApplicationRequest.getMavenArtifactId(), deployApplicationRequest.getSnapshotVersion() != null ? deployApplicationRequest.getSnapshotVersion() : deployApplicationRequest.getVersion());
+        installedModules.put(deployApplicationRequest.getMavenArtifactId(), deployApplicationRequest.getVersion());
         return just(deployApplicationRequest);
     }
 
@@ -108,7 +107,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .flatMap(entry -> {
                     StopApplication stopApplication = new StopApplication(vertx, config);
                     String[] mavenIds = entry.getKey().split(":", 2);
-                    DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), "jar");
+                    DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), null, "jar");
                     request.setRunning(false);
                     request.setInstalled(false);
                     return stopApplication.executeAsync(request);

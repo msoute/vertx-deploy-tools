@@ -28,7 +28,7 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
         String filename = createTempFile(request.getArtifactId());
         return new RxHttpUtil(rxVertx, config).get(location, filename)
                 .flatMap(x -> {
-                    request.setSnapshotVersion(retrieveAndParseMetadata(filename, request));
+                    request.setVersion(retrieveAndParseMetadata(filename, request));
                     return just(request);
                 })
                 .flatMap(x -> rxVertx.fileSystem().deleteObservable(filename))
