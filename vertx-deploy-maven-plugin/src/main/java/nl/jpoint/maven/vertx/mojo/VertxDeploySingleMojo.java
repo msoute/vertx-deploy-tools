@@ -2,7 +2,7 @@ package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
-import nl.jpoint.maven.vertx.request.DeployModuleRequest;
+import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
@@ -12,11 +12,12 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.Collections;
 import java.util.List;
 
-@Mojo(name = "deploy-single")
+@Mojo(name = "deploy-single", requiresDependencyResolution = ResolutionScope.RUNTIME)
 class VertxDeploySingleMojo extends AbstractDeployMojo {
 
     @Parameter(property = "deploy.single.type", required = true)
@@ -30,6 +31,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     @Parameter(property = "deploy.single.version", required = true)
     private String version;
 
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         final DeployUtils utils = new DeployUtils(getLog(), project);
@@ -41,9 +43,9 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
 
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
 
-        final List<Request> deployModuleRequests = MODULE_CLASSIFIER.equals(type) ? createModuleRequest() : Collections.emptyList();
-        final List<Request> deployArtifactRequests = SITE_CLASSIFIER.equals(type) ? createArtifactRequest() : Collections.emptyList();
-        final List<Request> deployConfigRequests = CONFIG_TYPE.equals(type) ? createConfigRequest() : Collections.emptyList();
+        final List<Request> deployModuleRequests = DeployUtils.APPLICATION_TYPE.equals(type) ? createModuleRequest() : Collections.emptyList();
+        final List<Request> deployArtifactRequests = DeployUtils.ARTIFACT_TYPE.equals(type) ? createArtifactRequest() : Collections.emptyList();
+        final List<Request> deployConfigRequests = DeployUtils.CONFIG_TYPE.equals(type) ? createConfigRequest() : Collections.emptyList();
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
@@ -61,7 +63,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     }
 
     private List<Request> createModuleRequest() {
-        return Collections.singletonList(new DeployModuleRequest(groupId, artifactId, version, type, 1, activeConfiguration.doRestart()));
+        return Collections.singletonList(new DeployApplicationRequest(groupId, artifactId, version, classifier, type, activeConfiguration.doRestart()));
     }
 
     private List<Request> createArtifactRequest() {

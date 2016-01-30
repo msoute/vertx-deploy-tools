@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AwsRequestExecutor extends RequestExecutor {
 
-    public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port) {
-        super(log, requestTimeout, port);
+    public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
+        super(log, requestTimeout, port, authToken);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                         case 500:
                             if (status.get() != 200) {
                                 status.set(500);
-                                log.error("Deploy request failed");
+                                log.error(EntityUtils.toString(response.getEntity()));
                                 waitFor.decrementAndGet();
                             }
                             break;

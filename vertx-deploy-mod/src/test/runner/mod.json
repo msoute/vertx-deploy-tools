@@ -1,6 +1,0 @@
-{
-  "main": "nl.jpoint.vertx.mod.cluster.ClusterManagerModule",
-  "system": true,
-  "worker": true,
-  "auto-redeploy": true
-}

@@ -1,7 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 
 import java.util.ArrayList;
@@ -61,7 +60,11 @@ public class DeployConfiguration {
      * AWS OpsWorks Properties
      **/
     private String opsWorksLayerId = null;
+    private String authToken;
 
+    public String getAuthToken() {
+        return authToken;
+    }
 
     public String getAutoScalingGroupId() {
         return autoScalingGroupId;
@@ -79,6 +82,10 @@ public class DeployConfiguration {
         return deploySnapshots;
     }
 
+    public void setDeploySnapshots(boolean deploySnapshots) {
+        this.deploySnapshots = deploySnapshots;
+    }
+
     public List<Exclusion> getExclusions() {
         return exclusions;
     }
@@ -89,6 +96,10 @@ public class DeployConfiguration {
 
     public boolean isTestScope() {
         return testScope;
+    }
+
+    public void setTestScope(boolean testScope) {
+        this.testScope = testScope;
     }
 
     public String getTarget() {
@@ -109,10 +120,6 @@ public class DeployConfiguration {
 
     public String getOpsWorksLayerId() {
         return this.opsWorksLayerId;
-    }
-
-    public void setTestScope(boolean testScope) {
-        this.testScope = testScope;
     }
 
     public boolean isDeployConfig() {
@@ -206,12 +213,14 @@ public class DeployConfiguration {
         this.deploySnapshots = deploySnapshots;
         return this;
     }
+
     public DeployConfiguration withExclusions(List<Exclusion> exclusions) {
         this.exclusions = exclusions;
         return this;
     }
 
-    public void setDeploySnapshots(boolean deploySnapshots) {
-        this.deploySnapshots = deploySnapshots;
+    public DeployConfiguration withAuthToken(String authToken) {
+        this.authToken = authToken;
+        return this;
     }
 }

@@ -11,9 +11,6 @@ import java.util.List;
 
 abstract class AbstractDeployMojo extends AbstractMojo {
 
-    static final String SITE_CLASSIFIER = "site";
-    static final String MODULE_CLASSIFIER = "mod";
-    static final String CONFIG_TYPE = "config";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;

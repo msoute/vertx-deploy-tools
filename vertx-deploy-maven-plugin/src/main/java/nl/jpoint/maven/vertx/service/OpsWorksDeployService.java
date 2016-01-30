@@ -51,7 +51,7 @@ public class OpsWorksDeployService extends DeployService {
 
         for (String host : activeConfiguration.getHosts()) {
 
-            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port);
+            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port, activeConfiguration.getAuthToken());
             executor.executeRequest(deployRequest, host, false);
         }
     }

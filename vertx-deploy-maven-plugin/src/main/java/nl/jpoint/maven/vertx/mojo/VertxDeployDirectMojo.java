@@ -7,10 +7,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.List;
 
-@Mojo(name = "deploy-direct")
+@Mojo(name = "deploy-direct", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
     @Parameter(property = "deploy.remoteIp", required = true)
@@ -21,6 +22,10 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
     private Boolean withConfig;
     @Parameter(property = "deploy.allowSnapshots", defaultValue = "false")
     private Boolean allowSnapshots;
+    @Parameter(property = "deploy.restart", defaultValue = "false")
+    private Boolean restart;
+    @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
+    private String authToken;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -31,12 +36,14 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.setTestScope(scopeTest);
         configuration.setWithConfig(withConfig);
         configuration.setDeploySnapshots(allowSnapshots);
+        configuration.withRestart(restart);
         configuration.getExclusions().addAll(utils.parseExclusions(exclusions));
+        configuration.withAuthToken(authToken);
         super.activeConfiguration = configuration;
         
-        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
-        final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
-        final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
+        final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
+        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
+        final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration);
 
         DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
         service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);

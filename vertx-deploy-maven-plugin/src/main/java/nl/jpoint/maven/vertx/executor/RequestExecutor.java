@@ -1,6 +1,7 @@
 package nl.jpoint.maven.vertx.executor;
 
 
+import com.amazonaws.util.StringUtils;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import org.apache.http.client.methods.HttpPost;
@@ -15,11 +16,13 @@ import java.util.Date;
 public abstract class RequestExecutor {
     protected final Log log;
     private final Integer port;
+    private final String authToken;
     private final long timeout;
 
-    public RequestExecutor(Log log, Integer requestTimeout, Integer port) {
+    public RequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
         this.log = log;
         this.port = port;
+        this.authToken = authToken != null ? authToken : "";
         this.timeout = System.currentTimeMillis() + (60000L * requestTimeout);
         log.info("Setting timeout to : " + new Date(timeout));
     }
@@ -27,6 +30,10 @@ public abstract class RequestExecutor {
     protected HttpPost createPost(DeployRequest deployRequest, String host) {
         log.info("Deploying to host : " + host);
         HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
+        if (!StringUtils.isNullOrEmpty(authToken)) {
+            log.info("Adding authToken to request header.");
+            post.addHeader("authToken", authToken);
+        }
         ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson(false).getBytes());
         BasicHttpEntity entity = new BasicHttpEntity();
         entity.setContent(bos);
