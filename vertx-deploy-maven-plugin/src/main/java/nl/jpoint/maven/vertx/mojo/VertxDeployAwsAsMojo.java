@@ -3,18 +3,15 @@ package nl.jpoint.maven.vertx.mojo;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
-import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
-@Mojo(name = "deploy-single-as")
+@Mojo(name = "deploy-single-as", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
     @Parameter(required = true, property = "deploy.as.id")
@@ -41,7 +38,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private boolean ignoreInStandby;
     @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
     private boolean deploySnapshots;
-
+    @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
+    private String authToken;
 
 
     @Override
@@ -50,9 +48,9 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
         activeConfiguration = this.createConfiguration();
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
-        final List<Request> deployModuleRequests = utils.createDeployModuleList(activeConfiguration, MODULE_CLASSIFIER);
-        final List<Request> deployArtifactRequests = utils.createDeploySiteList(activeConfiguration, SITE_CLASSIFIER);
-        final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration, CONFIG_TYPE);
+        final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
+        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
+        final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration);
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
@@ -75,6 +73,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withRestart(doRestart)
                 .withDecrementCapacity(decrementCapacity)
                 .withIgnoreInStandby(ignoreInStandby)
-                .withDeploySnapshots(deploySnapshots);
+                .withDeploySnapshots(deploySnapshots)
+                .withAuthToken(authToken);
     }
 }

@@ -91,6 +91,10 @@ public class AwsAutoScalingDeployUtils {
 
         log.debug("describing instances in auto scaling group");
 
+        if (autoScalingGroup.getInstances().isEmpty()) {
+            throw new MojoFailureException("No instances in AS group.");
+        }
+
         try {
             DescribeInstancesResult instancesResult = awsEc2Client.describeInstances(new DescribeInstancesRequest().withInstanceIds(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(Collectors.toList())));
             List<Ec2Instance> ec2Instances = instancesResult.getReservations().stream().flatMap(r -> r.getInstances().stream()).map(this::toEc2Instance).collect(Collectors.toList());

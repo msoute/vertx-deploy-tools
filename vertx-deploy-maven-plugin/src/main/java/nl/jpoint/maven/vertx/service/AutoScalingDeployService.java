@@ -47,6 +47,9 @@ public class AutoScalingDeployService extends DeployService {
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
+        if(asGroup == null) {
+            throw new MojoFailureException("Invalid auto-scaling group");
+        }
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
@@ -96,7 +99,7 @@ public class AutoScalingDeployService extends DeployService {
                 throw new MojoExecutionException("auto scaling group is not in a deployable state.");
             }
 
-            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port);
+            final RequestExecutor executor = new AwsRequestExecutor(getLog(), requestTimeout, port, activeConfiguration.getAuthToken());
 
             DeployRequest deployRequest = new DeployRequest.Builder()
                     .withModules(deployModuleRequests)

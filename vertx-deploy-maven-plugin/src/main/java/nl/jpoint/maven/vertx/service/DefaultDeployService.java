@@ -32,7 +32,7 @@ public class DefaultDeployService extends DeployService {
                 .withElb(activeConfiguration.useElbStatusCheck())
                 .withRestart(activeConfiguration.doRestart())
                 .build();
-        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port);
+        final DefaultRequestExecutor executor = new DefaultRequestExecutor(getLog(), requestTimeout, port, activeConfiguration.getAuthToken());
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
