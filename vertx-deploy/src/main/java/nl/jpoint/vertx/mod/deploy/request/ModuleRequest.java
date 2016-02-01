@@ -14,6 +14,7 @@ public abstract class ModuleRequest {
     private final String type;
     private final boolean snapshot;
     private String version;
+    private String remoteBase;
 
     private boolean restart = false;
 
@@ -29,6 +30,7 @@ public abstract class ModuleRequest {
         this.classifier = classifier;
         this.type = type != null ? type : "jar";
         this.snapshot = version.endsWith("-SNAPSHOT");
+        this.remoteBase = groupId.replaceAll("\\.", "/") + "/" + artifactId + "/" + version + "/";
     }
 
     public String getGroupId() {
@@ -41,6 +43,10 @@ public abstract class ModuleRequest {
 
     public String getVersion() {
         return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public UUID getId() {
@@ -56,13 +62,7 @@ public abstract class ModuleRequest {
     }
 
     public String getRemoteLocation() {
-        return getGroupId().replaceAll("\\.", "/") +
-                "/" +
-                getArtifactId() +
-                "/" +
-                getVersion() +
-                "/" +
-                getFileName();
+        return remoteBase + getFileName();
     }
 
     public String getFileName() {
@@ -73,6 +73,7 @@ public abstract class ModuleRequest {
             builder.append("-")
                     .append(classifier);
         }
+        builder.append(version);
         builder.append(".");
         builder.append(type);
 
@@ -80,16 +81,12 @@ public abstract class ModuleRequest {
 
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public boolean isSnapshot() {
         return snapshot;
     }
 
     public String getMetadataLocation() {
-        return getGroupId().replaceAll("\\.", "/") + "/" + getArtifactId() + "/" + getVersion() + "/" + "maven-metadata.xml";
+        return remoteBase + "maven-metadata.xml";
 
     }
 
