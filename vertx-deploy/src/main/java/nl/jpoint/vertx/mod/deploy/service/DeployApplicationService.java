@@ -61,7 +61,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     private Observable<DeployApplicationRequest> checkRunning(DeployApplicationRequest deployApplicationRequest) {
         new ProcessUtils(config).checkModuleRunning(deployApplicationRequest);
         if (!deployApplicationRequest.isRunning()) {
-            LOG.info("[{} - {}]: Module ({}) stopped externally.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId());
+            LOG.info("[{} - {}]: Module ({}) already stopped.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId());
         }
         return just(deployApplicationRequest);
     }

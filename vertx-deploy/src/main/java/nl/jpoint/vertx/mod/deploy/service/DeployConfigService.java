@@ -41,7 +41,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest, B
 
     private Observable<DeployConfigRequest> runTestCommand(DeployConfigRequest deployConfigRequest) {
         if (deployConfigRequest.getTestCommand().isPresent()) {
-            RunConsoleCommand consoleCommand = new RunConsoleCommand(deployConfigRequest.getTestCommand().get());
+            RunConsoleCommand consoleCommand = new RunConsoleCommand(vertx, deployConfigRequest.getTestCommand().get());
             return consoleCommand.executeAsync(deployConfigRequest);
         }
         return just(deployConfigRequest);
@@ -49,7 +49,7 @@ public class DeployConfigService implements DeployService<DeployConfigRequest, B
 
     private Observable<DeployConfigRequest> runRestartCommand(DeployConfigRequest deployConfigRequest) {
         if (deployConfigRequest.getRestartCommand().isPresent()) {
-            RunConsoleCommand consoleCommand = new RunConsoleCommand(deployConfigRequest.getRestartCommand().get());
+            RunConsoleCommand consoleCommand = new RunConsoleCommand(vertx, deployConfigRequest.getRestartCommand().get());
             return consoleCommand.executeAsync(deployConfigRequest);
         }
         return just(deployConfigRequest);

@@ -4,6 +4,7 @@ import io.vertx.rxjava.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.mod.deploy.util.ObservableCommand;
 import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static rx.Observable.just;
@@ -38,33 +40,14 @@ public class StopApplication implements Command<DeployApplicationRequest> {
         return just(request)
                 .flatMap(this::stopApplication)
                 .flatMap(this::doPoll);
-
     }
 
     private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
-        Process killProcess;
-        try {
-            killProcess = Runtime.getRuntime().exec(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", request.getMavenArtifactId()});
-            killProcess.waitFor(1, TimeUnit.MINUTES);
-            int exitValue = killProcess.exitValue();
-            BufferedReader output = new BufferedReader(new InputStreamReader(killProcess.getInputStream()));
-            String outputLine;
-            while ((outputLine = output.readLine()) != null && !outputLine.isEmpty()) {
-                LOG.trace("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), outputLine);
-            }
-
-            if (exitValue != 0) {
-                BufferedReader errorOut = new BufferedReader(new InputStreamReader(killProcess.getErrorStream()));
-                String errorLine;
-                while ((errorLine = errorOut.readLine()) != null) {
-                    LOG.error("[{} - {}]: {}", LogConstants.DEPLOY_REQUEST, request.getId(), errorLine);
-                }
-            }
-        } catch (IOException | InterruptedException e) {
-            LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
-        }
-        return just(request);
+        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", request.getMavenArtifactId()}));
+        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx );
+        return observableCommand.execute(processBuilder)
+                .doOnError(t ->  LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId()));
     }
 
     private Observable<DeployApplicationRequest> doPoll(DeployApplicationRequest request) {
