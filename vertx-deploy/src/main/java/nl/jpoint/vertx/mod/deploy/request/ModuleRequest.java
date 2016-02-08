@@ -68,12 +68,11 @@ public abstract class ModuleRequest {
     public String getFileName() {
         StringBuilder builder = new StringBuilder()
                 .append(getArtifactId()).append("-");
-
+        builder.append(version);
         if (classifier != null && !classifier.isEmpty()) {
             builder.append("-")
                     .append(classifier);
         }
-        builder.append(version);
         builder.append(".");
         builder.append(type);
 
