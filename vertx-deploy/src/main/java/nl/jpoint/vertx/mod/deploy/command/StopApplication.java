@@ -12,6 +12,7 @@ import rx.Observable;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Map;
 
 import static rx.Observable.just;
 
@@ -21,11 +22,13 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
     private final LocalDateTime timeout;
     private final DeployConfig config;
+    private final Map<String, String> installedModules;
     private final ProcessUtils processUtils;
     private final Vertx rxVertx;
 
-    public StopApplication(io.vertx.core.Vertx vertx, DeployConfig config) {
+    public StopApplication(io.vertx.core.Vertx vertx, DeployConfig config, Map<String, String> installedModules) {
         this.config = config;
+        this.installedModules = installedModules;
         this.processUtils = new ProcessUtils(config);
         this.rxVertx = new Vertx(vertx);
         this.timeout = LocalDateTime.now().plusMinutes(1);
@@ -38,8 +41,9 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     }
 
     private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest request) {
-        LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
-        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", request.getModuleId()}));
+        final String moduleIdToStop = request.getMavenArtifactId() + ":"+installedModules.get(request.getMavenArtifactId());
+        LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), moduleIdToStop);
+        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", moduleIdToStop}));
         ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx);
         return observableCommand.execute(processBuilder)
                 .doOnError(t -> LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId()));
