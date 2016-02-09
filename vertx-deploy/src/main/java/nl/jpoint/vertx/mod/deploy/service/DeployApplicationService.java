@@ -68,7 +68,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
 
     private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest deployApplicationRequest) {
         if (deployApplicationRequest.isRunning()) {
-            StopApplication stopApplicationCommand = new StopApplication(vertx, config);
+            StopApplication stopApplicationCommand = new StopApplication(vertx, config, installedModules);
             return stopApplicationCommand.executeAsync(deployApplicationRequest);
         } else {
             return just(deployApplicationRequest);
@@ -103,9 +103,10 @@ public class DeployApplicationService implements DeployService<DeployApplication
 
     public Observable<Boolean> stopContainer() {
         LOG.info("[{}]: Stopping all running modules",LogConstants.INVOKE_CONTAINER);
+        LOG.error("{}", installedModules.size());
         return Observable.from(installedModules.entrySet())
                 .flatMap(entry -> {
-                    StopApplication stopApplication = new StopApplication(vertx, config);
+                    StopApplication stopApplication = new StopApplication(vertx, config, installedModules);
                     String[] mavenIds = entry.getKey().split(":", 2);
                     DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), null, "jar");
                     request.setRunning(false);
