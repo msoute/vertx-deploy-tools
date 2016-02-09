@@ -10,12 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import static rx.Observable.just;
 
@@ -37,17 +33,16 @@ public class StopApplication implements Command<DeployApplicationRequest> {
 
     public Observable<DeployApplicationRequest> executeAsync(DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Waiting for module {} to stop.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
-        return just(request)
-                .flatMap(this::stopApplication)
+        return this.stopApplication(request)
                 .flatMap(this::doPoll);
     }
 
     private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
-        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", request.getMavenArtifactId()}));
-        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx );
+        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", request.getModuleId()}));
+        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx);
         return observableCommand.execute(processBuilder)
-                .doOnError(t ->  LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId()));
+                .doOnError(t -> LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId()));
     }
 
     private Observable<DeployApplicationRequest> doPoll(DeployApplicationRequest request) {
