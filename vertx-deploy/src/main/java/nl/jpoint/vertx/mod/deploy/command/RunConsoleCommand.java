@@ -28,7 +28,7 @@ public class RunConsoleCommand implements Command<DeployConfigRequest> {
         }
 
         ObservableCommand<DeployConfigRequest> observableCommand = new ObservableCommand<>(deployConfigRequest, 0, rxVertx);
-        return observableCommand.execute(new ProcessBuilder().command(command))
+        return observableCommand.execute(new ProcessBuilder().command(command.split("\\s+")))
                 .doOnCompleted(() -> LOG.info("[{} - {}]: Finished running console command '{}'.", LogConstants.CONSOLE_COMMAND, deployConfigRequest.getId(), command))
                 .doOnError(t -> LOG.error("[{} - {}]: Failed to run command {} with error {}", LogConstants.CONSOLE_COMMAND, deployConfigRequest.getId(), command, t));
     }
