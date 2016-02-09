@@ -163,7 +163,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> stopContainer(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.STOPPING_CONTAINER, deployRequest.getId().toString()));
         if (deployRequest.withRestart()) {
-            return applicationApplicationService.stopContainer().flatMap(x -> just(deployRequest));
+            return applicationApplicationService.stopContainer()
+                    .flatMap(x -> just(deployRequest));
         }
         return just(deployRequest);
     }
