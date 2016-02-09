@@ -39,20 +39,17 @@ public class ObservableCommand<R extends ModuleRequest> {
 
     private Observable<Integer> waitForExit() {
         return rxVertx.timerStream(POLLING_INTERVAL_IN_MS).toObservable()
-                .flatMap(x -> pollProcess());
+                .flatMap(x -> {
+                    if (process.isAlive()) {
+                        return waitForExit();
+                    } else {
+                        if (process.exitValue() != expectedResultCode) {
+                            throw new IllegalStateException("Error while executing process");
+                        }
+                        return just(process.exitValue());
+                    }
+                });
     }
-
-    private Observable<Integer> pollProcess() {
-        if (process.isAlive()) {
-            return pollProcess();
-        } else {
-            if (process.exitValue() != expectedResultCode) {
-                throw new IllegalStateException("Error while executing process");
-            }
-            return just(process.exitValue());
-        }
-    }
-
 
     private Observable<String> observableCommand(ProcessBuilder builder) {
         return Observable.create(subscriber -> {
@@ -71,14 +68,14 @@ public class ObservableCommand<R extends ModuleRequest> {
                     while ((line = reader.readLine()) != null) {
                         LOG.trace("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
                     }
-                    process.destroy();
-                    subscriber.onCompleted();
                 } catch (Exception e) {
                     subscriber.onError(e);
                 }
             } else {
                 subscriber.onError(new IllegalStateException("Unable to create process"));
             }
+            subscriber.onNext("Done");
+            subscriber.onCompleted();
         });
     }
 }

@@ -10,13 +10,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static rx.Observable.just;
 
@@ -36,7 +39,9 @@ public class RunApplication implements Command<DeployApplicationRequest> {
     public Observable<DeployApplicationRequest> executeAsync(final DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
         return this.readServiceDefaults(request)
-                .flatMap(this::startApplication);
+                .flatMap(this::startApplication)
+                .doOnError(t -> LOG.error("[{} - {}]: Error running module '{}', {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId(), t.getMessage()));
+
     }
 
     private Observable<DeployApplicationRequest> readServiceDefaults(DeployApplicationRequest request) {
@@ -85,7 +90,6 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         if (config.asCluster()) {
             command.add("-cluster");
         }
-
         ProcessBuilder processBuilder = new ProcessBuilder().command(command);
         ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(deployApplicationRequest, 0, rxVertx);
 

@@ -22,26 +22,41 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
     private final LocalDateTime timeout;
     private final DeployConfig config;
-    private final Map<String, String> installedModules;
     private final ProcessUtils processUtils;
     private final Vertx rxVertx;
 
-    public StopApplication(io.vertx.core.Vertx vertx, DeployConfig config, Map<String, String> installedModules) {
+    private String moduleIdToStop;
+
+    public StopApplication(io.vertx.core.Vertx vertx, DeployConfig config) {
         this.config = config;
-        this.installedModules = installedModules;
         this.processUtils = new ProcessUtils(config);
         this.rxVertx = new Vertx(vertx);
-        this.timeout = LocalDateTime.now().plusMinutes(1);
+        this.timeout = LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration());
     }
 
     public Observable<DeployApplicationRequest> executeAsync(DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Waiting for module {} to stop.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
         return this.stopApplication(request)
-                .flatMap(this::doPoll);
+                .flatMap(this::doPoll)
+                .flatMap(this::removeRunFile);
+    }
+
+    private Observable<DeployApplicationRequest> removeRunFile(DeployApplicationRequest deployApplicationRequest) {
+        deployApplicationRequest.setRunning(false);
+        return rxVertx.fileSystem().existsObservable(config.getRunDir()+moduleIdToStop)
+                .flatMap(exists -> {
+                    if (exists) {
+                        LOG.info("[{} - {}]: Removing runfile for application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), moduleIdToStop);
+                        return rxVertx.fileSystem().deleteObservable(config.getRunDir()+moduleIdToStop)
+                                .flatMap(x -> just(deployApplicationRequest));
+                    } else {
+                        return just(deployApplicationRequest);
+                    }
+                });
     }
 
     private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest request) {
-        final String moduleIdToStop = request.getMavenArtifactId() + ":"+installedModules.get(request.getMavenArtifactId());
+        moduleIdToStop = request.getMavenArtifactId() + ":"+new ProcessUtils(config).getRunningVersion(request);
         LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), moduleIdToStop);
         ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", moduleIdToStop}));
         ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx);
@@ -61,7 +76,7 @@ public class StopApplication implements Command<DeployApplicationRequest> {
                                 LOG.info("[{} - {}]: Application {} stopped.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
                                 return just(request);
                             } else {
-                                LOG.info("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
+                                LOG.trace("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
                                 return doPoll(request);
                             }
                         }

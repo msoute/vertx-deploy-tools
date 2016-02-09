@@ -28,7 +28,7 @@ The configured system user needs sudo access to the init.d vertx script and any 
     }
     
 * **vertx.home** : The Vertx installation directory. (required)
-* **artifact.storage** : Directory to download artifacts to. (required)
+* **artifact.storage** : Directory to download (config) artifacts to. (required)
 * **http.authUser** : Nexus repo user 
 * **http.authPass** : Nexus repo password
 * **maven.repo.uri*** : Maven repo url

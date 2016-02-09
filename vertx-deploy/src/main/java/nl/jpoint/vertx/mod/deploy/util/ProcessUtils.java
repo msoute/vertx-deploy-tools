@@ -96,7 +96,13 @@ public class ProcessUtils {
     }
 
     public Observable<DeployApplicationRequest> checkModuleRunning(DeployApplicationRequest request) {
-        request.setRunning(listInstalledAndRunningModules().containsKey(request.getMavenArtifactId()));
+        Map<String, String> installedModules = listInstalledAndRunningModules();
+        request.setRunning(installedModules.containsKey(request.getMavenArtifactId()));
+        request.setInstalled(installedModules.containsKey(request.getMavenArtifactId()) && installedModules.get(request.getMavenArtifactId()).equals(request.getVersion()));
         return just(request);
+    }
+
+    public String getRunningVersion(DeployApplicationRequest request) {
+        return listInstalledAndRunningModules().get(request.getMavenArtifactId());
     }
 }

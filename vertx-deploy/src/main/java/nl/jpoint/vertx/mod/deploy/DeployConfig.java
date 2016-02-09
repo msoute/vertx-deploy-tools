@@ -56,9 +56,11 @@ public class DeployConfig {
     private boolean asCluster = true;
     private String remoteRepoPolicy;
     private String defaultJavaOpts;
+    private String runDir;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
+        this.runDir = vertxHome+"/run/";
         this.artifactRepo = Paths.get(artifactRepo);
         if (nexusUrl == null || nexusUrl.isEmpty()) {
             this.mavenRemote = false;
@@ -267,5 +269,9 @@ public class DeployConfig {
 
     public Integer getHttpPort() {
         return this.httpPort;
+    }
+
+    public String getRunDir() {
+        return runDir;
     }
 }

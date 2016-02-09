@@ -35,6 +35,8 @@ public class AwsDeployApplication extends AbstractVerticle {
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
 
+        this.createRunDir(deployconfig);
+
         AwsService awsService = null;
 
         if (deployconfig.isAwsEnabled()) {
@@ -67,6 +69,11 @@ public class AwsDeployApplication extends AbstractVerticle {
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
     }
 
+    private void createRunDir(DeployConfig deployconfig) {
+        if(!vertx.fileSystem().existsBlocking(deployconfig.getRunDir())) {
+            vertx.fileSystem().mkdirBlocking(deployconfig.getRunDir());
+        }
+    }
 
     @Override
     public void stop() throws Exception {
