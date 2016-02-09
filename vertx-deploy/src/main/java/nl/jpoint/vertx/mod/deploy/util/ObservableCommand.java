@@ -6,10 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.Map;
 
 import static rx.Observable.just;
 
@@ -60,6 +58,7 @@ public class ObservableCommand<R extends ModuleRequest> {
         return Observable.create(subscriber -> {
             process = null;
             try {
+                builder.directory(new File(System.getProperty("java.io.tmpdir")));
                 process = builder.start();
             } catch (IOException e) {
                 subscriber.onError(e);
