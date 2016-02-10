@@ -59,7 +59,7 @@ public class AutoScalingDeployService extends DeployService {
             throw new MojoExecutionException("Error connecting to deploy module on some instances");
         }
 
-        if ((activeConfiguration.useElbStatusCheck() && instances.stream().noneMatch(i -> i.getState() == AwsState.INSERVICE))
+        if ((activeConfiguration.useElbStatusCheck() && instances.stream().noneMatch(i -> i.getElbState() == AwsState.INSERVICE))
                 || !activeConfiguration.useElbStatusCheck() && asGroup.getInstances().stream().noneMatch(i -> "InService".equals(i.getLifecycleState()))) {
             getLog().info("No instances inService, using deploy strategy WHATEVER");
             activeConfiguration.setDeployStrategy(DeployStrategyType.WHATEVER);
@@ -75,7 +75,7 @@ public class AutoScalingDeployService extends DeployService {
             asGroup = awsDeployUtils.getAutoScalingGroup();
             instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
         }
-        instances.sort((o1, o2) -> o1.getState().ordinal() - o2.getState().ordinal());
+        instances.sort((o1, o2) -> o1.getElbState().ordinal() - o2.getElbState().ordinal());
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
@@ -112,7 +112,7 @@ public class AutoScalingDeployService extends DeployService {
                     .withRestart(activeConfiguration.doRestart())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
-            getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getState().name() + " and public IP " + instance.getPublicIp());
+            getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
 
             try {
                 AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), !DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()));
@@ -134,6 +134,7 @@ public class AutoScalingDeployService extends DeployService {
         }
         awsDeployUtils.resumeScheduledActions(getLog());
     }
+
 
     private List<Ec2Instance> checkInstances(AwsAutoScalingDeployUtils awsDeployUtils, AutoScalingGroup asGroup, List<Ec2Instance> instances) {
         List<String> removedInstances = asGroup.getInstances().stream()

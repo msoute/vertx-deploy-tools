@@ -10,7 +10,8 @@ public class Ec2Instance {
     private final String instanceId;
     private final String publicIp;
     private final String privateIp;
-    private AwsState state = AwsState.UNKNOWN;
+    private AwsState asState = AwsState.UNKNOWN;
+    private AwsState elbState = AwsState.UNKNOWN;
 
     private Ec2Instance(final String instanceId, final String publicIp, final String privateIp) {
         this.instanceId = instanceId;
@@ -30,20 +31,29 @@ public class Ec2Instance {
         return privateIp;
     }
 
-    public AwsState getState() {
-        return state;
+    public AwsState getElbState() {
+        return elbState;
+    }
+
+    public AwsState getAsState() {
+        return this.asState;
     }
 
     public void updateState(AwsState awsState) {
-        if (state.ordinal() < awsState.ordinal()) {
-            state = awsState;
+        if (elbState.ordinal() < awsState.ordinal()) {
+            elbState = awsState;
         }
+    }
+
+    public void updateAsState(AwsState awsState) {
+            asState = awsState;
     }
 
     public static class Builder {
         private String instanceId;
         private String publicIp;
         private String privateIp;
+        private AwsState asState;
 
         public Builder withInstanceId(String instanceId) {
             this.instanceId = instanceId;

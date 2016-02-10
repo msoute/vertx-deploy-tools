@@ -6,15 +6,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
-import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
-import com.amazonaws.services.autoscaling.model.DetachInstancesRequest;
-import com.amazonaws.services.autoscaling.model.Instance;
-import com.amazonaws.services.autoscaling.model.ResumeProcessesRequest;
-import com.amazonaws.services.autoscaling.model.SetDesiredCapacityRequest;
-import com.amazonaws.services.autoscaling.model.SuspendProcessesRequest;
-import com.amazonaws.services.autoscaling.model.UpdateAutoScalingGroupRequest;
+import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
@@ -28,8 +20,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AwsAutoScalingDeployUtils {
@@ -38,6 +33,7 @@ public class AwsAutoScalingDeployUtils {
     private final AmazonElasticLoadBalancingClient awsElbClient;
     private final AmazonEC2Client awsEc2Client;
     private final DeployConfiguration activeConfiguration;
+
 
     public AwsAutoScalingDeployUtils(Server server, String region, DeployConfiguration activeConfiguration) throws MojoFailureException {
         this.activeConfiguration = activeConfiguration;
@@ -95,16 +91,32 @@ public class AwsAutoScalingDeployUtils {
             throw new MojoFailureException("No instances in AS group.");
         }
 
+        Map<String, Instance> instanceMap = autoScalingGroup.getInstances().stream().collect(Collectors.toMap(Instance::getInstanceId, Function.identity()));
+
         try {
             DescribeInstancesResult instancesResult = awsEc2Client.describeInstances(new DescribeInstancesRequest().withInstanceIds(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(Collectors.toList())));
             List<Ec2Instance> ec2Instances = instancesResult.getReservations().stream().flatMap(r -> r.getInstances().stream()).map(this::toEc2Instance).collect(Collectors.toList());
             log.debug("describing elb status");
             autoScalingGroup.getLoadBalancerNames().forEach(elb -> this.updateInstancesStateOnLoadBalancer(elb, ec2Instances));
-            return ec2Instances;
+            ec2Instances.stream().forEach(i -> i.updateAsState(AwsState.map(instanceMap.get(i.getInstanceId()).getLifecycleState())));
+            Collections.sort(ec2Instances, (o1, o2) -> {
 
+                int sComp = o1.getAsState().compareTo(o2.getAsState());
+
+                if (sComp != 0) {
+                    return sComp;
+                } else {
+                    return o1.getElbState().compareTo(o2.getElbState());
+                }
+            });
+            if (activeConfiguration.isIgnoreInStandby()) {
+                return ec2Instances.stream().filter(i -> i.getAsState() != AwsState.STANDBY).collect(Collectors.toList());
+            }
+            return ec2Instances;
         } catch (AmazonClientException e) {
             throw new MojoFailureException(e.getMessage());
         }
+
     }
 
     public boolean shouldAddExtraInstance(AutoScalingGroup autoScalingGroup) {

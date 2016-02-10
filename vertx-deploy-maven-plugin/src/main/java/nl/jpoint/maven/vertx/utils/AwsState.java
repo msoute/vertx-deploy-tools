@@ -8,12 +8,17 @@ public enum AwsState {
     ENTERINGSTANDBY,
     STANDBY,
     PENDING,
+    RUNNING,
     INSERVICE;
 
     public static AwsState map(String state) {
         if (state == null || state.isEmpty()) {
             return UNKNOWN;
         }
-        return AwsState.valueOf(state.toUpperCase());
+        try {
+            return AwsState.valueOf(state.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return UNKNOWN;
+        }
     }
 }

@@ -19,7 +19,7 @@ public interface DeployStrategy {
                 .filter(i -> i.getLifecycleState().equals(LifecycleState.Standby.toString()))
                 .count();
 
-        long inServiceInstances = instances.stream().filter(i -> AwsState.INSERVICE.equals(i.getState())).count();
+        long inServiceInstances = instances.stream().filter(i -> AwsState.INSERVICE.equals(i.getElbState())).count();
         return this.calculate(activeConfiguration, autoScalingGroup, inServiceInstances, healthyInstances, inStandbyInstances);
     }
 
