@@ -1,3 +1,5 @@
+![Vertx Deploy Logo](./vertx-deploy-tools.png)
+
 vertx-deploy
 ================
 # Introduction
