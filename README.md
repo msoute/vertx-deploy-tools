@@ -1,7 +1,5 @@
 ![Vertx Deploy Logo](./vertx-deploy-tools.png)
 
-vertx-deploy
-================
 # Introduction
 
 Tooling to deploy Vert.X applications, generic artifacts and (application) configuration onto cloud based instances (Ec2).
