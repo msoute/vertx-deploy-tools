@@ -28,6 +28,7 @@ The configured system user needs sudo access to the init.d vertx script and any 
     }
     
 * **vertx.home** : The Vertx installation directory. (required)
+* **vertx.run** : Dir where the applications writes state files for currently deployed applications (default {vertx.home}/run/)
 * **artifact.storage** : Directory to download (config) artifacts to. (required)
 * **http.authUser** : Nexus repo user 
 * **http.authPass** : Nexus repo password

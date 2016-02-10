@@ -16,6 +16,7 @@ public class DeployConfig {
     //   private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
 
     private static final String VERTX_HOME = "vertx.home";
+    private static final String RUN_DIR = "vertx.run";
     private static final String ARTIFACT_REPO = "artifact.storage";
     private static final String AWS_AUTH_KEY = "aws.auth.access.key";
     private static final String AWS_SECRET_AUTH_KEY = "aws.auth.secret.access.key";
@@ -60,7 +61,6 @@ public class DeployConfig {
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
-        this.runDir = vertxHome+"/run/";
         this.artifactRepo = Paths.get(artifactRepo);
         if (nexusUrl == null || nexusUrl.isEmpty()) {
             this.mavenRemote = false;
@@ -114,6 +114,7 @@ public class DeployConfig {
                 .withHttpAuth(config)
                 .withAuthToken(config)
                 .withCluster(config)
+                .withRunDir(config)
                 .withLoggerFactoryName(config)
                 .withRemoteRepoUpdatePolicy(config);
 
@@ -132,6 +133,12 @@ public class DeployConfig {
     private DeployConfig withConfigLocation(JsonObject config) {
         this.configLocation = config.getString(CONFIG_LOCATION, "");
         config.remove(CONFIG_LOCATION);
+        return this;
+    }
+
+    private DeployConfig withRunDir(JsonObject config) {
+        this.runDir = config.getString(RUN_DIR, getVertxHome()+"/run/");
+        config.remove(RUN_DIR);
         return this;
     }
 
