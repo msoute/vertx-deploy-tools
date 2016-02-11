@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static rx.Observable.just;
 
@@ -109,10 +110,11 @@ public class DeployApplicationService implements DeployService<DeployApplication
     public Observable<?> cleanup() {
         List<String> runningApplications = new ProcessUtils(config).listModules();
         FileSystem fs = new io.vertx.rxjava.core.Vertx(vertx).fileSystem();
+
         return fs.readDirObservable(config.getRunDir())
                 .flatMapIterable(x -> x)
-                .flatMap(s -> just(s.substring(s.lastIndexOf("/") + 1)))
-                .filter(s -> !runningApplications.contains(s))
+                .flatMap(s -> just(Pattern.compile("/").splitAsStream(s).reduce((a, b) -> b).orElse("")))
+                .filter(s -> !s.isEmpty() && !runningApplications.contains(s))
                 .flatMap(file -> fs.deleteObservable(config.getRunDir() + file))
                 .toList()
                 .flatMap(x -> just(null))
