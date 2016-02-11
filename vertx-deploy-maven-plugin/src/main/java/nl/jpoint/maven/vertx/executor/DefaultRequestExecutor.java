@@ -6,6 +6,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -44,6 +45,7 @@ public class DefaultRequestExecutor extends RequestExecutor {
                 }
                 if (response.getStatusLine().getStatusCode() != 200) {
                     log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
+                    log.error("DeployModuleCommand : " + EntityUtils.toString(response.getEntity()));
                     throw new MojoExecutionException("Error deploying module. ");
                 }
             } catch (IOException e) {
