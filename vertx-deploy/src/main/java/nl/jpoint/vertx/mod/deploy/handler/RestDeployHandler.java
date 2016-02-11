@@ -139,6 +139,10 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             return Observable.from(deployRequest.getConfigs())
                     .flatMap(configDeployService::deployAsync)
                     .toList()
+                    .flatMap(x -> {
+                        LOG.info("[{} - {}]: Done extracting all config.", LogConstants.DEPLOY_CONFIG_REQUEST, deployRequest.getId());
+                        return just(x);
+                    })
                     .flatMap(list -> {
                         if (list.contains(Boolean.TRUE)) {
                             deployRequest.setRestart(true);
@@ -156,6 +160,10 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             return Observable.from(deployRequest.getArtifacts())
                     .flatMap(artifactDeployService::deployAsync)
                     .toList()
+                    .flatMap(x -> {
+                        LOG.info("[{} - {}]: Done extracting all artifacts.", LogConstants.DEPLOY_ARTIFACT_REQUEST, deployRequest.getId());
+                        return just(x);
+                    })
                     .flatMap(x -> just(deployRequest));
         } else {
             return just(deployRequest);

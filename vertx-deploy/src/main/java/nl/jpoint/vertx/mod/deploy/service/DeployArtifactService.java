@@ -36,7 +36,8 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
                                 .flatMap(this::extractArtifact)
                                 .flatMap(this::addInstalledVersion);
                     }
-                });
+                })
+                .doOnCompleted(() -> LOG.info("[{} - {}]: Done extracting artifact {}.", deployRequest.getLogName(), deployRequest.getId(), deployRequest.getModuleId()));
     }
 
     private boolean versionInstalled(DeployArtifactRequest deployRequest) {
