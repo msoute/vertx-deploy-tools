@@ -62,7 +62,7 @@ public class ProcessUtils {
         return module;
     }
 
-    private List<String> listModules() {
+    public List<String> listModules() {
         List<String> result = new ArrayList<>();
         try {
             final Process listProcess = Runtime.getRuntime().exec(new String[]{vertxHome.resolve("bin/vertx").toString(), "list"});

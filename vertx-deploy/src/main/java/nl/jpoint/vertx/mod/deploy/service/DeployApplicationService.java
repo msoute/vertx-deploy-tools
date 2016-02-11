@@ -1,15 +1,19 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
 import io.vertx.core.Vertx;
+import io.vertx.rxjava.core.file.FileSystem;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.command.RunApplication;
 import nl.jpoint.vertx.mod.deploy.command.StopApplication;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
+import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+
+import java.util.List;
 
 import static rx.Observable.just;
 
@@ -95,5 +99,23 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 })
                 .toList()
                 .flatMap(x -> Observable.just(true));
+    }
+
+    public Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
+        return cleanup()
+                .flatMap(x -> just(deployRequest));
+    }
+
+    public Observable<?> cleanup() {
+        List<String> runningApplications = new ProcessUtils(config).listModules();
+        FileSystem fs = new io.vertx.rxjava.core.Vertx(vertx).fileSystem();
+        return fs.readDirObservable(config.getRunDir())
+                .flatMapIterable(x -> x)
+                .flatMap(s -> just(s.substring(s.lastIndexOf("/") + 1)))
+                .filter(s -> !runningApplications.contains(s))
+                .flatMap(file -> fs.deleteObservable(config.getRunDir() + file))
+                .toList()
+                .flatMap(x -> just(null))
+                .doOnError(t -> LOG.error("Error during cleanup of run files {}", t.getMessage()));
     }
 }

@@ -83,6 +83,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             just(deployRequest)
                     .flatMap(this::registerRequest)
                     .flatMap(r -> respondContinue(r, context.request()))
+                    .flatMap(this::cleanup)
                     .flatMap(this::deRegisterInstanceFromAutoScalingGroup)
                     .flatMap(this::deRegisterInstanceFromLoadBalancer)
                     .flatMap(this::deployConfigs)
@@ -97,6 +98,10 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         });
     }
 
+    private Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
+        return applicationApplicationService.cleanup(deployRequest);
+    }
+
     private Observable<DeployRequest> deRegisterInstanceFromLoadBalancer(DeployRequest deployRequest) {
         if (deployRequest.withElb() && !deployRequest.withAutoScaling() && awsService.isPresent()) {
             return awsService.get().loadBalancerDeRegisterInstance(deployRequest);
@@ -107,11 +112,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
 
     private Observable<DeployRequest> registerRequest(DeployRequest deployRequest) {
-        if (deployRequest.withElb()) {
             awsService.ifPresent(service ->
-                    service.registerRequest(deployRequest)
-            );
-        }
+                    service.registerRequest(deployRequest));
         return just(deployRequest);
     }
 

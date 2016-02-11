@@ -35,8 +35,9 @@ public class AwsDeployApplication extends AbstractVerticle {
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
 
-        this.createRunDir(deployconfig);
+        deployApplicationService.cleanup().subscribe();
 
+        this.createRunDir(deployconfig);
         AwsService awsService = null;
 
         if (deployconfig.isAwsEnabled()) {
