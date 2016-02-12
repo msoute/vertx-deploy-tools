@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     private static final Logger LOG = LoggerFactory.getLogger(DeployApplicationService.class);
     private final DeployConfig config;
     private final Vertx vertx;
+    private List<String> deployedApplications = new ArrayList<>();
 
     public DeployApplicationService(DeployConfig config, Vertx vertx) {
         this.config = config;
@@ -103,6 +105,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     }
 
     public Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
+        deployedApplications.clear();
         return cleanup()
                 .flatMap(x -> just(deployRequest));
     }
@@ -119,5 +122,9 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .toList()
                 .flatMap(x -> just(null))
                 .doOnError(t -> LOG.error("Error during cleanup of run files {}", t.getMessage()));
+    }
+
+    public List<String> getDeployedApplications() {
+        return deployedApplications;
     }
 }

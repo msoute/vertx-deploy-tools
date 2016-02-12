@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
@@ -13,6 +14,7 @@ import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
+import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,8 +114,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
 
     private Observable<DeployRequest> registerRequest(DeployRequest deployRequest) {
-            awsService.ifPresent(service ->
-                    service.registerRequest(deployRequest));
+        awsService.ifPresent(service ->
+                service.registerRequest(deployRequest));
         return just(deployRequest);
     }
 
@@ -207,12 +209,16 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         }
     }
 
-
     private void respond(DeployRequest deployRequest, HttpServerRequest request) {
         request.response().setStatusCode(HttpResponseStatus.OK.code());
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.SUCCESS, deployRequest.getId().toString()));
         if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
-            request.response().end();
+            JsonArray list = HttpUtils.toArray(applicationApplicationService.getDeployedApplications());
+            if (list.isEmpty()) {
+                request.response().end();
+            } else {
+                request.response().end(list.encode());
+            }
         }
     }
 

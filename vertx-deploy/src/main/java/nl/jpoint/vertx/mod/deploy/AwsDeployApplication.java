@@ -4,10 +4,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployArtifactHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployModuleHandler;
-import nl.jpoint.vertx.mod.deploy.handler.RestDeployStatusHandler;
+import nl.jpoint.vertx.mod.deploy.handler.*;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
@@ -49,8 +46,10 @@ public class AwsDeployApplication extends AbstractVerticle {
         router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployApplicationService));
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
 
+
         if (deployconfig.isAwsEnabled()) {
             router.get("/deploy/status/:id").handler(new RestDeployStatusHandler(awsService));
+            router.get("/deploy/update/:id").handler(new StatusUpdateHandler(deployApplicationService));
         }
 
         router.get("/status").handler(event -> {
