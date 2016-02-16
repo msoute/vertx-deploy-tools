@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
@@ -14,6 +14,7 @@ import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
 import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
+import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
 import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
@@ -213,11 +214,13 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         request.response().setStatusCode(HttpResponseStatus.OK.code());
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.SUCCESS, deployRequest.getId().toString()));
         if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
-            JsonArray list = HttpUtils.toArray(applicationApplicationService.getDeployedApplications());
-            if (list.isEmpty()) {
+            JsonObject result = new JsonObject();
+            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsSuccess()));
+            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsFailed()));
+            if (result.isEmpty()) {
                 request.response().end();
             } else {
-                request.response().end(list.encode());
+                request.response().end(result.encode());
             }
         }
     }
