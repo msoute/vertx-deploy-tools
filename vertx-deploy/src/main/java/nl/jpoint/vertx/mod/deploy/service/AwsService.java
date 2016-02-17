@@ -28,7 +28,7 @@ public class AwsService {
         this.vertx = vertx;
         this.config = config;
 
-        awsContext = AwsContext.build(config.getAwsAccessKey(), config.getAwsSecretAccessKey(), config.getAwsRegion());
+        awsContext = AwsContext.build(config.getAwsRegion());
     }
 
     public void registerRequest(DeployRequest deployRequest) {

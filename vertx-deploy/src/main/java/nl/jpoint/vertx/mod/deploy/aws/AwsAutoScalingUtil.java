@@ -3,7 +3,6 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClient;
-import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +16,10 @@ import static rx.Observable.just;
 public class AwsAutoScalingUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsAutoScalingUtil.class);
 
-    private final AmazonAutoScalingClient asClient;
     private final AmazonAutoScalingAsyncClient asyncClient;
 
     public AwsAutoScalingUtil(final AwsContext context) {
-        asClient = new AmazonAutoScalingClient(context.getCredentials());
-        asClient.setRegion(context.getAwsRegion());
-        asyncClient = new AmazonAutoScalingAsyncClient(context.getCredentials());
+        asyncClient = new AmazonAutoScalingAsyncClient();
         asyncClient.setRegion(context.getAwsRegion());
     }
 
@@ -53,7 +49,7 @@ public class AwsAutoScalingUtil {
 
     public boolean enterStandby(final String instanceId, final String groupId, boolean decrementDesiredCapacity) {
         try {
-            DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withMaxRecords(1).withInstanceIds(instanceId));
+            DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withMaxRecords(1).withInstanceIds(instanceId));
             Optional<AutoScalingInstanceDetails> state = result.getAutoScalingInstances()
                     .stream()
                     .filter(asi -> asi.getInstanceId().equals(instanceId)).findFirst();
@@ -61,7 +57,7 @@ public class AwsAutoScalingUtil {
             if (state.isPresent() && state.get().getLifecycleState().equalsIgnoreCase(AwsState.STANDBY.name())) {
                 return true;
             } else {
-                asClient.enterStandby(new EnterStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId).withShouldDecrementDesiredCapacity(decrementDesiredCapacity));
+                asyncClient.enterStandby(new EnterStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId).withShouldDecrementDesiredCapacity(decrementDesiredCapacity));
                 return true;
             }
         } catch (AmazonClientException e) {
@@ -72,7 +68,7 @@ public class AwsAutoScalingUtil {
 
     public boolean exitStandby(final String instanceId, final String groupId) {
         try {
-            asClient.exitStandby(new ExitStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId));
+            asyncClient.exitStandby(new ExitStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId));
             return true;
         } catch (AmazonClientException e) {
             LOG.error("Error executing request {}.", e);

@@ -17,7 +17,7 @@ public class AwsElbUtil {
     private final AmazonElasticLoadBalancingAsyncClient elbAsyncClient;
 
     public AwsElbUtil(AwsContext context) {
-        this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient(context.getCredentials());
+        this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient();
         this.elbAsyncClient.setRegion(context.getAwsRegion());
     }
 

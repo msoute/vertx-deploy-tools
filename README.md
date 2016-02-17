@@ -242,7 +242,7 @@ config file in the artifact root dir (artifact_context.xml) instructs the applic
 ## 3.0.0
 
 * [Feature] Move to vertx.3
-
+* [] Remove config for aws keys, default to aws client authentication strategy (Environment variables, Java System Properties, Credential profiles, Instance profile)
 ## 1.2.1
 
 * [Feature] Fail build if module is not reachable on any host to deploy to.
