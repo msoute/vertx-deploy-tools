@@ -136,7 +136,7 @@ Multiple targets can be configured. The target configuration can be selected wit
 
 #### Aws AutoScaling Configuration Options
 * **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
-* **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *false*)
+* **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *true*)
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
 * **maxCapacity** : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
 * **minCapacity** : If Strategy is GUARANTEE_MINIMUM and a deploy failed the build wil also fail if the capacity drops under the configured minimum. (default : *1*)
@@ -197,6 +197,11 @@ Deploys a single artifact to a DeployTarget
 * **deploy.single.artifactId** : The artifactId *required*
 * **deploy.single.classifier** : The artifact classifier 
 * **deploy.single.version** : The artifact version *required*
+
+#### mvn deploy-single-as
+Deploys to an autoscaling group
+
+TODO
 
 ### mvn deploy:as-enable
 Mojo to add one instance to an as_group if current instances size equals 0.
