@@ -235,13 +235,25 @@ config file in the artifact root dir (artifact_context.xml) instructs the applic
 * **baselocation** : Instructs the application where to extract the artifact. All existing dir's and / or files wil be removed first *required*
 * **testCommand** : Runs a console command after extraction, if the command failed the build wil fail (i.e. nginx -t)
 * **restartCommand** : Command to restart a service after extraction, runs after testCommand (i.e. service nginx restart)
-* **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart. 
+* **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart.
+
+# Phone Home
+
+Applications deployed through the deploy application should report to the deploy application if de deploy was successful or failed. All verticles can do this by
+sending a request to http://localhost:[port]/deploy/update?id=[id]&status=[ok|error]&errormessage=[message]
+
+The deploy application adds an JVM property that indicates on what port the deploy application is running (vertxdeploy.port)
+
+If an application reports an error the deploy wil fail, the same error is reported back to the maven pluging.
 
 # Changelog
 
-## 3.0.0
+## 3.0.0-SNAPSHOT
 
-* [Feature] Move to vertx.3
+* [Upgrade] Move to vertx.3
+* [Feature] Add phone home function
+* [Maven Plugin] Only log result messages once
+* [Maven Plugin] Fail builds if deploy of any instance failes for strategy WHATEVER and DEFAULT
 
 ## 1.2.1
 
