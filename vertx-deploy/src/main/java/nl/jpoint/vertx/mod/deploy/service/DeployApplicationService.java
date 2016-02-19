@@ -25,8 +25,8 @@ public class DeployApplicationService implements DeployService<DeployApplication
     private static final Logger LOG = LoggerFactory.getLogger(DeployApplicationService.class);
     private final DeployConfig config;
     private final Vertx vertx;
-    private List<String> deployedApplicationsSuccess = new ArrayList<>();
-    private Map<String, String> deployedApplicationsFailed = new HashMap<>();
+    private final List<String> deployedApplicationsSuccess = new ArrayList<>();
+    private final Map<String, Object> deployedApplicationsFailed = new HashMap<>();
 
     public DeployApplicationService(DeployConfig config, Vertx vertx) {
         this.config = config;
@@ -129,7 +129,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     }
 
     public void addApplicationDeployResult(boolean succeeded, String message, String deploymentId) {
-        if (succeeded) {
+        if (succeeded && !deployedApplicationsSuccess.contains(deploymentId)) {
             deployedApplicationsSuccess.add(deploymentId);
         } else {
             if (!deployedApplicationsFailed.containsKey(deploymentId)) {
@@ -142,7 +142,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
         return deployedApplicationsSuccess;
     }
 
-    public Map<String, String> getDeployedApplicationsFailed() {
+    public Map<String, Object> getDeployedApplicationsFailed() {
         return deployedApplicationsFailed;
     }
 }

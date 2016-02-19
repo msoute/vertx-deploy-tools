@@ -10,6 +10,7 @@ public enum DeployState {
     UNKNOWN,
     FAILED,
     SUCCESS,
+    CONTINUE,
     WAITING_FOR_AS_REGISTER,
     WAITING_FOR_ELB_REGISTER
 }

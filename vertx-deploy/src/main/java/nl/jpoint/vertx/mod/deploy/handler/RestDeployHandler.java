@@ -64,15 +64,15 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             String eventBody = new String(buffer.getBytes());
 
             if (eventBody.isEmpty()) {
-                LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
-                respondFailed(null, context.request(), "No postdata in request.");
+                LOG.error("{}: No POST data in request.", LogConstants.DEPLOY_REQUEST);
+                respondFailed(null, context.request(), "No POST data in request.");
                 return;
             }
-            LOG.debug("{}: received postdata -> {} ", LogConstants.DEPLOY_REQUEST, eventBody);
+            LOG.debug("{}: received POST data -> {} ", LogConstants.DEPLOY_REQUEST, eventBody);
             try {
                 deployRequest = reader.readValue(eventBody);
             } catch (IOException e) {
-                LOG.error("{}: Error while reading post data -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
+                LOG.error("{}: Error while reading POST data -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
                 respondFailed(null, context.request(), "Error wile reading post data -> " + e.getMessage());
                 return;
             }
@@ -213,27 +213,37 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private void respond(DeployRequest deployRequest, HttpServerRequest request) {
         request.response().setStatusCode(HttpResponseStatus.OK.code());
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.SUCCESS, deployRequest.getId().toString()));
-        if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
-            JsonObject result = new JsonObject();
-            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsSuccess()));
-            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsFailed()));
-            if (result.isEmpty()) {
-                request.response().end();
-            } else {
-                request.response().end(result.encode());
+        if (!request.response().ended()) {
+            if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
+                JsonObject result = new JsonObject();
+                result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsSuccess()));
+                result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsFailed()));
+                if (result.isEmpty()) {
+                    request.response().end();
+                } else {
+                    request.response().end(result.encodePrettily());
+                }
             }
         }
     }
 
     private void respondFailed(String id, HttpServerRequest request, String message) {
-        request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-        if (message != null) {
-            request.response().end(message);
-        } else {
-            request.response().end();
-        }
-        if (id != null) {
-            awsService.ifPresent(aws -> aws.failBuild(id));
+
+        if (!request.response().ended()) {
+
+            request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+            JsonObject result = new JsonObject();
+            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsSuccess()));
+            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsFailed()));
+            result.put("message", message);
+            if (result.isEmpty()) {
+                request.response().end();
+            } else {
+                request.response().end(result.encodePrettily());
+            }
+            if (id != null) {
+                awsService.ifPresent(aws -> aws.failBuild(id));
+            }
         }
 
     }

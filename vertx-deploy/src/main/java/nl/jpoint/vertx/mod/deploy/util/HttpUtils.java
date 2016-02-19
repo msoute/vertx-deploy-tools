@@ -8,18 +8,10 @@ import java.util.Map;
 
 public class HttpUtils {
     public static JsonArray toArray(List<String> list) {
-        JsonArray array = new JsonArray();
-        list.stream()
-                .map(moduleId -> new JsonObject().put(moduleId, "OK"))
-                .map(array::add);
-        return array;
+        return new JsonArray(list);
     }
 
-    public static JsonArray toArray(Map<String, String> map) {
-        JsonArray array = new JsonArray();
-        map.keySet().stream()
-                .map(key -> new JsonObject().put(key, map.get(key)))
-                .map(array::add);
-        return array;
+    public static JsonObject toArray(Map<String, Object> map) {
+        return new JsonObject(map);
     }
 }
