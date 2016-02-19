@@ -39,10 +39,12 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
         switch (state != null ? state : DeployState.CONTINUE) {
             case SUCCESS:
                 respondOk(context.request());
+                deployApplicationService.cleanup();
                 break;
             case UNKNOWN:
             case FAILED:
                 respondFailed(context.request());
+                deployApplicationService.cleanup();
                 break;
             default:
                 respondContinue(context.request(), state);

@@ -2,6 +2,7 @@ package nl.jpoint.maven.vertx.executor;
 
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.utils.AwsState;
+import nl.jpoint.maven.vertx.utils.LogUtil;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -55,7 +56,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                     switch (code) {
                         case 200:
                             log.info("Deploy request finished executing");
-                            log.info(EntityUtils.toString(response.getEntity()));
+                            LogUtil.logDeployResult(log, EntityUtils.toString(response.getEntity()));
                             status.set(200);
                             waitFor.decrementAndGet();
                             break;
@@ -63,7 +64,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                             if (status.get() != 200) {
                                 status.set(500);
                                 if (!errorLogged.getAndSet(true)) {
-                                    log.error(EntityUtils.toString(response.getEntity()));
+                                    LogUtil.logDeployResult(log, EntityUtils.toString(response.getEntity()));
                                     waitFor.decrementAndGet();
                                 }
                             }
@@ -74,7 +75,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                                     status.set(500);
                                 }
                                 log.error("Timeout while waiting for deploy request.");
-                                log.error(EntityUtils.toString(response.getEntity()));
+                                LogUtil.logDeployResult(log, EntityUtils.toString(response.getEntity()));
                                 waitFor.decrementAndGet();
                             }
                             log.info("Waiting for deploy to finish. Current status : " + state);
