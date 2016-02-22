@@ -27,8 +27,6 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
     private final Path basePath;
     private final FileDigestUtil fileDigestUtil;
 
-    private final boolean configChanged = false;
-
     public ExtractArtifact(io.vertx.core.Vertx vertx, DeployConfig config, Path basePath) {
         this.vertx = new Vertx(vertx);
         this.config = config;
@@ -46,7 +44,8 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
             final Path zipRoot = zipFs.getPath("/");
             Files.walkFileTree(zipRoot, CopyingFileVisitor(basePath, request));
             LOG.info("[{} - {}]: Extracted artifact {} to {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath);
-            return just(request);
+            return just(request)
+                    .doOnError(t -> LOG.error("Unable to extract artifact {}, {}", t.getMessage(), t));
         } catch (IOException | InvalidPathException e) {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", request.getLogName(), request.getId(), request.getModuleId(), e.getMessage());
             throw new IllegalStateException();
@@ -56,7 +55,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
     private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, T request) {
         return new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
                 byte[] oldDigest = null, newDigest = null;
                 if (ArtifactContextUtil.ARTIFACT_CONTEXT.equals(file.getFileName().toString())) {
                     return FileVisitResult.CONTINUE;
@@ -78,7 +77,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
             }
 
             @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attributes) throws IOException {
                 final Path subDir = Paths.get(basePath.toString(), dir.toString());
                 if (Files.notExists(subDir)) {
                     Files.createDirectory(subDir);

@@ -44,7 +44,7 @@ public class DeployRequest {
         this.instanceId = instanceId;
         this.asGroupId = asGroupId;
         this.decrementDesiredCapacity = decrementDesiredCapacity;
-        autoScaling = (asGroupId != null);
+        this.autoScaling = (asGroupId != null);
     }
 
     public String toJson(boolean pretty) {

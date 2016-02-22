@@ -45,11 +45,10 @@ public class AwsDeployApplication extends AbstractVerticle {
         router.post("/deploy/deploy").handler(new RestDeployHandler(deployApplicationService, deployArtifactService, deployConfigService, awsService, deployconfig.getAuthToken()));
         router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployApplicationService));
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
-
+        router.get("/deploy/update*").handler(new StatusUpdateHandler(deployApplicationService));
 
         if (deployconfig.isAwsEnabled()) {
-            router.get("/deploy/status/:id").handler(new RestDeployStatusHandler(awsService));
-            router.get("/deploy/update/:id").handler(new StatusUpdateHandler(deployApplicationService));
+            router.get("/deploy/status/:id").handler(new RestDeployStatusHandler(awsService, deployApplicationService));
         }
 
         router.get("/status").handler(event -> {
@@ -70,7 +69,7 @@ public class AwsDeployApplication extends AbstractVerticle {
     }
 
     private void createRunDir(DeployConfig deployconfig) {
-        if(!vertx.fileSystem().existsBlocking(deployconfig.getRunDir())) {
+        if (!vertx.fileSystem().existsBlocking(deployconfig.getRunDir())) {
             vertx.fileSystem().mkdirBlocking(deployconfig.getRunDir());
         }
     }

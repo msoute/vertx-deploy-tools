@@ -2,6 +2,7 @@ package nl.jpoint.maven.vertx.executor;
 
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.utils.AwsState;
+import nl.jpoint.maven.vertx.utils.LogUtil;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AwsRequestExecutor extends RequestExecutor {
@@ -34,6 +36,7 @@ public class AwsRequestExecutor extends RequestExecutor {
             final String buildId;
             final AtomicInteger waitFor = new AtomicInteger(1);
             final AtomicInteger status = new AtomicInteger(0);
+            final AtomicBoolean errorLogged = new AtomicBoolean(false);
             try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     log.error("DeployModuleCommand : Post response status -> " + response.getStatusLine().getReasonPhrase());
@@ -45,7 +48,6 @@ public class AwsRequestExecutor extends RequestExecutor {
 
             ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
-
             exec.scheduleAtFixedRate(() -> {
                 HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
                 try (CloseableHttpResponse response = httpClient.execute(get)) {
@@ -54,14 +56,17 @@ public class AwsRequestExecutor extends RequestExecutor {
                     switch (code) {
                         case 200:
                             log.info("Deploy request finished executing");
+                            LogUtil.logDeployResult(log, EntityUtils.toString(response.getEntity()));
                             status.set(200);
                             waitFor.decrementAndGet();
                             break;
                         case 500:
                             if (status.get() != 200) {
                                 status.set(500);
-                                log.error(EntityUtils.toString(response.getEntity()));
-                                waitFor.decrementAndGet();
+                                if (!errorLogged.getAndSet(true)) {
+                                    LogUtil.logDeployResult(log, EntityUtils.toString(response.getEntity()));
+                                    waitFor.decrementAndGet();
+                                }
                             }
                             break;
                         default:
@@ -70,6 +75,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                                     status.set(500);
                                 }
                                 log.error("Timeout while waiting for deploy request.");
+                                LogUtil.logDeployResult(log, EntityUtils.toString(response.getEntity()));
                                 waitFor.decrementAndGet();
                             }
                             log.info("Waiting for deploy to finish. Current status : " + state);

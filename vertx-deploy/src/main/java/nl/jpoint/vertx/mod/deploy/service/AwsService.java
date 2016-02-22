@@ -45,7 +45,7 @@ public class AwsService {
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
-        runningRequests.get(deployRequest.getId().toString()).setState(DeployState.WAITING_FOR_AS_DEREGISTER);
+        updateAndGetRequest(DeployState.WAITING_FOR_AS_DEREGISTER, deployRequest.getId().toString());
         AwsAsDeRegisterInstance deRegisterFromAsGroup = new AwsAsDeRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
         return deRegisterFromAsGroup.executeAsync(deployRequest);
     }
@@ -56,7 +56,7 @@ public class AwsService {
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
-        runningRequests.get(deployRequest.getId().toString()).setState(DeployState.WAITING_FOR_AS_REGISTER);
+        updateAndGetRequest(DeployState.WAITING_FOR_AS_REGISTER, deployRequest.getId().toString());
         AwsAsRegisterInstance register = new AwsAsRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
         return register.executeAsync(deployRequest);
     }
@@ -67,8 +67,9 @@ public class AwsService {
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
-        runningRequests.get(deployRequest.getId().toString()).setState(DeployState.WAITING_FOR_ELB_REGISTER);
-        AwsElbRegisterInstance register = new AwsElbRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
+        updateAndGetRequest(DeployState.WAITING_FOR_ELB_REGISTER, deployRequest.getId().toString());
+        AwsElbRegisterInstance register = new AwsElbRegisterInstance(vertx, deployRequest.getId().toString(), awsContext, config.getAwsMaxRegistrationDuration(),
+                s -> runningRequests.containsKey(s) && (!DeployState.FAILED.equals(runningRequests.get(s).getState()) || !DeployState.SUCCESS.equals(runningRequests.get(s).getState())));
         return register.executeAsync(deployRequest);
     }
 
@@ -78,14 +79,14 @@ public class AwsService {
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
-        runningRequests.get(deployRequest.getId().toString()).setState(DeployState.WAITING_FOR_ELB_DEREGISTER);
+        updateAndGetRequest(DeployState.WAITING_FOR_ELB_DEREGISTER, deployRequest.getId().toString());
         AwsElbDeRegisterInstance register = new AwsElbDeRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
         return register.executeAsync(deployRequest);
     }
 
 
     public DeployRequest updateAndGetRequest(DeployState state, String buildId) {
-        if (runningRequests.containsKey(buildId)) {
+        if (runningRequests.containsKey(buildId) && !DeployState.FAILED.equals(runningRequests.get(buildId).getState())) {
             LOG.info("[{} - {}]: Updating state to {}", LogConstants.AWS_ELB_REQUEST, buildId, state);
             runningRequests.get(buildId).setState(state);
             return runningRequests.get(buildId);
@@ -110,5 +111,9 @@ public class AwsService {
             runningRequests.remove(deployId);
         }
         return state;
+    }
+
+    public void failAllRunningRequests() {
+        runningRequests.forEach((id, r) -> r.setState(DeployState.FAILED));
     }
 }

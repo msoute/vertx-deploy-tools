@@ -12,6 +12,7 @@ import rx.Observable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 class AwsPollingElbStateObservable {
     private static final Logger LOG = LoggerFactory.getLogger(AwsPollingElbStateObservable.class);
@@ -20,14 +21,19 @@ class AwsPollingElbStateObservable {
     private final AwsElbUtil awsElbUtil;
     private final LocalDateTime timeout;
     private final List<AwsState> acceptedStates;
+    private final String deployId;
+    private final Function<String, Boolean> requestStillActive;
 
-    public AwsPollingElbStateObservable(io.vertx.core.Vertx vertx, AwsElbUtil awsElbUtil, LocalDateTime timeout, AwsState... acceptedStates) {
+    public AwsPollingElbStateObservable(io.vertx.core.Vertx vertx, String deployId, AwsElbUtil awsElbUtil, LocalDateTime timeout, Function<String, Boolean> requestStillActive, AwsState... acceptedStates) {
+        this.deployId = deployId;
+        this.requestStillActive = requestStillActive;
         this.rxVertx = new Vertx(vertx);
         this.awsElbUtil = awsElbUtil;
         this.timeout = timeout;
         this.acceptedStates = Arrays.asList(acceptedStates);
 
     }
+
 
     public Observable<DeployRequest> poll(DeployRequest request, String elb) {
         LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), request.getInstanceId(), elb);
@@ -38,6 +44,10 @@ class AwsPollingElbStateObservable {
         return rxVertx.timerStream(POLLING_INTERVAL_IN_MS).toObservable()
                 .flatMap(x -> awsElbUtil.pollForInstanceState(request.getInstanceId(), elb))
                 .flatMap(awsState -> {
+                    if (!requestStillActive.apply(deployId)) {
+                        LOG.error("[{} - {}]: Request canceled, stopping poller {} ", LogConstants.AWS_ELB_REQUEST, request.getId(), awsState.name());
+                        throw new IllegalStateException();
+                    }
                             if (LocalDateTime.now().isAfter(timeout)) {
                                 LOG.error("[{} - {}]: Timeout while waiting for instance to reach {} ", LogConstants.AWS_ELB_REQUEST, request.getId(), awsState.name());
                                 throw new IllegalStateException();

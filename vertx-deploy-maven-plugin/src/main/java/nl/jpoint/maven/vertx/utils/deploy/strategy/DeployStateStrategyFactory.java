@@ -31,7 +31,7 @@ public class DeployStateStrategyFactory {
     }
 
     public static boolean isDeployableOnError(DeployConfiguration activeConfiguration, AutoScalingGroup asGroup, List<Ec2Instance> instances) {
-        return !DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()) && isDeployable(activeConfiguration, asGroup, instances);
+        return activeConfiguration.getDeployStrategy().ordinal() > 1 && isDeployable(activeConfiguration, asGroup, instances);
 
     }
 }

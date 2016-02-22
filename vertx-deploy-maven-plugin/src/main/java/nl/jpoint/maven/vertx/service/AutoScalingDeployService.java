@@ -115,7 +115,7 @@ public class AutoScalingDeployService extends DeployService {
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-                AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), !DeployStrategyType.DEFAULT.equals(activeConfiguration.getDeployStrategy()));
+                AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.getDeployStrategy().ordinal() > 1);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
             } catch (MojoExecutionException | MojoFailureException e) {

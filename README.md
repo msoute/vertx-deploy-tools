@@ -136,7 +136,7 @@ Multiple targets can be configured. The target configuration can be selected wit
 
 #### Aws AutoScaling Configuration Options
 * **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
-* **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *false*)
+* **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *true*)
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
 * **maxCapacity** : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
 * **minCapacity** : If Strategy is GUARANTEE_MINIMUM and a deploy failed the build wil also fail if the capacity drops under the configured minimum. (default : *1*)
@@ -198,6 +198,11 @@ Deploys a single artifact to a DeployTarget
 * **deploy.single.classifier** : The artifact classifier 
 * **deploy.single.version** : The artifact version *required*
 
+#### mvn deploy-single-as
+Deploys to an autoscaling group
+
+TODO
+
 ### mvn deploy:as-enable
 Mojo to add one instance to an as_group if current instances size equals 0.
 * **autoScalingGroupId** : The auto scaling group to enable. 
@@ -235,13 +240,25 @@ config file in the artifact root dir (artifact_context.xml) instructs the applic
 * **baselocation** : Instructs the application where to extract the artifact. All existing dir's and / or files wil be removed first *required*
 * **testCommand** : Runs a console command after extraction, if the command failed the build wil fail (i.e. nginx -t)
 * **restartCommand** : Command to restart a service after extraction, runs after testCommand (i.e. service nginx restart)
-* **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart. 
+* **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart.
+
+# Phone Home
+
+Applications deployed through the deploy application should report to the deploy application if de deploy was successful or failed. All verticles can do this by
+sending a request to http://localhost:[port]/deploy/update?id=[id]&status=[ok|error]&errormessage=[message]
+
+The deploy application adds an JVM property that indicates on what port the deploy application is running (vertxdeploy.port)
+
+If an application reports an error the deploy wil fail, the same error is reported back to the maven pluging.
 
 # Changelog
 
-## 3.0.0
+## 3.0.0-SNAPSHOT
 
-* [Feature] Move to vertx.3
+* [Upgrade] Move to vertx.3
+* [Feature] Add phone home function
+* [Maven Plugin] Only log result messages once
+* [Maven Plugin] Fail builds if deploy of any instance failes for strategy WHATEVER and DEFAULT
 
 ## 1.2.1
 
