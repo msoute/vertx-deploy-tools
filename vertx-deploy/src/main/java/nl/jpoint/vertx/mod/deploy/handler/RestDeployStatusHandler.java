@@ -35,8 +35,8 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
                 deployAwsService.failAllRunningRequests();
             }
         }
-
-        switch (state != null ? state : DeployState.CONTINUE) {
+        DeployState deployState = state != null ? state : DeployState.CONTINUE;
+        switch (deployState) {
             case SUCCESS:
                 respondOk(context.request());
                 deployApplicationService.cleanup();
@@ -47,7 +47,7 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
                 deployApplicationService.cleanup();
                 break;
             default:
-                respondContinue(context.request(), state);
+                respondContinue(context.request(), deployState);
         }
 
     }
