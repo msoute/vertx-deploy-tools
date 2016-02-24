@@ -37,7 +37,8 @@ public class DownloadArtifact<T extends ModuleRequest> implements Command<T> {
                     LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId(), config.getArtifactRepo() + request.getModuleId() + "." + request.getType());
                     return just(request);
                 })
-                .flatMap(x -> just(request));
+                .flatMap(x -> just(request))
+                .doOnError(t -> LOG.error("[{} - {}]: Error downloading artifact -> {}, {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), t.getMessage(), t));
 
     }
 }
