@@ -31,18 +31,74 @@
         <hr>
 
         <section id="main_content">
-          <h1>
-<a id="vertx-deploy-mod" class="anchor" href="#vertx-deploy-mod" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>vertx-deploy-mod</h1>
+          <p><img src="./vertx-deploy-tools.png" alt="Vertx Deploy Logo"></p>
 
 <h1>
 <a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h1>
 
-<p>vertx-deploy-mod</p>
-
-<p>Tooling to deploy Vert.X modules, generic artifacts and (application) configuration onto cloud based instances (Ec2).</p>
+<p>Tooling to deploy Vert.X applications, generic artifacts and (application) configuration onto cloud based instances (Ec2).</p>
 
 <h1>
 <a id="installation--configuration" class="anchor" href="#installation--configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation / Configuration</h1>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation.</h2>
+
+<p>Install as any other application in with max 1 verticle instance.
+Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
+Place defaults in /etc/defaults/vertx and configure as needed.</p>
+
+<p>The configured system user needs sudo access to the init.d vertx script and any (test) command. The user also needs write access to directories configured for artifacts</p>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h2>
+
+<pre><code>{
+    "vertx.home":"/opt/sw/vertx/current",
+    "artifact.storage": "/opt/data/repo/",
+    "http.authUser": "...",
+    "http.authPass": "...",
+    "maven.repo.uri": "...",
+    "aws.auth.access.key":"****************",
+    "aws.auth.secret.access.key":"**********************",
+    "aws.region", "eu-west-1",
+    "aws.as.register.maxduration":10,
+}
+</code></pre>
+
+<ul>
+<li>
+<strong>vertx.home</strong> : The Vertx installation directory. (required)</li>
+<li>
+<strong>vertx.run</strong> : Dir where the applications writes state files for currently deployed applications (default {vertx.home}/run/)</li>
+<li>
+<strong>artifact.storage</strong> : Directory to download (config) artifacts to. (required)</li>
+<li>
+<strong>http.authUser</strong> : Nexus repo user </li>
+<li>
+<strong>http.authPass</strong> : Nexus repo password</li>
+<li>
+<strong>maven.repo.uri</strong>* : Maven repo url</li>
+<li>
+<strong>maven.repo.snapshot.policy</strong>  : Maven snapshot policy (default: always)</li>
+<li>
+<strong>config.location</strong> : Location of config file (used for -conf when a verticle is instantiated)</li>
+<li>
+<strong>aws.auth.access.key</strong> : Aws access key</li>
+<li>
+<strong>aws.auth.secret.access.key</strong> Aws secret access key</li>
+<li>
+<strong>aws.region</strong> : The Aws region</li>
+<li>
+<strong>aws.as.register.maxduration</strong> : maximum (de)register duration in minutes (default:4)</li>
+<li>
+<strong>vertx.default.java.opts</strong> : Default java opts passed to the application with --java-opts (default "")</li>
+<li>
+<strong>vertx.clustering</strong> : (boolean) Enables -cluster</li>
+</ul>
+
+<h1>
+<a id="deploy-configuration" class="anchor" href="#deploy-configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Deploy configuration</h1>
 
 <h2>
 <a id="deploy-artifacts" class="anchor" href="#deploy-artifacts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Deploy artifacts.</h2>
@@ -52,27 +108,24 @@
 <ul>
 <li>config : configuration files, unpacked to a specified location</li>
 <li>static artifacts : static content, sites etc that are extracted to a specified location on the target host</li>
-<li>modules : Vert.x (2) packaged modules</li>
+<li>applications : Vert.x applications.</li>
 </ul>
 
-<p>To instruct the plugin to deploy an artifact (module, artifact or config) it only needs to be added as a dependency to the pom.xml. The plugin ignores all dependencies specified in parent poms or transitive.</p>
+<p>To instruct the plugin to deploy an artifact (application, artifact or config) it only needs to be added as a dependency to the pom.xml. The plugin ignores all dependencies specified in parent poms or transitive.</p>
 
 <h3>
-<a id="vertx-mod-artifact" class="anchor" href="#vertx-mod-artifact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Vert.x Mod artifact</h3>
+<a id="vertx-application-artifact" class="anchor" href="#vertx-application-artifact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Vert.x Application artifact</h3>
 
 <pre><code>...
 &lt;dependency&gt;
     &lt;groupId&gt;[groupId]&lt;/groupId&gt;
     &lt;artifactId&gt;[artifactId]&lt;/artifactId&gt;
     &lt;version&gt;[version]&lt;/version&gt;
-    &lt;classifier&gt;mod&lt;/classifier&gt;
-    &lt;type&gt;zip&lt;/type&gt;
 &lt;/dependency&gt;
 ...
 </code></pre>
 
-<p>All modules will be installed as a module and started (either through init.d or internal see vertx module configuration)
-identified by classifier mod</p>
+<p>Applications are started using the vert.x CLI start method. all non config or static artifacts are regarded as vert.x applications.</p>
 
 <h3>
 <a id="config-artifact" class="anchor" href="#config-artifact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Config artifact</h3>
@@ -86,7 +139,7 @@ identified by classifier mod</p>
 &lt;/dependency&gt;
 </code></pre>
 
-<p>These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always before static artifacts or modules
+<p>These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always before static artifacts or applications
 identified by type config</p>
 
 <h3>
@@ -101,7 +154,7 @@ identified by type config</p>
 &lt;/dependency&gt;
 </code></pre>
 
-<p>These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always after config artifacts and before modules
+<p>These artifacts will be unpacked to the location specified in artifact_context.xml (See appendix creating an artifact). Always after config artifacts and before applications
 identified by classifier site</p>
 
 <h2>
@@ -111,7 +164,7 @@ identified by classifier site</p>
 &lt;plugin&gt;
     &lt;groupId&gt;nl.jpoint.vertx-deploy-tools&lt;/groupId&gt;
     &lt;artifactId&gt;vertx-deploy-maven-plugin&lt;/artifactId&gt;
-    &lt;version&gt;1.2.0-SNAPSHOT&lt;/version&gt;
+    &lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
     &lt;configuration&gt;
         &lt;region&gt;eu-west-1&lt;/region&gt;
         &lt;credentialsId&gt;credentials&lt;/credentialsId&gt;
@@ -156,11 +209,9 @@ identified by classifier site</p>
 <li>
 <strong>testScope</strong> : Include artifacts in test scope (default : <em>false</em>) </li>
 <li>
-<strong>restart</strong> : Restart whole container or only deployed modules (default : <em>false</em>)<br>
-</li>
+<strong>restart</strong> : Restart whole container or only deployed applications (default : <em>false</em>)</li>
 <li>
-<strong>deploySnapshots</strong> : Also deploy -SNAPSHOT artifacts (default : <em>false</em>)<br>
-</li>
+<strong>deploySnapshots</strong> : Also deploy -SNAPSHOT artifacts (default : <em>false</em>)</li>
 </ul>
 
 <h4>
@@ -168,8 +219,7 @@ identified by classifier site</p>
 
 <ul>
 <li>
-<strong>awsPrivateIp</strong> : Use public or private ip's to connect to deploy mod. (default : <em>false</em>)<br>
-</li>
+<strong>awsPrivateIp</strong> : Use public or private ip's to connect to deploy application. (default : <em>false</em>)</li>
 <li>
 <strong>UseOpsWorks</strong> : Use OpsWorks (Layers) to detect instances to deploy to. Cannot be use icw <em>useAutoScaling</em>. (default : <em>false</em>)<br>
 </li>
@@ -177,8 +227,7 @@ identified by classifier site</p>
 <strong>useAutoScaling</strong> : Use auto scaling groups to detect instances to deploy to. Cannot be used icw <em>useOpsWorks</em>. (default : <em>false</em>)<br>
 </li>
 <li>
-<strong>elb</strong> : When true the deploy module with wait for instances to come InService on attached elb's before continuing deploy. (default : <em>false</em>)<br>
-</li>
+<strong>elb</strong> : When true the deploy application with wait for instances to come InService on attached elb's before continuing deploy. (default : <em>false</em>)</li>
 </ul>
 
 <h4>
@@ -188,7 +237,7 @@ identified by classifier site</p>
 <li>
 <strong>autoScalingGroupId</strong> : The auto scaling group to get the list of instances from. </li>
 <li>
-<strong>ignoreInStandby</strong> : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : <em>false</em>)</li>
+<strong>ignoreInStandby</strong> : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : <em>true</em>)</li>
 <li>
 <strong>decrementDesiredCapacity</strong> Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : <em>true</em>)</li>
 <li>
@@ -204,10 +253,13 @@ identified by classifier site</p>
 
 <ul>
 <li>
-<strong>KEEP_CAPACITY</strong> : The deploy mod wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
+<strong>KEEP_CAPACITY</strong> : The deploy applications wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
 configured maximum. If <em>maxCapacity</em>* is configured the desired count wil never be greater than <strong>maxCapacity</strong>. If <em>elb</em>* is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. </li>
 <li>
-<strong>GUARANTEE_MINIMUM</strong> : Yhe deploy mod does not care if a single instance deploy fails. As long as the InService count never drops below <strong>minCapacity</strong>. With <strong>elb</strong> the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.</li>
+<strong>DEFAULT</strong> : The deploy applications wil only deploy if the  InService count is greater than the groups minimum count. The deploy wil never continue after a failed deploy. The deploy mod
+wil not guarantee at least one InService instance (i.e. if the groups minimum count is 0 with one InService instance)</li>
+<li>
+<strong>GUARANTEE_MINIMUM</strong> : Yhe deploy applications does not care if a single instance deploy fails. As long as the InService count never drops below <strong>minCapacity</strong>. With <strong>elb</strong> the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.</li>
 <li>
 <strong>WHATEVER</strong> : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)</li>
 </ul>
@@ -238,14 +290,14 @@ configured maximum. If <em>maxCapacity</em>* is configured the desired count wil
 <a id="mvn-deploydeploy" class="anchor" href="#mvn-deploydeploy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>mvn deploy:deploy</h4>
 
 <p>The default mojo. Based on configuration it wil deploy to a set of configured instances, instances in an OpWorks layer or instances in an auto scaling group.
-When deploying to an OpsWorks based set of instances the deploy module can be configured to wait for every instance to come InService on an elb before continuing.</p>
+When deploying to an OpsWorks based set of instances the deploy application can be configured to wait for every instance to come InService on an elb before continuing.</p>
 
 <p>During deploys to an auto scaling group the plugin wil first try to deploy Standby instances and put those back into service. This can be overridden with <strong>ignoreInStandby</strong></p>
 
 <p>When an instance is put InStandby for deployment it wil decrement the desired capacity of the auto scaling group with 1. This can be overridden (  <strong>decrementDesiredCapacity</strong> ). Note that an
 auto scaling group will always try to conform to the configured desired amount i.e. it wil launch a new instance.</p>
 
-<p>Note : During a deploy to an auto scaling group the deploy mod temporarily suspends the following auto scaling policies : <em>ScheduledActions</em> , <em>Terminate</em> and <em>ReplaceUnhealthy</em>. These processes are resumed
+<p>Note : During a deploy to an auto scaling group the deploy application temporarily suspends the following auto scaling policies : <em>ScheduledActions</em> , <em>Terminate</em> and <em>ReplaceUnhealthy</em>. These processes are resumed
 after the deploy finished (or fails). If the maven task is killed during the deploy those processes are not automatically. This can be fixed either by running a new deploy or with the AWS CLI  </p>
 
 <p>Note : The plugin assumes that a deploy is ready when an instance reaches the status <em>InService</em> on all elb's or when no elb's are attached in the auto scaling group. The default ELB health check
@@ -290,6 +342,23 @@ This mojo ignores <strong>deploy.activeTarget</strong> </p>
 </li>
 </ul>
 
+<h4>
+<a id="mvn-deploy-single-as" class="anchor" href="#mvn-deploy-single-as" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>mvn deploy-single-as</h4>
+
+<p>Deploys to an autoscaling group</p>
+
+<p>TODO</p>
+
+<h3>
+<a id="mvn-deployas-enable" class="anchor" href="#mvn-deployas-enable" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>mvn deploy:as-enable</h3>
+
+<p>Mojo to add one instance to an as_group if current instances size equals 0.</p>
+
+<ul>
+<li>
+<strong>autoScalingGroupId</strong> : The auto scaling group to enable. </li>
+</ul>
+
 <h2>
 <a id="vertx-module-configuration" class="anchor" href="#vertx-module-configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Vert.X Module Configuration</h2>
 
@@ -313,17 +382,73 @@ on the ELB's it is a member of. If the instance does not reach the inService sta
 </code></pre>
 
 <h1>
+<a id="creating-config-artifacts" class="anchor" href="#creating-config-artifacts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Creating (config) artifacts.</h1>
+
+<p>Artifacts other than vert.x applications can be constructed in a similar way by using the maven-assembly-plugin. These artifacts are extracted on the targeted instance. A
+config file in the artifact root dir (artifact_context.xml) instructs the application where and how to extract the artifact.</p>
+
+<pre><code>&lt;?xml version="1.0"?&gt;
+&lt;artifact&gt;
+    &lt;baselocation&gt;...&lt;/baselocation&gt;
+    &lt;testCommand&gt;...&lt;/testCommand&gt;
+    &lt;restartCommand&gt;...&lt;/restartCommand&gt;
+    &lt;checkContent&gt;true|false&lt;/checkContent&gt;
+&lt;/artifact&gt;
+</code></pre>
+
+<ul>
+<li>
+<strong>baselocation</strong> : Instructs the application where to extract the artifact. All existing dir's and / or files wil be removed first <em>required</em>
+</li>
+<li>
+<strong>testCommand</strong> : Runs a console command after extraction, if the command failed the build wil fail (i.e. nginx -t)</li>
+<li>
+<strong>restartCommand</strong> : Command to restart a service after extraction, runs after testCommand (i.e. service nginx restart)</li>
+<li>
+<strong>checkContent</strong> : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart.</li>
+</ul>
+
+<h1>
+<a id="phone-home" class="anchor" href="#phone-home" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Phone Home</h1>
+
+<p>Applications deployed through the deploy application should report to the deploy application if de deploy was successful or failed. All verticles can do this by
+sending a request to http://localhost:[port]/deploy/update?id=[id]&amp;status=[ok|error]&amp;errormessage=[message]</p>
+
+<p>The deploy application adds an JVM property that indicates on what port the deploy application is running (vertxdeploy.port)</p>
+
+<p>If an application reports an error the deploy wil fail, the same error is reported back to the maven pluging.</p>
+
+<h1>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Changelog</h1>
 
 <h2>
-<a id="12-snapshot" class="anchor" href="#12-snapshot" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.2-SNAPSHOT</h2>
+<a id="300-snapshot" class="anchor" href="#300-snapshot" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3.0.0-SNAPSHOT</h2>
 
 <ul>
-<li>[Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option <code>keepCurrentCapacity</code> defaults to true</li>
+<li>[Upgrade] Move to vertx.3</li>
+<li>[Feature] Add phone home function</li>
+<li>[Maven Plugin] Only log result messages once</li>
+<li>[Maven Plugin] Fail builds if deploy of any instance failes for strategy WHATEVER and DEFAULT</li>
+</ul>
+
+<h2>
+<a id="121" class="anchor" href="#121" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.2.1</h2>
+
+<ul>
+<li>[Feature] Fail build if module is not reachable on any host to deploy to.</li>
+</ul>
+
+<h2>
+<a id="120" class="anchor" href="#120" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.2.0</h2>
+
+<ul>
+<li>[Feature] Auto remove InStandby instances from an autoscaling group if the instances has already been terminated (#11).</li>
+<li>[Feature] Add support to check if config has changed and force a restart of the container.</li>
+<li>[Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option <code>keepCurrentCapacity</code> defaults to true.</li>
 <li>[Feature] Add local run support <code>deploy.internal</code>.</li>
-<li>[Feature] Add support to deploy to autoscaling groups</li>
+<li>[Feature] Add support to deploy to autoscaling groups.</li>
 <li>[Feature] Add 'aws.as.register.maxduration' and 'aws.as.deregister.maxduration' to overwrite the default timeouts for (de)registration of an instance (autoscaling only). Timeouts are specified in minutes.</li>
-<li>[Feature] Make aws region configurable <code>aws.region</code> (defaults to eu-west-1) </li>
+<li>[Feature] Make aws region configurable <code>aws.region</code> (defaults to eu-west-1). </li>
 <li>[Feature] Default to include instances that are in STANDBY. Instances can be excluded by setting <code>includeInStandby</code> to false in DeployConfiguration.</li>
 <li><p>[Feature] Add configuration option <code>aws.as.deregister.decrementDesiredCapacity</code> to configure if desired capacity should be decremented if an instance is put in standby (defaults to true)</p></li>
 <li><p>[Maven Plugin] Dropped custom Aws implementation in favor of Amazon SDK</p></li>
