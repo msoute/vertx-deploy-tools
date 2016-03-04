@@ -5,10 +5,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import nl.jpoint.vertx.mod.deploy.handler.*;
-import nl.jpoint.vertx.mod.deploy.service.AwsService;
-import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
-import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
-import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
+import nl.jpoint.vertx.mod.deploy.service.*;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +28,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         final DeployApplicationService deployApplicationService = new DeployApplicationService(deployconfig, getVertx());
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
+        final AutoDiscoverDeployService autoDiscoverDeployService = new AutoDiscoverDeployService(getVertx(), deployconfig);
 
         deployApplicationService.cleanup().subscribe();
 
@@ -48,6 +46,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         router.get("/deploy/update*").handler(new StatusUpdateHandler(deployApplicationService));
 
         if (deployconfig.isAwsEnabled()) {
+            router.get("/deploy/latest").handler(new RestLatestDeployRequest(awsService));
             router.get("/deploy/status/:id").handler(new RestDeployStatusHandler(awsService, deployApplicationService));
         }
 
@@ -66,6 +65,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         server.listen(deployconfig.getHttpPort());
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
+        autoDiscoverDeployService.autoDiscoverFirstDeploy();
     }
 
     private void createRunDir(DeployConfig deployconfig) {

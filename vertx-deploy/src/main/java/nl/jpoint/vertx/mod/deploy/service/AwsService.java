@@ -23,6 +23,7 @@ public class AwsService {
     private final DeployConfig config;
     private final Map<String, DeployRequest> runningRequests = new HashMap<>();
     private final AwsContext awsContext;
+    private DeployRequest latestDeployRequest = null;
 
     public AwsService(Vertx vertx, DeployConfig config) {
         this.vertx = vertx;
@@ -115,5 +116,13 @@ public class AwsService {
 
     public void failAllRunningRequests() {
         runningRequests.forEach((id, r) -> r.setState(DeployState.FAILED));
+    }
+
+    public DeployRequest getLatestDeployRequest() {
+        return latestDeployRequest;
+    }
+
+    public void setLatestDeployRequest(DeployRequest latestDeployRequest) {
+        this.latestDeployRequest = latestDeployRequest;
     }
 }

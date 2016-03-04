@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -71,6 +72,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             LOG.debug("{}: received POST data -> {} ", LogConstants.DEPLOY_REQUEST, eventBody);
             try {
                 deployRequest = reader.readValue(eventBody);
+                deployRequest.setTimestamp(System.currentTimeMillis());
             } catch (IOException e) {
                 LOG.error("{}: Error while reading POST data -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
                 respondFailed(null, context.request(), "Error wile reading post data -> " + e.getMessage());
@@ -95,10 +97,16 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                     .flatMap(this::deployApplications)
                     .flatMap(this::registerInstanceInAutoScalingGroup)
                     .flatMap(this::checkElbStatus)
+                    .flatMap(r -> this.registerLatestSuccess(r, buffer))
                     .doOnCompleted(() -> this.respond(deployRequest, context.request()))
                     .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
                     .subscribe();
         });
+    }
+
+    private Observable<DeployRequest> registerLatestSuccess(DeployRequest deployRequest, Buffer buffer) {
+        awsService.ifPresent(s -> s.setLatestDeployRequest(deployRequest));
+        return just(deployRequest);
     }
 
     private Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
