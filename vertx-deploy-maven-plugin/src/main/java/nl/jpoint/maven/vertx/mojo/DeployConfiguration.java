@@ -8,6 +8,12 @@ import java.util.List;
 
 public class DeployConfiguration {
     /**
+     * The maven project version as String (groupId:artifactId:version)
+     */
+    private String projectVersion;
+
+    /**
+
      * The configuration target id
      **/
     private String target;
@@ -221,6 +227,15 @@ public class DeployConfiguration {
 
     public DeployConfiguration withAuthToken(String authToken) {
         this.authToken = authToken;
+        return this;
+    }
+
+    public String getProjectVersion() {
+        return projectVersion;
+    }
+
+    public DeployConfiguration withProjectVersion(String projectVersion) {
+        this.projectVersion = projectVersion;
         return this;
     }
 }

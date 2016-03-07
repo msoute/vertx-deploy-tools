@@ -74,6 +74,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withDecrementCapacity(decrementCapacity)
                 .withIgnoreInStandby(ignoreInStandby)
                 .withDeploySnapshots(deploySnapshots)
-                .withAuthToken(authToken);
+                .withAuthToken(authToken)
+                .withProjectVersion(projectVersionAsString());
     }
 }
