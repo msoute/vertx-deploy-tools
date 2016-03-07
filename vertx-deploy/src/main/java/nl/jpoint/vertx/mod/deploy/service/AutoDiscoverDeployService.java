@@ -32,7 +32,7 @@ public class AutoDiscoverDeployService {
     private final AwsAutoScalingUtil awsAutoScalingUtil;
     private final DefaultDeployService defaultDeployService;
     private final RepositorySystem system;
-    RepositorySystemSession session;
+    private final RepositorySystemSession session;
 
     public AutoDiscoverDeployService(DeployConfig config, DefaultDeployService defaultDeployService) {
         this.deployConfig = config;
@@ -45,14 +45,15 @@ public class AutoDiscoverDeployService {
     public void autoDiscoverFirstDeploy() {
         Map<String, String> tags = awsAutoScalingUtil.getDeployTags();
 
-        if (!tags.containsValue(AwsAutoScalingUtil.LATEST_VERSION_TAG)) {
+        if (!tags.containsKey(AwsAutoScalingUtil.LATEST_VERSION_TAG) || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG) == null || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG).isEmpty()) {
             LOG.info("No tag {} in auto scaling group.", AwsAutoScalingUtil.LATEST_VERSION_TAG);
             return;
         }
 
         Artifact deployArtifact = getDeployArtifact(tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG));
 
-        List<Artifact> dependencies = getDeployDependencies(deployArtifact,
+        if (deployArtifact != null) {
+            List<Artifact> dependencies = getDeployDependencies(deployArtifact,
                 getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
                 Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
 
@@ -65,7 +66,7 @@ public class AutoDiscoverDeployService {
                 .doOnError(t -> LOG.error("[{}] : Error while performing auto discover deploy {}", request.getId(), t))
                 .doOnCompleted(() -> LOG.info("[{}] : Completed auto discover deploy.", request.getId()))
                 .subscribe();
-
+        }
 
     }
 
@@ -91,7 +92,6 @@ public class AutoDiscoverDeployService {
 
     private Artifact getDeployArtifact(String mavenCoords) {
         Artifact artifact = new DefaultArtifact(mavenCoords);
-
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
         artifactRequest.setRepositories(AetherUtil.newRepositories(deployConfig));
@@ -108,6 +108,7 @@ public class AutoDiscoverDeployService {
     private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, boolean testScope) {
         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
         descriptorRequest.setRepositories(AetherUtil.newRepositories(deployConfig));
+        descriptorRequest.setArtifact(artifact);
         try {
             ArtifactDescriptorResult descriptorResult = system.readArtifactDescriptor(session, descriptorRequest);
             return descriptorResult.getDependencies().stream()

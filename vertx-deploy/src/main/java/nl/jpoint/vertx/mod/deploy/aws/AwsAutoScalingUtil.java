@@ -31,13 +31,12 @@ public class AwsAutoScalingUtil {
         asClient.setRegion(context.getAwsRegion());
         asyncClient = new AmazonAutoScalingAsyncClient(context.getCredentials());
         asyncClient.setRegion(context.getAwsRegion());
-
         instanceId = EC2MetadataUtils.getInstanceId();
     }
 
 
     public Optional<AutoScalingInstanceDetails> describeInstance() {
-        DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances().withAutoScalingInstances(new AutoScalingInstanceDetails().withInstanceId(instanceId));
+        DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
         return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
     }
 
@@ -99,21 +98,10 @@ public class AwsAutoScalingUtil {
         Optional<AutoScalingInstanceDetails> details = describeInstance();
         if (details.isPresent()) {
             details.get().getAutoScalingGroupName();
-            List<TagDescription> filter = Arrays.asList(
-                    new TagDescription()
-                            .withResourceType("auto-scaling-group")
-                            .withResourceId(details.get().getAutoScalingGroupName())
-                            .withKey(LATEST_VERSION_TAG),
-                    new TagDescription()
-                            .withResourceType("auto-scaling-group")
-                            .withResourceId(details.get().getAutoScalingGroupName())
-                            .withKey(SCOPE_TAG),
-                    new TagDescription()
-                            .withResourceType("auto-scaling-group")
-                            .withResourceId(details.get().getAutoScalingGroupName())
-                            .withKey(EXCLUSION_TAG)
+            List<Filter> filters = Collections.singletonList(
+                    new Filter().withName("auto-scaling-group").withValues(details.get().getAutoScalingGroupName())
             );
-            DescribeTagsResult result = asClient.describeTags().withTags(filter);
+            DescribeTagsResult result = asClient.describeTags(new DescribeTagsRequest().withFilters(filters));
             result.getTags().stream().forEach(t -> tags.put(t.getKey(), t.getValue()));
         }
         return tags;

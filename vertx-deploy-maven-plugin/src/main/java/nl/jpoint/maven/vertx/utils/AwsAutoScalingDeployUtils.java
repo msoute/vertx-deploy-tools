@@ -209,7 +209,7 @@ public class AwsAutoScalingDeployUtils {
         return instanceTerminated;
     }
 
-    public void setVersionMetadataTag(final String version) {
+    public void setDeployMetadataTags(final String version) {
         List<Tag> tags = Arrays.asList(
                 new Tag().withPropagateAtLaunch(true)
                         .withResourceType("auto-scaling-group")
@@ -218,12 +218,15 @@ public class AwsAutoScalingDeployUtils {
                 new Tag().withPropagateAtLaunch(true)
                         .withResourceType("auto-scaling-group")
                         .withKey(SCOPE_TAG).withValue(Boolean.toString(activeConfiguration.isTestScope()))
-                        .withResourceId(activeConfiguration.getAutoScalingGroupId()),
-                new Tag().withPropagateAtLaunch(true)
-                        .withResourceType("auto-scaling-group")
-                        .withKey(EXCLUSION_TAG).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getGroupId()).collect(Collectors.joining(";")))
                         .withResourceId(activeConfiguration.getAutoScalingGroupId())
         );
+
+        if (!activeConfiguration.getExclusions().isEmpty()) {
+            tags.add(new Tag().withPropagateAtLaunch(true)
+                    .withResourceType("auto-scaling-group")
+                    .withKey(EXCLUSION_TAG).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getGroupId()).collect(Collectors.joining(";")))
+                    .withResourceId(activeConfiguration.getAutoScalingGroupId()));
+        }
         awsAsClient.createOrUpdateTags(new CreateOrUpdateTagsRequest().withTags(tags));
     }
 }

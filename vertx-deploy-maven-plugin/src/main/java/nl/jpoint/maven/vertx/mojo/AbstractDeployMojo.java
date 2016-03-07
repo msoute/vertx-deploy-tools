@@ -61,7 +61,7 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     }
 
     String projectVersionAsString() {
-        return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+        return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getPackaging() + ":" + project.getVersion();
     }
 
     public Server getServer() throws MojoFailureException {
