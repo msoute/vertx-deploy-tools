@@ -13,6 +13,10 @@ public class DeployConfigRequest extends ModuleRequest {
         super(groupId, artifactId, version, classifier, type);
     }
 
+    public static DeployConfigRequest build(String groupId, String artifactId, String version, String classifier) {
+        return new DeployConfigRequest(groupId, artifactId, version, classifier, "config");
+    }
+
     @Override
     public boolean deleteBase() {
         return false;

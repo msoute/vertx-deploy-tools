@@ -28,7 +28,8 @@ public class AwsDeployApplication extends AbstractVerticle {
         final DeployApplicationService deployApplicationService = new DeployApplicationService(deployconfig, getVertx());
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
-        final AutoDiscoverDeployService autoDiscoverDeployService = new AutoDiscoverDeployService(getVertx(), deployconfig);
+        final DefaultDeployService defaultDeployService = new DefaultDeployService(deployApplicationService, deployArtifactService, deployConfigService);
+        final AutoDiscoverDeployService autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService);
 
         deployApplicationService.cleanup().subscribe();
 
@@ -40,13 +41,12 @@ public class AwsDeployApplication extends AbstractVerticle {
         }
 
         Router router = Router.router(getVertx());
-        router.post("/deploy/deploy").handler(new RestDeployHandler(deployApplicationService, deployArtifactService, deployConfigService, awsService, deployconfig.getAuthToken()));
+        router.post("/deploy/deploy").handler(new RestDeployHandler(defaultDeployService, awsService, deployconfig.getAuthToken()));
         router.post("/deploy/module*").handler(new RestDeployModuleHandler(deployApplicationService));
         router.post("/deploy/artifact*").handler(new RestDeployArtifactHandler(deployArtifactService));
         router.get("/deploy/update*").handler(new StatusUpdateHandler(deployApplicationService));
 
         if (deployconfig.isAwsEnabled()) {
-            router.get("/deploy/latest").handler(new RestLatestDeployRequest(awsService));
             router.get("/deploy/status/:id").handler(new RestDeployStatusHandler(awsService, deployApplicationService));
         }
 
@@ -65,7 +65,9 @@ public class AwsDeployApplication extends AbstractVerticle {
         server.listen(deployconfig.getHttpPort());
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
-        autoDiscoverDeployService.autoDiscoverFirstDeploy();
+        if (deployconfig.isAwsEnabled()) {
+            autoDiscoverDeployService.autoDiscoverFirstDeploy();
+        }
     }
 
     private void createRunDir(DeployConfig deployconfig) {

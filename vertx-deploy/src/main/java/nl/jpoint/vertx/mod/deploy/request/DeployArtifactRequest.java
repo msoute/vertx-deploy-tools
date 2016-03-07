@@ -30,4 +30,7 @@ public class DeployArtifactRequest extends ModuleRequest {
         return LogConstants.DEPLOY_ARTIFACT_REQUEST;
     }
 
+    public static DeployArtifactRequest build(String groupId, String artifactId, String version, String classifier) {
+        return new DeployArtifactRequest(groupId, artifactId, version, classifier, "zip");
+    }
 }

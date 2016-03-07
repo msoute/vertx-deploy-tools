@@ -36,7 +36,7 @@ class AwsPollingAsStateObservable {
 
     private Observable<DeployRequest> doPoll(DeployRequest request) {
         return rxVertx.timerStream(POLLING_INTERVAL_IN_MS).toObservable()
-                .flatMap(x -> awsAsUtil.pollForInstanceState(request.getInstanceId()))
+                .flatMap(x -> awsAsUtil.pollForInstanceState())
                 .flatMap(awsState -> {
                             if (LocalDateTime.now().isAfter(timeout)) {
                                 LOG.error("[{} - {}]: Timeout while waiting for instance to reach {} ", LogConstants.AWS_AS_REQUEST, request.getId(), awsState.name());

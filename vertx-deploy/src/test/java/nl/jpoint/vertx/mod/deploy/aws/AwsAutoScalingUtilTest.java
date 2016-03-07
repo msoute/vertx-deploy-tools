@@ -1,10 +1,7 @@
 package nl.jpoint.vertx.mod.deploy.aws;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.List;
 
 public class AwsAutoScalingUtilTest {
 
@@ -24,12 +21,12 @@ public class AwsAutoScalingUtilTest {
     @Test
     @Ignore
     public void testEnterStandby() throws AwsException {
-        util.enterStandby(INSTANCE_ID, AS_GROUP_ID, false);
+        util.enterStandby(AS_GROUP_ID, false);
     }
 
     @Test
     @Ignore
     public void testExitStandby() throws AwsException {
-        util.exitStandby(INSTANCE_ID, AS_GROUP_ID);
+        util.exitStandby(AS_GROUP_ID);
     }
 }

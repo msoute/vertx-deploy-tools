@@ -5,16 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
-import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
-import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
-import nl.jpoint.vertx.mod.deploy.service.DeployConfigService;
+import nl.jpoint.vertx.mod.deploy.service.DefaultDeployService;
 import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
 import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -29,22 +26,16 @@ import static rx.Observable.just;
 
 public class RestDeployHandler implements Handler<RoutingContext> {
 
-    private final DeployApplicationService applicationApplicationService;
-    private final DeployArtifactService artifactDeployService;
-    private final DeployConfigService configDeployService;
+    private final DefaultDeployService deployService;
     private final Optional<AwsService> awsService;
     private final String authToken;
 
     private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
-    public RestDeployHandler(final DeployApplicationService deployApplicationService,
-                             final DeployArtifactService artifactDeployService,
-                             final DeployConfigService configDeployService,
+    public RestDeployHandler(final DefaultDeployService deployService,
                              final AwsService awsService,
                              final String authToken) {
-        this.applicationApplicationService = deployApplicationService;
-        this.artifactDeployService = artifactDeployService;
-        this.configDeployService = configDeployService;
+        this.deployService = deployService;
         this.awsService = Optional.ofNullable(awsService);
         this.authToken = authToken;
     }
@@ -97,20 +88,15 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                     .flatMap(this::deployApplications)
                     .flatMap(this::registerInstanceInAutoScalingGroup)
                     .flatMap(this::checkElbStatus)
-                    .flatMap(r -> this.registerLatestSuccess(r, buffer))
                     .doOnCompleted(() -> this.respond(deployRequest, context.request()))
                     .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
                     .subscribe();
         });
     }
 
-    private Observable<DeployRequest> registerLatestSuccess(DeployRequest deployRequest, Buffer buffer) {
-        awsService.ifPresent(s -> s.setLatestDeployRequest(deployRequest));
-        return just(deployRequest);
-    }
 
     private Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
-        return applicationApplicationService.cleanup(deployRequest);
+        return deployService.cleanup(deployRequest);
     }
 
     private Observable<DeployRequest> deRegisterInstanceFromLoadBalancer(DeployRequest deployRequest) {
@@ -147,13 +133,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> deployConfigs(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployRequest.getId().toString()));
         if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
-            return Observable.from(deployRequest.getConfigs())
-                    .flatMap(configDeployService::deployAsync)
-                    .toList()
-                    .flatMap(x -> {
-                        LOG.info("[{} - {}]: Done extracting all config.", LogConstants.DEPLOY_CONFIG_REQUEST, deployRequest.getId());
-                        return just(x);
-                    })
+            return deployService.deployConfigs(deployRequest.getId(), deployRequest.getConfigs())
                     .flatMap(list -> {
                         if (list.contains(Boolean.TRUE)) {
                             deployRequest.setRestart(true);
@@ -168,13 +148,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> deployArtifacts(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_ARTIFACTS, deployRequest.getId().toString()));
         if (deployRequest.getArtifacts() != null && !deployRequest.getArtifacts().isEmpty()) {
-            return Observable.from(deployRequest.getArtifacts())
-                    .flatMap(artifactDeployService::deployAsync)
-                    .toList()
-                    .flatMap(x -> {
-                        LOG.info("[{} - {}]: Done extracting all artifacts.", LogConstants.DEPLOY_ARTIFACT_REQUEST, deployRequest.getId());
-                        return just(x);
-                    })
+            return deployService.deployArtifacts(deployRequest.getId(), deployRequest.getArtifacts())
                     .flatMap(x -> just(deployRequest));
         } else {
             return just(deployRequest);
@@ -184,7 +158,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> stopContainer(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.STOPPING_CONTAINER, deployRequest.getId().toString()));
         if (deployRequest.withRestart()) {
-            return applicationApplicationService.stopContainer()
+            return deployService.stopContainer()
                     .flatMap(x -> just(deployRequest));
         }
         return just(deployRequest);
@@ -193,9 +167,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> deployApplications(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_APPLICATIONS, deployRequest.getId().toString()));
         if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
-            return Observable.from(deployRequest.getModules())
-                    .flatMap(applicationApplicationService::deployAsync)
-                    .toList()
+            return deployService.deployApplications(deployRequest.getId(), deployRequest.getModules())
                     .flatMap(x -> just(deployRequest));
         }
         return just(deployRequest);
@@ -224,8 +196,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         if (!request.response().ended()) {
             if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
                 JsonObject result = new JsonObject();
-                result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsSuccess()));
-                result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsFailed()));
+                result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
+                result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
                 if (result.isEmpty()) {
                     request.response().end();
                 } else {
@@ -241,8 +213,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
             request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
             JsonObject result = new JsonObject();
-            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsSuccess()));
-            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(applicationApplicationService.getDeployedApplicationsFailed()));
+            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
+            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
             result.put("message", message);
             if (result.isEmpty()) {
                 request.response().end();
