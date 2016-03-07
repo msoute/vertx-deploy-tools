@@ -54,7 +54,14 @@ abstract class AbstractDeployMojo extends AbstractMojo {
 
 
         getLog().info("Deploy config with target " + activeConfiguration.getTarget() + " activated");
+
+        activeConfiguration.withProjectVersion(projectVersionAsString());
+
         return activeConfiguration;
+    }
+
+    String projectVersionAsString() {
+        return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getPackaging() + ":" + project.getVersion();
     }
 
     public Server getServer() throws MojoFailureException {

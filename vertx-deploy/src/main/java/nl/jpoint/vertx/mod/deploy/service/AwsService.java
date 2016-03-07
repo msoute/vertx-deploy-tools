@@ -116,4 +116,5 @@ public class AwsService {
     public void failAllRunningRequests() {
         runningRequests.forEach((id, r) -> r.setState(DeployState.FAILED));
     }
+
 }
