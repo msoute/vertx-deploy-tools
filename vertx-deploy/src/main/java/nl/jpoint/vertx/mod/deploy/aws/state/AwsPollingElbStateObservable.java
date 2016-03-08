@@ -36,7 +36,7 @@ class AwsPollingElbStateObservable {
 
 
     public Observable<DeployRequest> poll(DeployRequest request, String elb) {
-        LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), request.getInstanceId(), elb);
+        LOG.info("[{} - {}]: Starting instance status poller for instance id {} on loadbalancer {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.getInstanceId(), elb);
         return doPoll(request, elb);
     }
 
@@ -52,7 +52,7 @@ class AwsPollingElbStateObservable {
                                 LOG.error("[{} - {}]: Timeout while waiting for instance to reach {} ", LogConstants.AWS_ELB_REQUEST, request.getId(), awsState.name());
                                 throw new IllegalStateException();
                             }
-                            LOG.info("[{} - {}]: Instance {} on elb {} in state {}", LogConstants.AWS_ELB_REQUEST, request.getId(), request.getInstanceId(), elb, awsState.name());
+                    LOG.info("[{} - {}]: Instance {} on elb {} in state {}", LogConstants.AWS_ELB_REQUEST, request.getId(), awsElbUtil.getInstanceId(), elb, awsState.name());
                             if (acceptedStates.contains(awsState)) {
                                 return Observable.just(request);
                             } else {

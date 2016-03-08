@@ -27,12 +27,12 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
 
     public Observable<DeployRequest> executeAsync(DeployRequest request) {
         if (!awsAsUtil.exitStandby(request.getAutoScalingGroup())) {
-            LOG.error("[{} - {}]: InstanceId {} failed to exit standby in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
+            LOG.error("[{} - {}]: InstanceId {} failed to exit standby in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), awsAsUtil.getInstanceId(), request.getAutoScalingGroup());
             throw new IllegalStateException();
         }
 
-        LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), AwsState.INSERVICE);
-        LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup());
+        LOG.info("[{} - {}]: Waiting for instance {} status in auto scaling group {} to reach {}.", LogConstants.AWS_AS_REQUEST, request.getId(), awsAsUtil.getInstanceId(), request.getAutoScalingGroup(), AwsState.INSERVICE);
+        LOG.info("[{} - {}]: Starting instance status poller for instance id {} in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), awsAsUtil.getInstanceId(), request.getAutoScalingGroup());
 
         return poller.poll(request);
     }

@@ -71,4 +71,8 @@ public class AwsElbUtil {
             throw new AwsException(e);
         }
     }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
 }

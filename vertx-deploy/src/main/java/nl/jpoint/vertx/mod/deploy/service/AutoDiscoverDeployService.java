@@ -85,7 +85,7 @@ public class AutoDiscoverDeployService {
                 .map(a -> DeployApplicationRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
                 .collect(Collectors.toList());
 
-        return new DeployRequest(applications, artifacts, configs, false, false, "", "", false);
+        return new DeployRequest(applications, artifacts, configs, false, false, "", false);
     }
 
 

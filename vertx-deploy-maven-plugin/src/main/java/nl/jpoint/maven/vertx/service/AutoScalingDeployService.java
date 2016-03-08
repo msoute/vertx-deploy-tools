@@ -106,7 +106,6 @@ public class AutoScalingDeployService extends DeployService {
                     .withArtifacts(deployArtifactRequests)
                     .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
                     .withElb(activeConfiguration.useElbStatusCheck())
-                    .withInstanceId(instance.getInstanceId())
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
                     .withDecrementDesiredCapacity(activeConfiguration.isDecrementDesiredCapacity())
                     .withRestart(activeConfiguration.doRestart())

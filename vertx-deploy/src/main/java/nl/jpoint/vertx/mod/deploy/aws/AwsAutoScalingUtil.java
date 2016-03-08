@@ -105,4 +105,8 @@ public class AwsAutoScalingUtil {
         }
         return tags;
     }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
 }

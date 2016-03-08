@@ -42,7 +42,7 @@ class AwsPollingAsStateObservable {
                                 LOG.error("[{} - {}]: Timeout while waiting for instance to reach {} ", LogConstants.AWS_AS_REQUEST, request.getId(), awsState.name());
                                 throw new IllegalStateException();
                             }
-                            LOG.info("[{} - {}]: Instance {} in auto scaling group {} in state {}", LogConstants.AWS_AS_REQUEST, request.getId(), request.getInstanceId(), request.getAutoScalingGroup(), awsState.name());
+                    LOG.info("[{} - {}]: Instance {} in auto scaling group {} in state {}", LogConstants.AWS_AS_REQUEST, request.getId(), awsAsUtil.getInstanceId(), request.getAutoScalingGroup(), awsState.name());
                             if (acceptedStates.contains(awsState)) {
                                 return Observable.just(request);
                             } else {

@@ -28,20 +28,17 @@ public class DeployRequest {
     private final boolean autoScaling;
     @JsonProperty("restart")
     private final boolean restart;
-    @JsonProperty("instance_id")
-    private final String instanceId;
     @JsonProperty(value = "as_group_id")
     private final String asGroupId;
     @JsonProperty(value = "as_decrement_desired_capacity")
     private final boolean decrementDesiredCapacity;
 
-    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String instanceId, String asGroupId, boolean decrementDesiredCapacity) {
+    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String asGroupId, boolean decrementDesiredCapacity) {
         this.modules = modules;
         this.artifacts = artifacts;
         this.configs = configs;
         this.elb = elb;
         this.restart = restart;
-        this.instanceId = instanceId;
         this.asGroupId = asGroupId;
         this.decrementDesiredCapacity = decrementDesiredCapacity;
         this.autoScaling = (asGroupId != null);
@@ -72,7 +69,6 @@ public class DeployRequest {
         private boolean restart = true;
         private boolean decrementDesiredCapacity = true;
         private String autoScalingGroup = "";
-        private String instanceId = "";
 
         public Builder withElb(final boolean elb) {
             this.elb = elb;
@@ -104,11 +100,6 @@ public class DeployRequest {
             return this;
         }
 
-        public Builder withInstanceId(final String instanceId) {
-            this.instanceId = instanceId;
-            return this;
-        }
-
         public Builder withDecrementDesiredCapacity(final boolean decrementDesiredCapacity) {
             this.decrementDesiredCapacity = decrementDesiredCapacity;
             return this;
@@ -116,7 +107,7 @@ public class DeployRequest {
 
 
         public DeployRequest build() {
-            return new DeployRequest(modules, artifacts, configs, elb, restart, instanceId, autoScalingGroup, decrementDesiredCapacity);
+            return new DeployRequest(modules, artifacts, configs, elb, restart, autoScalingGroup, decrementDesiredCapacity);
         }
     }
 }
