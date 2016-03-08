@@ -30,7 +30,9 @@ public class DeployConfigService implements DeployService<DeployConfigRequest, B
                 .flatMap(this::runTestCommand)
                 .flatMap(this::runRestartCommand)
                 .map(DeployConfigRequest::restart)
-                .doOnCompleted(() -> LOG.info("[{} - {}]: Done extracting config {}.", deployRequest.getLogName(), deployRequest.getId(), deployRequest.getModuleId()));
+                .doOnCompleted(() -> LOG.info("[{} - {}]: Done extracting config {}.", deployRequest.getLogName(), deployRequest.getId(), deployRequest.getModuleId()))
+                .doOnError(t -> LOG.error("[{} - {}]: Error extracting config {} : {}.", deployRequest.getLogName(), deployRequest.getId(), deployRequest.getModuleId(), t));
+
     }
 
     @Override

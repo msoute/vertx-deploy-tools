@@ -14,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static rx.Observable.just;
@@ -23,7 +25,8 @@ public class DeployApplicationService implements DeployService<DeployApplication
     private static final Logger LOG = LoggerFactory.getLogger(DeployApplicationService.class);
     private final DeployConfig config;
     private final Vertx vertx;
-    private List<String> deployedApplications = new ArrayList<>();
+    private final List<String> deployedApplicationsSuccess = new ArrayList<>();
+    private final Map<String, Object> deployedApplicationsFailed = new HashMap<>();
 
     public DeployApplicationService(DeployConfig config, Vertx vertx) {
         this.config = config;
@@ -105,7 +108,8 @@ public class DeployApplicationService implements DeployService<DeployApplication
     }
 
     public Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
-        deployedApplications.clear();
+        deployedApplicationsSuccess.clear();
+        deployedApplicationsFailed.clear();
         return cleanup()
                 .flatMap(x -> just(deployRequest));
     }
@@ -124,7 +128,21 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .doOnError(t -> LOG.error("Error during cleanup of run files {}", t.getMessage()));
     }
 
-    public List<String> getDeployedApplications() {
-        return deployedApplications;
+    public void addApplicationDeployResult(boolean succeeded, String message, String deploymentId) {
+        if (succeeded && !deployedApplicationsSuccess.contains(deploymentId)) {
+            deployedApplicationsSuccess.add(deploymentId);
+        } else {
+            if (!deployedApplicationsFailed.containsKey(deploymentId)) {
+                deployedApplicationsFailed.put(deploymentId, message != null ? message : "Unknown");
+            }
+        }
+    }
+
+    public List<String> getDeployedApplicationsSuccess() {
+        return deployedApplicationsSuccess;
+    }
+
+    public Map<String, Object> getDeployedApplicationsFailed() {
+        return deployedApplicationsFailed;
     }
 }

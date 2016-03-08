@@ -21,6 +21,7 @@ public class DeployRequest {
     private boolean decrementDesiredCapacity = true;
     private boolean restart;
     private DeployState state;
+    private long timestamp;
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployApplicationRequest> modules,
@@ -99,4 +100,11 @@ public class DeployRequest {
         this.restart = restart;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 }

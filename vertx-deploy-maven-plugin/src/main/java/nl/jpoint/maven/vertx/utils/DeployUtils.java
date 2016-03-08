@@ -1,9 +1,9 @@
 package nl.jpoint.maven.vertx.utils;
 
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
+import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
-import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;

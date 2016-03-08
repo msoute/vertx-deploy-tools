@@ -1,8 +1,8 @@
 package nl.jpoint.maven.vertx.utils.deploy.strategy;
 
 public enum DeployStrategyType {
-    KEEP_CAPACITY,
+    WHATEVER,
     DEFAULT,
     GUARANTEE_MINIMUM,
-    WHATEVER
+    KEEP_CAPACITY
 }

@@ -6,6 +6,8 @@ import io.vertx.rxjava.core.http.HttpClient;
 import io.vertx.rxjava.core.http.HttpClientRequest;
 import io.vertx.rxjava.core.http.HttpClientResponse;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observer;
 
@@ -13,6 +15,8 @@ import java.net.URI;
 import java.util.function.Consumer;
 
 public class RxHttpUtil {
+
+    private final Logger LOG = LoggerFactory.getLogger(RxHttpUtil.class);
 
     private final Vertx rxVertx;
     private final DeployConfig config;
@@ -27,7 +31,8 @@ public class RxHttpUtil {
     }
 
     public Observable<HttpClientResponse> get(URI location, String filename) {
-        return executeGet(httpClient.getAbs(location.toString()), HttpClientRequest::end, filename);
+        return executeGet(httpClient.getAbs(location.toString()), HttpClientRequest::end, filename)
+                .doOnError(t -> LOG.error("Error downloading file {}, {}", t.getMessage(), t));
     }
 
     private Observable<HttpClientResponse> executeGet(HttpClientRequest request,
@@ -39,6 +44,7 @@ public class RxHttpUtil {
                 setAuthorizationHeader(request);
             }
             requestFiller.accept(request);
+
         });
     }
 

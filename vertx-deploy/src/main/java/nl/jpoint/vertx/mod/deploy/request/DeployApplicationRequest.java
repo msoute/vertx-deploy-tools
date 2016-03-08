@@ -65,4 +65,8 @@ public class DeployApplicationRequest extends ModuleRequest {
     public void setInstalled(boolean installed) {
         this.installed = installed;
     }
+
+    public static DeployApplicationRequest build(String groupId, String artifactId, String version, String classifier) {
+        return new DeployApplicationRequest(groupId, artifactId, version, classifier, "jar");
+    }
 }

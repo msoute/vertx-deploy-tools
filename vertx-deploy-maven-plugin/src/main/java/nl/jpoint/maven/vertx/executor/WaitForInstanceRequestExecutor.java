@@ -46,9 +46,10 @@ public class WaitForInstanceRequestExecutor {
             }
             if (newInstance == null) {
                 newInstance = findNewInstance(autoScalingGroup, updatedGroup);
-                log.info("Found new instance with id " + newInstance.getInstanceId());
+                if (newInstance != null) {
+                    log.info("Found new instance with id " + newInstance.getInstanceId());
+                }
             }
-
             if (!autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames(), log)) {
                 waitFor.decrementAndGet();
             }

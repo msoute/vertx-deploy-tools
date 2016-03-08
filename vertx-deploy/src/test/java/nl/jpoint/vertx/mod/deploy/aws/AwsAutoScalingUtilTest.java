@@ -19,12 +19,12 @@ public class AwsAutoScalingUtilTest {
     @Test
     @Ignore
     public void testEnterStandby() throws AwsException {
-        util.enterStandby(INSTANCE_ID, AS_GROUP_ID, false);
+        util.enterStandby(AS_GROUP_ID, false);
     }
 
     @Test
     @Ignore
     public void testExitStandby() throws AwsException {
-        util.exitStandby(INSTANCE_ID, AS_GROUP_ID);
+        util.exitStandby(AS_GROUP_ID);
     }
 }
