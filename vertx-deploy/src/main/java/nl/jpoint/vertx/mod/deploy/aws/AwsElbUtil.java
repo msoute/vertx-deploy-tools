@@ -2,8 +2,12 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsyncClient;
 import com.amazonaws.services.elasticloadbalancing.model.*;
+import com.amazonaws.util.EC2MetadataUtils;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -15,13 +19,15 @@ import static rx.Observable.just;
 public class AwsElbUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbUtil.class);
     private final AmazonElasticLoadBalancingAsyncClient elbAsyncClient;
+    private final String instanceId;
 
-    public AwsElbUtil(AwsContext context) {
-        this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient(context.getCredentials());
-        this.elbAsyncClient.setRegion(context.getAwsRegion());
+    public AwsElbUtil(DeployConfig config) {
+        this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient();
+        this.elbAsyncClient.setRegion(Region.getRegion(Regions.fromName(config.getAwsRegion())));
+        this.instanceId = EC2MetadataUtils.getInstanceId();
     }
 
-    public Observable<String> registerInstanceWithLoadBalancer(String instanceId, String loadBalancer) throws AwsException {
+    public Observable<String> registerInstanceWithLoadBalancer(String loadBalancer) throws AwsException {
         if (instanceId == null || loadBalancer == null) {
             LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
             throw new IllegalStateException();
@@ -36,7 +42,7 @@ public class AwsElbUtil {
 
     }
 
-    public Observable<String> deRegisterInstanceFromLoadbalancer(String instanceId, String loadBalancer) throws AwsException {
+    public Observable<String> deRegisterInstanceFromLoadbalancer(String loadBalancer) throws AwsException {
 
         if (instanceId == null || loadBalancer == null) {
             LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
@@ -53,7 +59,7 @@ public class AwsElbUtil {
     }
 
 
-    public Observable<AwsState> pollForInstanceState(final String instanceId, final String loadBalancer) throws AwsException {
+    public Observable<AwsState> pollForInstanceState(final String loadBalancer) throws AwsException {
         try {
             return Observable.from(elbAsyncClient.describeInstanceHealthAsync(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(result -> {
@@ -64,5 +70,9 @@ public class AwsElbUtil {
             LOG.error("Error executing request {}.", e);
             throw new AwsException(e);
         }
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 }

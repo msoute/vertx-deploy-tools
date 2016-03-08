@@ -258,8 +258,10 @@ If an application reports an error the deploy wil fail, the same error is report
 * [Upgrade] Move to vertx.3
 * [Feature] Add phone home function
 * [Feature] Auto discover latest deployed version from auto scaling group and deploy on first start of deploy application
+* [Feature] Remove config for aws keys, default to aws client authentication strategy (Environment variables, Java System Properties, Credential profiles, Instance profile)
 * [Maven Plugin] Only log result messages once
 * [Maven Plugin] Fail builds if deploy of any instance failes for strategy WHATEVER and DEFAULT
+* [Misc] Do not add instance id to deploy request, read it from instance metadata.
 
 ## 1.2.1
 

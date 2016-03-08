@@ -2,10 +2,12 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClient;
-import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -18,7 +20,6 @@ import static rx.Observable.just;
 public class AwsAutoScalingUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsAutoScalingUtil.class);
 
-    private final AmazonAutoScalingClient asClient;
     private final AmazonAutoScalingAsyncClient asyncClient;
     public static final String LATEST_VERSION_TAG = "deploy:latest:version";
     public static final String SCOPE_TAG = "deploy:scope:tst";
@@ -26,17 +27,15 @@ public class AwsAutoScalingUtil {
     private final String instanceId;
 
 
-    public AwsAutoScalingUtil(final AwsContext context) {
-        asClient = new AmazonAutoScalingClient(context.getCredentials());
-        asClient.setRegion(context.getAwsRegion());
-        asyncClient = new AmazonAutoScalingAsyncClient(context.getCredentials());
-        asyncClient.setRegion(context.getAwsRegion());
+    public AwsAutoScalingUtil(DeployConfig config) {
+        asyncClient = new AmazonAutoScalingAsyncClient();
+        asyncClient.setRegion(Region.getRegion(Regions.fromName(config.getAwsRegion())));
         instanceId = EC2MetadataUtils.getInstanceId();
     }
 
 
     public Optional<AutoScalingInstanceDetails> describeInstance() {
-        DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
+        DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
         return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
     }
 
@@ -66,7 +65,7 @@ public class AwsAutoScalingUtil {
 
     public boolean enterStandby(final String groupId, boolean decrementDesiredCapacity) {
         try {
-            DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withMaxRecords(1).withInstanceIds(instanceId));
+            DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withMaxRecords(1).withInstanceIds(instanceId));
             Optional<AutoScalingInstanceDetails> state = result.getAutoScalingInstances()
                     .stream()
                     .filter(asi -> asi.getInstanceId().equals(instanceId)).findFirst();
@@ -74,7 +73,7 @@ public class AwsAutoScalingUtil {
             if (state.isPresent() && state.get().getLifecycleState().equalsIgnoreCase(AwsState.STANDBY.name())) {
                 return true;
             } else {
-                asClient.enterStandby(new EnterStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId).withShouldDecrementDesiredCapacity(decrementDesiredCapacity));
+                asyncClient.enterStandby(new EnterStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId).withShouldDecrementDesiredCapacity(decrementDesiredCapacity));
                 return true;
             }
         } catch (AmazonClientException e) {
@@ -85,7 +84,7 @@ public class AwsAutoScalingUtil {
 
     public boolean exitStandby(final String groupId) {
         try {
-            asClient.exitStandby(new ExitStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId));
+            asyncClient.exitStandby(new ExitStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId));
             return true;
         } catch (AmazonClientException e) {
             LOG.error("Error executing request {}.", e);
@@ -101,9 +100,13 @@ public class AwsAutoScalingUtil {
             List<Filter> filters = Collections.singletonList(
                     new Filter().withName("auto-scaling-group").withValues(details.get().getAutoScalingGroupName())
             );
-            DescribeTagsResult result = asClient.describeTags(new DescribeTagsRequest().withFilters(filters));
+            DescribeTagsResult result = asyncClient.describeTags(new DescribeTagsRequest().withFilters(filters));
             result.getTags().stream().forEach(t -> tags.put(t.getKey(), t.getValue()));
         }
         return tags;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 }

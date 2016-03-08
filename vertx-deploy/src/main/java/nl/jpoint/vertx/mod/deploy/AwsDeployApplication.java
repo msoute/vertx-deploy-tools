@@ -29,7 +29,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
         final DefaultDeployService defaultDeployService = new DefaultDeployService(deployApplicationService, deployArtifactService, deployConfigService);
-        final AutoDiscoverDeployService autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService);
+        final AutoDiscoverDeployService autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService, getVertx());
 
         deployApplicationService.cleanup().subscribe();
 

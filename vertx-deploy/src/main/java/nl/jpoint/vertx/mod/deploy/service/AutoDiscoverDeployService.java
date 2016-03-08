@@ -1,8 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import io.vertx.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
@@ -33,16 +33,24 @@ public class AutoDiscoverDeployService {
     private final DefaultDeployService defaultDeployService;
     private final RepositorySystem system;
     private final RepositorySystemSession session;
+    private final Vertx vertx;
 
-    public AutoDiscoverDeployService(DeployConfig config, DefaultDeployService defaultDeployService) {
+    public AutoDiscoverDeployService(DeployConfig config, DefaultDeployService defaultDeployService, Vertx vertx) {
         this.deployConfig = config;
-        this.awsAutoScalingUtil = new AwsAutoScalingUtil(AwsContext.build(config.getAwsAccessKey(), config.getAwsSecretAccessKey(), config.getAwsRegion()));
+        this.awsAutoScalingUtil = new AwsAutoScalingUtil(config);
         this.defaultDeployService = defaultDeployService;
+        this.vertx = vertx;
         this.system = AetherUtil.newRepositorySystem();
         this.session = AetherUtil.newRepositorySystemSession(system);
     }
 
     public void autoDiscoverFirstDeploy() {
+
+        if (vertx.fileSystem().existsBlocking(deployConfig.getStatFile())) {
+            LOG.info("Not initial run, skipping auto discover deploy");
+            return;
+        }
+
         Map<String, String> tags = awsAutoScalingUtil.getDeployTags();
 
         if (!tags.containsKey(AwsAutoScalingUtil.LATEST_VERSION_TAG) || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG) == null || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG).isEmpty()) {
@@ -54,18 +62,21 @@ public class AutoDiscoverDeployService {
 
         if (deployArtifact != null) {
             List<Artifact> dependencies = getDeployDependencies(deployArtifact,
-                getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
-                Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
+                    getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
+                    Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
 
-        DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
-        LOG.info("[{}] : Starting auto discover deploy ", request.getId());
-        just(request)
-                .flatMap(x -> defaultDeployService.deployConfigs(request.getId(), request.getConfigs()))
-                .flatMap(x -> defaultDeployService.deployArtifacts(request.getId(), request.getArtifacts()))
-                .flatMap(x -> defaultDeployService.deployApplications(request.getId(), request.getModules()))
-                .doOnError(t -> LOG.error("[{}] : Error while performing auto discover deploy {}", request.getId(), t))
-                .doOnCompleted(() -> LOG.info("[{}] : Completed auto discover deploy.", request.getId()))
-                .subscribe();
+            DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
+            LOG.info("[{}] : Starting auto discover deploy ", request.getId());
+            just(request)
+                    .flatMap(x -> defaultDeployService.deployConfigs(request.getId(), request.getConfigs()))
+                    .flatMap(x -> defaultDeployService.deployArtifacts(request.getId(), request.getArtifacts()))
+                    .flatMap(x -> defaultDeployService.deployApplications(request.getId(), request.getModules()))
+                    .doOnError(t -> LOG.error("[{}] : Error while performing auto discover deploy {}", request.getId(), t))
+                    .doOnCompleted(() -> {
+                        LOG.info("[{}] : Completed auto discover deploy.", request.getId());
+                        vertx.fileSystem().createFileBlocking(deployConfig.getStatFile());
+                    })
+                    .subscribe();
         }
 
     }
@@ -86,7 +97,7 @@ public class AutoDiscoverDeployService {
                 .map(a -> DeployApplicationRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
                 .collect(Collectors.toList());
 
-        return new DeployRequest(applications, artifacts, configs, false, false, "", "", false);
+        return new DeployRequest(applications, artifacts, configs, false, false, "", false);
     }
 
 

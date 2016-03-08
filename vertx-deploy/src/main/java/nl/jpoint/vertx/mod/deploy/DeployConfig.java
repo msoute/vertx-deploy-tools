@@ -18,8 +18,7 @@ public class DeployConfig {
     private static final String VERTX_HOME = "vertx.home";
     private static final String RUN_DIR = "vertx.run";
     private static final String ARTIFACT_REPO = "artifact.storage";
-    private static final String AWS_AUTH_KEY = "aws.auth.access.key";
-    private static final String AWS_SECRET_AUTH_KEY = "aws.auth.secret.access.key";
+    private static final String AWS_ENABLED = "aws.enable";
     private static final String AWS_REGION = "aws.region";
     private static final String AWS_DEFAULT_REGION = "eu-west-1";
     private static final String AWS_REGISTER_MAX_DURATION = "aws.as.register.maxduration";
@@ -36,13 +35,12 @@ public class DeployConfig {
 
     private static final String AWS_ELB_ID = "aws.elb.loadbalancer";
     private static final String AWS_INSTANCE_ID = "aws.elb.instanceid";
+    private static final String STAT_FILE = ".initial";
 
     private final Path vertxHome;
     private final Path artifactRepo;
     private final URI nexusUrl;
     private String configLocation;
-    private String awsAccessKey;
-    private String awsSecretAccessKey;
     private String awsRegion;
     private Integer httpPort;
     private String httpAuthUser;
@@ -51,13 +49,13 @@ public class DeployConfig {
     private boolean httpAuthentication = false;
     private boolean mavenRemote = true;
     private String awsLoadbalancerId;
-    private String awsInstanceId;
     private int awsMaxRegistrationDuration;
     private String authToken;
     private boolean asCluster = true;
     private String remoteRepoPolicy;
     private String defaultJavaOpts;
     private String runDir;
+    private String statFile;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -81,13 +79,13 @@ public class DeployConfig {
         return (String) config.remove(field);
     }
 
-    private static String validateField(String field, JsonObject config) {
-        return validateField(field, config, "");
+    private static <T> T validateField(String field, JsonObject config) {
+        return validateField(field, config, null);
     }
 
-    private static String validateField(String field, JsonObject config, String defaultValue) {
-        if (config.containsKey(field) && !config.getString(field).isEmpty()) {
-            return (String) config.remove(field);
+    private static <T> T validateField(String field, JsonObject config, T defaultValue) {
+        if (config.containsKey(field) && config.getValue(field) != null) {
+            return (T) config.remove(field);
         }
         return defaultValue;
     }
@@ -138,6 +136,10 @@ public class DeployConfig {
 
     private DeployConfig withRunDir(JsonObject config) {
         this.runDir = config.getString(RUN_DIR, getVertxHome()+"/run/");
+        if (!runDir.endsWith("/")) {
+            runDir = runDir + "/";
+        }
+        this.statFile = runDir + STAT_FILE;
         config.remove(RUN_DIR);
         return this;
     }
@@ -161,18 +163,15 @@ public class DeployConfig {
     }
 
     private DeployConfig withAwsConfig(JsonObject config) {
-        this.awsAccessKey = validateField(AWS_AUTH_KEY, config);
-        this.awsSecretAccessKey = validateField(AWS_SECRET_AUTH_KEY, config);
         this.awsRegion = validateField(AWS_REGION, config, AWS_DEFAULT_REGION);
-        this.awsInstanceId = validateField(AWS_ELB_ID, config);
         this.awsLoadbalancerId = validateField(AWS_INSTANCE_ID, config);
+        this.awsEnabled = validateField(AWS_ENABLED, config, false);
 
         this.awsMaxRegistrationDuration = config.getInteger(AWS_REGISTER_MAX_DURATION, 4);
         config.remove(AWS_REGISTER_MAX_DURATION);
 
-        if (!awsAccessKey.isEmpty() && !awsSecretAccessKey.isEmpty()) {
+        if (awsEnabled) {
             LOG.info("Enabled AWS support.");
-            this.awsEnabled = true;
         } else {
             LOG.info("Disabled AWS support.");
         }
@@ -214,24 +213,12 @@ public class DeployConfig {
         return configLocation;
     }
 
-    public String getAwsAccessKey() {
-        return awsAccessKey;
-    }
-
-    public String getAwsSecretAccessKey() {
-        return awsSecretAccessKey;
-    }
-
     public String getAwsRegion() {
         return awsRegion;
     }
 
     public String getAwsLoadbalancerId() {
         return awsLoadbalancerId;
-    }
-
-    public String getAwsInstanceId() {
-        return awsInstanceId;
     }
 
     public int getAwsMaxRegistrationDuration() {
@@ -280,5 +267,9 @@ public class DeployConfig {
 
     public String getRunDir() {
         return runDir;
+    }
+
+    public String getStatFile() {
+        return statFile;
     }
 }

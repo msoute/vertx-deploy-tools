@@ -30,20 +30,11 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
                 .flatMap(x -> {
                     request.setVersion(retrieveAndParseMetadata(filename, request));
                     return just(request);
-                })
-                .flatMap(x -> this.cleanUp(request, filename));
+                });
     }
 
     private String createTempFile(String filename) {
         return System.getProperty("java.io.tmpdir") + "/" + filename;
-    }
-
-    private Observable<T> cleanUp(T request, String fileName) {
-        if (rxVertx.fileSystem().existsBlocking(fileName)) {
-            return rxVertx.fileSystem().deleteObservable(fileName)
-                    .flatMap(x -> just(request));
-        }
-        return just(request);
     }
 
     private String retrieveAndParseMetadata(String fileLocation, ModuleRequest request) {

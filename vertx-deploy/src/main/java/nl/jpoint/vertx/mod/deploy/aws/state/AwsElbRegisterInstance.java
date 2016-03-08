@@ -1,6 +1,10 @@
 package nl.jpoint.vertx.mod.deploy.aws.state;
 
-import nl.jpoint.vertx.mod.deploy.aws.*;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
+import nl.jpoint.vertx.mod.deploy.aws.AwsElbUtil;
+import nl.jpoint.vertx.mod.deploy.aws.AwsException;
+import nl.jpoint.vertx.mod.deploy.aws.AwsState;
 import nl.jpoint.vertx.mod.deploy.command.Command;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -17,16 +21,16 @@ public class AwsElbRegisterInstance implements Command<DeployRequest> {
     private final AwsAutoScalingUtil awsAsUtil;
     private final AwsPollingElbStateObservable poller;
 
-    public AwsElbRegisterInstance(io.vertx.core.Vertx vertx, String deployId, AwsContext awsContext, Integer maxDuration, Function<String, Boolean> requestStillActive) {
-        this.awsElbUtil = new AwsElbUtil(awsContext);
-        this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
-        this.poller = new AwsPollingElbStateObservable(vertx, deployId, awsElbUtil, LocalDateTime.now().plusMinutes(maxDuration), requestStillActive, AwsState.INSERVICE);
+    public AwsElbRegisterInstance(io.vertx.core.Vertx vertx, String deployId, DeployConfig config, Function<String, Boolean> requestStillActive) {
+        this.awsElbUtil = new AwsElbUtil(config);
+        this.awsAsUtil = new AwsAutoScalingUtil(config);
+        this.poller = new AwsPollingElbStateObservable(vertx, deployId, awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), requestStillActive, AwsState.INSERVICE);
     }
 
     public Observable<DeployRequest> executeAsync(DeployRequest request) {
         try {
             return awsAsUtil.listLoadBalancers(request.getAutoScalingGroup())
-                    .flatMap(elb -> awsElbUtil.registerInstanceWithLoadBalancer(request.getInstanceId(), elb))
+                    .flatMap(awsElbUtil::registerInstanceWithLoadBalancer)
                     .flatMap(elb -> poller.poll(request, elb));
         } catch (AwsException e) {
             LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage());
