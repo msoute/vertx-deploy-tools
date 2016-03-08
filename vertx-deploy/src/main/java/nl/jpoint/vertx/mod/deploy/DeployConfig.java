@@ -35,6 +35,7 @@ public class DeployConfig {
 
     private static final String AWS_ELB_ID = "aws.elb.loadbalancer";
     private static final String AWS_INSTANCE_ID = "aws.elb.instanceid";
+    private static final String STAT_FILE = ".initial";
 
     private final Path vertxHome;
     private final Path artifactRepo;
@@ -55,6 +56,7 @@ public class DeployConfig {
     private String remoteRepoPolicy;
     private String defaultJavaOpts;
     private String runDir;
+    private String statFile;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -135,6 +137,10 @@ public class DeployConfig {
 
     private DeployConfig withRunDir(JsonObject config) {
         this.runDir = config.getString(RUN_DIR, getVertxHome()+"/run/");
+        if (!runDir.endsWith("/")) {
+            runDir = runDir + "/";
+        }
+        this.statFile = runDir + STAT_FILE;
         config.remove(RUN_DIR);
         return this;
     }
@@ -267,5 +273,9 @@ public class DeployConfig {
 
     public String getRunDir() {
         return runDir;
+    }
+
+    public String getStatFile() {
+        return statFile;
     }
 }

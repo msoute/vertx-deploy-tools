@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
+import io.vertx.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
@@ -32,16 +33,24 @@ public class AutoDiscoverDeployService {
     private final DefaultDeployService defaultDeployService;
     private final RepositorySystem system;
     private final RepositorySystemSession session;
+    private final Vertx vertx;
 
-    public AutoDiscoverDeployService(DeployConfig config, DefaultDeployService defaultDeployService) {
+    public AutoDiscoverDeployService(DeployConfig config, DefaultDeployService defaultDeployService, Vertx vertx) {
         this.deployConfig = config;
         this.awsAutoScalingUtil = new AwsAutoScalingUtil(config);
         this.defaultDeployService = defaultDeployService;
+        this.vertx = vertx;
         this.system = AetherUtil.newRepositorySystem();
         this.session = AetherUtil.newRepositorySystemSession(system);
     }
 
     public void autoDiscoverFirstDeploy() {
+
+        if (vertx.fileSystem().existsBlocking(deployConfig.getStatFile())) {
+            LOG.info("Not initial run, skipping auto discover deploy");
+            return;
+        }
+
         Map<String, String> tags = awsAutoScalingUtil.getDeployTags();
 
         if (!tags.containsKey(AwsAutoScalingUtil.LATEST_VERSION_TAG) || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG) == null || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG).isEmpty()) {
@@ -63,7 +72,10 @@ public class AutoDiscoverDeployService {
                     .flatMap(x -> defaultDeployService.deployArtifacts(request.getId(), request.getArtifacts()))
                     .flatMap(x -> defaultDeployService.deployApplications(request.getId(), request.getModules()))
                     .doOnError(t -> LOG.error("[{}] : Error while performing auto discover deploy {}", request.getId(), t))
-                    .doOnCompleted(() -> LOG.info("[{}] : Completed auto discover deploy.", request.getId()))
+                    .doOnCompleted(() -> {
+                        LOG.info("[{}] : Completed auto discover deploy.", request.getId());
+                        vertx.fileSystem().createFileBlocking(deployConfig.getStatFile());
+                    })
                     .subscribe();
         }
 
