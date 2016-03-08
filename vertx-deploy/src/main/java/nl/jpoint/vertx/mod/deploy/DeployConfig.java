@@ -49,7 +49,6 @@ public class DeployConfig {
     private boolean httpAuthentication = false;
     private boolean mavenRemote = true;
     private String awsLoadbalancerId;
-    private String awsInstanceId;
     private int awsMaxRegistrationDuration;
     private String authToken;
     private boolean asCluster = true;
@@ -80,13 +79,13 @@ public class DeployConfig {
         return (String) config.remove(field);
     }
 
-    private static String validateField(String field, JsonObject config) {
-        return validateField(field, config, "");
+    private static <T> T validateField(String field, JsonObject config) {
+        return validateField(field, config, null);
     }
 
-    private static String validateField(String field, JsonObject config, String defaultValue) {
-        if (config.containsKey(field) && !config.getString(field).isEmpty()) {
-            return (String) config.remove(field);
+    private static <T> T validateField(String field, JsonObject config, T defaultValue) {
+        if (config.containsKey(field) && config.getValue(field) != null) {
+            return (T) config.remove(field);
         }
         return defaultValue;
     }
@@ -165,9 +164,8 @@ public class DeployConfig {
 
     private DeployConfig withAwsConfig(JsonObject config) {
         this.awsRegion = validateField(AWS_REGION, config, AWS_DEFAULT_REGION);
-        this.awsInstanceId = validateField(AWS_ELB_ID, config);
         this.awsLoadbalancerId = validateField(AWS_INSTANCE_ID, config);
-        this.awsEnabled = Boolean.valueOf(validateField(AWS_ENABLED, config, "false"));
+        this.awsEnabled = validateField(AWS_ENABLED, config, false);
 
         this.awsMaxRegistrationDuration = config.getInteger(AWS_REGISTER_MAX_DURATION, 4);
         config.remove(AWS_REGISTER_MAX_DURATION);
@@ -221,10 +219,6 @@ public class DeployConfig {
 
     public String getAwsLoadbalancerId() {
         return awsLoadbalancerId;
-    }
-
-    public String getAwsInstanceId() {
-        return awsInstanceId;
     }
 
     public int getAwsMaxRegistrationDuration() {
