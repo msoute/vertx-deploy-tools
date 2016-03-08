@@ -2,7 +2,6 @@ package nl.jpoint.vertx.mod.deploy.service;
 
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
@@ -36,7 +35,7 @@ public class AutoDiscoverDeployService {
 
     public AutoDiscoverDeployService(DeployConfig config, DefaultDeployService defaultDeployService) {
         this.deployConfig = config;
-        this.awsAutoScalingUtil = new AwsAutoScalingUtil(AwsContext.build(config.getAwsAccessKey(), config.getAwsSecretAccessKey(), config.getAwsRegion()));
+        this.awsAutoScalingUtil = new AwsAutoScalingUtil(config);
         this.defaultDeployService = defaultDeployService;
         this.system = AetherUtil.newRepositorySystem();
         this.session = AetherUtil.newRepositorySystemSession(system);
@@ -54,18 +53,18 @@ public class AutoDiscoverDeployService {
 
         if (deployArtifact != null) {
             List<Artifact> dependencies = getDeployDependencies(deployArtifact,
-                getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
-                Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
+                    getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
+                    Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
 
-        DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
-        LOG.info("[{}] : Starting auto discover deploy ", request.getId());
-        just(request)
-                .flatMap(x -> defaultDeployService.deployConfigs(request.getId(), request.getConfigs()))
-                .flatMap(x -> defaultDeployService.deployArtifacts(request.getId(), request.getArtifacts()))
-                .flatMap(x -> defaultDeployService.deployApplications(request.getId(), request.getModules()))
-                .doOnError(t -> LOG.error("[{}] : Error while performing auto discover deploy {}", request.getId(), t))
-                .doOnCompleted(() -> LOG.info("[{}] : Completed auto discover deploy.", request.getId()))
-                .subscribe();
+            DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
+            LOG.info("[{}] : Starting auto discover deploy ", request.getId());
+            just(request)
+                    .flatMap(x -> defaultDeployService.deployConfigs(request.getId(), request.getConfigs()))
+                    .flatMap(x -> defaultDeployService.deployArtifacts(request.getId(), request.getArtifacts()))
+                    .flatMap(x -> defaultDeployService.deployApplications(request.getId(), request.getModules()))
+                    .doOnError(t -> LOG.error("[{}] : Error while performing auto discover deploy {}", request.getId(), t))
+                    .doOnCompleted(() -> LOG.info("[{}] : Completed auto discover deploy.", request.getId()))
+                    .subscribe();
         }
 
     }

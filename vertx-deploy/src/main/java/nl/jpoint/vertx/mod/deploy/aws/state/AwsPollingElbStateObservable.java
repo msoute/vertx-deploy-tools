@@ -42,7 +42,7 @@ class AwsPollingElbStateObservable {
 
     private Observable<DeployRequest> doPoll(DeployRequest request, String elb) {
         return rxVertx.timerStream(POLLING_INTERVAL_IN_MS).toObservable()
-                .flatMap(x -> awsElbUtil.pollForInstanceState(request.getInstanceId(), elb))
+                .flatMap(x -> awsElbUtil.pollForInstanceState(elb))
                 .flatMap(awsState -> {
                     if (!requestStillActive.apply(deployId)) {
                         LOG.error("[{} - {}]: Request canceled, stopping poller {} ", LogConstants.AWS_ELB_REQUEST, request.getId(), awsState.name());

@@ -1,6 +1,10 @@
 package nl.jpoint.vertx.mod.deploy.aws.state;
 
-import nl.jpoint.vertx.mod.deploy.aws.*;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
+import nl.jpoint.vertx.mod.deploy.aws.AwsElbUtil;
+import nl.jpoint.vertx.mod.deploy.aws.AwsException;
+import nl.jpoint.vertx.mod.deploy.aws.AwsState;
 import nl.jpoint.vertx.mod.deploy.command.Command;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
@@ -16,16 +20,16 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
     private final AwsAutoScalingUtil awsAsUtil;
     private final AwsPollingElbStateObservable poller;
 
-    public AwsElbDeRegisterInstance(io.vertx.core.Vertx vertx, AwsContext awsContext, Integer maxDuration) {
-        this.awsElbUtil = new AwsElbUtil(awsContext);
-        this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
-        this.poller = new AwsPollingElbStateObservable(vertx, "fakeId", awsElbUtil, LocalDateTime.now().plusMinutes(maxDuration), s -> true, AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
+    public AwsElbDeRegisterInstance(io.vertx.core.Vertx vertx, DeployConfig config) {
+        this.awsElbUtil = new AwsElbUtil(config);
+        this.awsAsUtil = new AwsAutoScalingUtil(config);
+        this.poller = new AwsPollingElbStateObservable(vertx, "fakeId", awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), s -> true, AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
     }
 
     public Observable<DeployRequest> executeAsync(DeployRequest request) {
         try {
             return awsAsUtil.listLoadBalancers(request.getAutoScalingGroup())
-                    .flatMap(elb -> awsElbUtil.deRegisterInstanceFromLoadbalancer(request.getInstanceId(), elb))
+                    .flatMap(awsElbUtil::deRegisterInstanceFromLoadbalancer)
                     .flatMap(elb -> poller.poll(request, elb));
         } catch (AwsException e) {
             LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage());

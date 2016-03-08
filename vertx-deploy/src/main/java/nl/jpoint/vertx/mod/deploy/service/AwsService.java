@@ -2,7 +2,6 @@ package nl.jpoint.vertx.mod.deploy.service;
 
 import io.vertx.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsAsDeRegisterInstance;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsAsRegisterInstance;
 import nl.jpoint.vertx.mod.deploy.aws.state.AwsElbDeRegisterInstance;
@@ -22,13 +21,10 @@ public class AwsService {
     private final Vertx vertx;
     private final DeployConfig config;
     private final Map<String, DeployRequest> runningRequests = new HashMap<>();
-    private final AwsContext awsContext;
 
     public AwsService(Vertx vertx, DeployConfig config) {
         this.vertx = vertx;
         this.config = config;
-
-        awsContext = AwsContext.build(config.getAwsRegion());
     }
 
     public void registerRequest(DeployRequest deployRequest) {
@@ -46,7 +42,7 @@ public class AwsService {
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_AS_DEREGISTER, deployRequest.getId().toString());
-        AwsAsDeRegisterInstance deRegisterFromAsGroup = new AwsAsDeRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
+        AwsAsDeRegisterInstance deRegisterFromAsGroup = new AwsAsDeRegisterInstance(vertx, config, config.getAwsMaxRegistrationDuration());
         return deRegisterFromAsGroup.executeAsync(deployRequest);
     }
 
@@ -57,7 +53,7 @@ public class AwsService {
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_AS_REGISTER, deployRequest.getId().toString());
-        AwsAsRegisterInstance register = new AwsAsRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
+        AwsAsRegisterInstance register = new AwsAsRegisterInstance(vertx, config, config.getAwsMaxRegistrationDuration());
         return register.executeAsync(deployRequest);
     }
 
@@ -68,7 +64,7 @@ public class AwsService {
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_ELB_REGISTER, deployRequest.getId().toString());
-        AwsElbRegisterInstance register = new AwsElbRegisterInstance(vertx, deployRequest.getId().toString(), awsContext, config.getAwsMaxRegistrationDuration(),
+        AwsElbRegisterInstance register = new AwsElbRegisterInstance(vertx, deployRequest.getId().toString(), config,
                 s -> runningRequests.containsKey(s) && (!DeployState.FAILED.equals(runningRequests.get(s).getState()) || !DeployState.SUCCESS.equals(runningRequests.get(s).getState())));
         return register.executeAsync(deployRequest);
     }
@@ -80,7 +76,7 @@ public class AwsService {
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_ELB_DEREGISTER, deployRequest.getId().toString());
-        AwsElbDeRegisterInstance register = new AwsElbDeRegisterInstance(vertx, awsContext, config.getAwsMaxRegistrationDuration());
+        AwsElbDeRegisterInstance register = new AwsElbDeRegisterInstance(vertx, config);
         return register.executeAsync(deployRequest);
     }
 

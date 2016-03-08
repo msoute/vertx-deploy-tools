@@ -2,9 +2,12 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClient;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -24,15 +27,15 @@ public class AwsAutoScalingUtil {
     private final String instanceId;
 
 
-    public AwsAutoScalingUtil(final AwsContext context) {
+    public AwsAutoScalingUtil(DeployConfig config) {
         asyncClient = new AmazonAutoScalingAsyncClient();
-        asyncClient.setRegion(context.getAwsRegion());
+        asyncClient.setRegion(Region.getRegion(Regions.fromName(config.getAwsRegion())));
         instanceId = EC2MetadataUtils.getInstanceId();
     }
 
 
     public Optional<AutoScalingInstanceDetails> describeInstance() {
-        DescribeAutoScalingInstancesResult result = asClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
+        DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
         return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
     }
 
@@ -97,7 +100,7 @@ public class AwsAutoScalingUtil {
             List<Filter> filters = Collections.singletonList(
                     new Filter().withName("auto-scaling-group").withValues(details.get().getAutoScalingGroupName())
             );
-            DescribeTagsResult result = asClient.describeTags(new DescribeTagsRequest().withFilters(filters));
+            DescribeTagsResult result = asyncClient.describeTags(new DescribeTagsRequest().withFilters(filters));
             result.getTags().stream().forEach(t -> tags.put(t.getKey(), t.getValue()));
         }
         return tags;

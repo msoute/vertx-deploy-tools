@@ -1,8 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.aws.state;
 
 import io.vertx.core.Vertx;
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsContext;
 import nl.jpoint.vertx.mod.deploy.aws.AwsState;
 import nl.jpoint.vertx.mod.deploy.command.Command;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
@@ -19,8 +19,8 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
     private final AwsAutoScalingUtil awsAsUtil;
     private final AwsPollingAsStateObservable poller;
 
-    public AwsAsRegisterInstance(final Vertx vertx, final AwsContext awsContext, final Integer maxDuration) {
-        this.awsAsUtil = new AwsAutoScalingUtil(awsContext);
+    public AwsAsRegisterInstance(final Vertx vertx, final DeployConfig config, final Integer maxDuration) {
+        this.awsAsUtil = new AwsAutoScalingUtil(config);
         this.poller = new AwsPollingAsStateObservable(vertx, awsAsUtil, LocalDateTime.now().plusMinutes(maxDuration)
                 , AwsState.INSERVICE);
     }

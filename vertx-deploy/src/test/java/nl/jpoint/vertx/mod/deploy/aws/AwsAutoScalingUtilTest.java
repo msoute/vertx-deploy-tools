@@ -1,19 +1,25 @@
 package nl.jpoint.vertx.mod.deploy.aws;
 
+import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AwsAutoScalingUtilTest {
 
+    @Mock
+    DeployConfig config;
     private final static String AWS_REGION = "eu-west-1";
     private final static String AS_GROUP_ID = "gid";
     private final static String INSTANCE_ID = "iid";
     private final static String ELB = "elb";
 
-    private final AwsContext context = AwsContext.build(AWS_REGION);
 
-    private AwsAutoScalingUtil util = new AwsAutoScalingUtil(context);
-    private AwsElbUtil elbUtil = new AwsElbUtil(context);
+    private AwsAutoScalingUtil util = new AwsAutoScalingUtil(config);
+    private AwsElbUtil elbUtil = new AwsElbUtil(config);
 
 
     @Test
