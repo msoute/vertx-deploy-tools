@@ -1,11 +1,7 @@
 package nl.jpoint.vertx.mod.deploy.service;
 
 import nl.jpoint.vertx.mod.deploy.Constants;
-import nl.jpoint.vertx.mod.deploy.command.Command;
-import nl.jpoint.vertx.mod.deploy.command.DownloadArtifact;
-import nl.jpoint.vertx.mod.deploy.command.ExtractArtifact;
-import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
-import nl.jpoint.vertx.mod.deploy.command.RunConsoleCommand;
+import nl.jpoint.vertx.mod.deploy.command.*;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
@@ -47,6 +43,10 @@ public class DeployConfigService implements DeployService<DeployConfigRequest> {
             return deployResult.putBoolean("result", false);
         }
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(config.getString("artifact.repo") + "/" + deployRequest.getFileName());
+        if (artifactContextUtil.getBaseLocation() == null || artifactContextUtil.getBaseLocation().isEmpty()) {
+            LOG.info("ERROR");
+            return deployResult.putBoolean("result", false);
+        }
         ExtractArtifact extractConfig = new ExtractArtifact(vertx, config, Paths.get(artifactContextUtil.getBaseLocation()), false, artifactContextUtil.getCheckConfig(), LogConstants.DEPLOY_CONFIG_REQUEST);
         JsonObject extractResult = extractConfig.execute(deployRequest);
 
