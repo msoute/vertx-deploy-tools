@@ -251,6 +251,21 @@ The deploy application adds an JVM property that indicates on what port the depl
 
 If an application reports an error the deploy wil fail, the same error is reported back to the maven pluging.
 
+# AWS IAM Policy
+
+The following AWS actions are needed for the deploy applications
+
+        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+        "elasticloadbalancing:DescribeInstanceHealth",
+        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+        "elasticloadbalancing:DescribeLoadBalancers",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLoadBalancers",
+        "autoscaling:DescribeTags",
+        "autoscaling:EnterStandby",
+        "autoscaling:ExitStandby"
+
+
 # Changelog
 
 ## 3.0.0-SNAPSHOT
