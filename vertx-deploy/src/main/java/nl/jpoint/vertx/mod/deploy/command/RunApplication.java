@@ -24,6 +24,8 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String INSTANCES = "INSTANCES";
+    private static final String CONFIG = "CONFIG_FILE";
+
     private static final Logger LOG = LoggerFactory.getLogger(RunApplication.class);
     private final Vertx rxVertx;
     private final DeployConfig config;
@@ -55,6 +57,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                                         LOG.error("[{} - {}]: Failed to initialize properties for module  {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e.getMessage());
                                     }
                                     request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS));
+                                    request.withConfigLocation(serviceProperties.getProperty(CONFIG));
                                     request.withInstances(serviceProperties.getProperty(INSTANCES, "1"));
                                     return just(request);
                                 });
@@ -74,7 +77,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         }
         if (!config.getConfigLocation().isEmpty()) {
             command.add("-conf");
-            command.add(config.getConfigLocation());
+            command.add(deployApplicationRequest.getConfigLocation().isEmpty() ? config.getConfigLocation() : deployApplicationRequest.getConfigLocation());
         }
         if (!deployApplicationRequest.getJavaOpts().isEmpty() || !config.getDefaultJavaOpts().isEmpty()) {
             command.add("--java-opts");
