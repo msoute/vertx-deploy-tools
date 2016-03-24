@@ -29,7 +29,7 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DeployUtils utils = new DeployUtils(getLog(), project);
+        final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
 
         DeployConfiguration configuration = new DeployConfiguration();
         configuration.getHosts().add(remoteIp);

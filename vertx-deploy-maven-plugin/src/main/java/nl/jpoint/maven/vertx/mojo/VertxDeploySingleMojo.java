@@ -1,8 +1,8 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
-import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
@@ -34,7 +34,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DeployUtils utils = new DeployUtils(getLog(), project);
+        final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
         setActiveDeployConfig();
 
         if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsWorks()) {

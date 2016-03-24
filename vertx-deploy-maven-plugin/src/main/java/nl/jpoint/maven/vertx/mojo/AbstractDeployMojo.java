@@ -2,16 +2,26 @@ package nl.jpoint.maven.vertx.mojo;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.util.List;
 
 abstract class AbstractDeployMojo extends AbstractMojo {
 
+    @Component
+    protected RepositorySystem repoSystem;
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+    protected RepositorySystemSession repoSession;
 
+    @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true, required = true)
+    protected List<RemoteRepository> remoteRepos;
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
     @Parameter(defaultValue = "${settings}", readonly = true, required = true)
@@ -22,7 +32,7 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
     protected Integer requestTimeout;
     @Parameter(property = "deploy.credentialsId")
-    protected String credentialsId;
+    private String credentialsId;
     @Parameter(defaultValue = "6789")
     protected Integer port;
     @Parameter(defaultValue = "eu-west-1")
@@ -34,7 +44,6 @@ abstract class AbstractDeployMojo extends AbstractMojo {
 
 
     DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
-
         if (deployConfigurations.size() == 1) {
             getLog().info("Found exactly one deploy config to activate.");
             activeConfiguration = deployConfigurations.get(0);
