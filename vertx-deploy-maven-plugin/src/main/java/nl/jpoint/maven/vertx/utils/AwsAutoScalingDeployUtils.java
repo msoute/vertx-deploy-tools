@@ -29,6 +29,7 @@ public class AwsAutoScalingDeployUtils {
     private static final String LATEST_VERSION_TAG = "deploy:latest:version";
     private static final String SCOPE_TAG = "deploy:scope:tst";
     private static final String EXCLUSION_TAG = "deploy:exclusions";
+    private static final String PROPERTIES_TAGS = "deploy:properties";
 
     private final AmazonAutoScalingClient awsAsClient;
     private final AmazonElasticLoadBalancingClient awsElbClient;
@@ -143,7 +144,7 @@ public class AwsAutoScalingDeployUtils {
         }
     }
 
-    public void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
+    private void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
         DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(loadBalancerName));
         instances.stream().forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
     }
@@ -209,7 +210,7 @@ public class AwsAutoScalingDeployUtils {
         return instanceTerminated;
     }
 
-    public void setDeployMetadataTags(final String version) {
+    public void setDeployMetadataTags(final String version, Properties properties) {
         List<Tag> tags = Arrays.asList(
                 new Tag().withPropagateAtLaunch(true)
                         .withResourceType("auto-scaling-group")
@@ -221,6 +222,13 @@ public class AwsAutoScalingDeployUtils {
                         .withResourceId(activeConfiguration.getAutoScalingGroupId())
         );
 
+        if (!activeConfiguration.getAutoScalingProperies().isEmpty()) {
+            tags.add(new Tag().withPropagateAtLaunch(true)
+                    .withResourceType("auto-scaling-group")
+                    .withKey(PROPERTIES_TAGS).withValue(activeConfiguration.getAutoScalingProperies().stream().map(property -> property + ":" + properties.getProperty(property)).collect(Collectors.joining(";")))
+                    .withResourceId(activeConfiguration.getAutoScalingGroupId())
+            );
+        }
         if (!activeConfiguration.getExclusions().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
                     .withResourceType("auto-scaling-group")

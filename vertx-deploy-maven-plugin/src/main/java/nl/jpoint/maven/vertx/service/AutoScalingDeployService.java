@@ -19,6 +19,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.settings.Server;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class AutoScalingDeployService extends DeployService {
@@ -27,13 +28,15 @@ public class AutoScalingDeployService extends DeployService {
     private final String region;
     private final Integer port;
     private final Integer requestTimeout;
+    private final Properties properties;
 
-    public AutoScalingDeployService(DeployConfiguration activeConfiguration, final String region, final Integer port, final Integer requestTimeout, final Server server, final Log log) throws MojoExecutionException {
+    public AutoScalingDeployService(DeployConfiguration activeConfiguration, final String region, final Integer port, final Integer requestTimeout, final Server server, final Log log, Properties properties) throws MojoExecutionException {
         super(server, log);
         this.activeConfiguration = activeConfiguration;
         this.region = region;
         this.port = port;
         this.requestTimeout = requestTimeout;
+        this.properties = properties;
     }
 
     public void deployWithAutoScaling(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
@@ -117,7 +120,7 @@ public class AutoScalingDeployService extends DeployService {
                 AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.getDeployStrategy().ordinal() > 1);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
-                awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion());
+                awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion(), properties);
             } catch (MojoExecutionException | MojoFailureException e) {
                 getLog().error("Error during deploy. Resuming auto scaling processes.", e);
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());

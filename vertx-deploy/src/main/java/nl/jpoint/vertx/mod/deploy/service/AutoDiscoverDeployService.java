@@ -63,6 +63,7 @@ public class AutoDiscoverDeployService {
         if (deployArtifact != null) {
             List<Artifact> dependencies = getDeployDependencies(deployArtifact,
                     getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
+                    getProperties(tags.getOrDefault(AwsAutoScalingUtil.PROPERTIES_TAGS, "")),
                     Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
 
             DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
@@ -116,12 +117,17 @@ public class AutoDiscoverDeployService {
         return null;
     }
 
-    private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, boolean testScope) {
+    private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, Map<String, String> properties, boolean testScope) {
         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
         descriptorRequest.setRepositories(AetherUtil.newRepositories(deployConfig));
         descriptorRequest.setArtifact(artifact);
         try {
             ArtifactDescriptorResult descriptorResult = system.readArtifactDescriptor(session, descriptorRequest);
+
+            if (!properties.isEmpty()) {
+                descriptorResult.getProperties().putAll(properties);
+            }
+
             return descriptorResult.getDependencies().stream()
                     .filter(d -> "compile".equalsIgnoreCase(d.getScope()) || ("test".equalsIgnoreCase(d.getScope()) && testScope))
                     .filter(d -> !exclusions.contains(new Exclusion(d.getArtifact().getGroupId(), d.getArtifact().getArtifactId(), null, null)))
@@ -140,6 +146,19 @@ public class AutoDiscoverDeployService {
         return Stream.of(exclusionString.split(";"))
                 .map(this::toExclusion)
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, String> getProperties(String propertiesString) {
+        if (propertiesString == null || propertiesString.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return Stream.of(propertiesString.split(";"))
+                .filter(s -> s.contains(":"))
+                .map(s -> s.split(":"))
+                .filter(s -> s.length == 2)
+                .collect(Collectors.toMap(strings -> strings[0], strings -> strings[1]));
+
     }
 
     private Exclusion toExclusion(String s) {
