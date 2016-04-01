@@ -24,7 +24,7 @@ public class AwsAutoScalingUtil {
     public static final String LATEST_VERSION_TAG = "deploy:latest:version";
     public static final String SCOPE_TAG = "deploy:scope:tst";
     public static final String EXCLUSION_TAG = "deploy:exclusions";
-    public static final String PROPERTIES_TAGS = "deploy:properties";
+    public static final String PROPERTIES_TAGS = "deploy:classifier:properties";
     private final String instanceId;
 
 

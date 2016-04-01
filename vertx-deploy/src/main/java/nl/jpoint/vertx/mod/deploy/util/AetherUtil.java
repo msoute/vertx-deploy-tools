@@ -2,9 +2,13 @@ package nl.jpoint.vertx.mod.deploy.util;
 
 
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
@@ -15,10 +19,9 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 public class AetherUtil {
 
@@ -44,7 +47,6 @@ public class AetherUtil {
 
     public static DefaultRepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-
         LocalRepository localRepo = new LocalRepository(System.getProperty("user.home") + "/.m2/repository");
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
         return session;
@@ -73,6 +75,24 @@ public class AetherUtil {
         }
 
         return builder.build();
+    }
+
+    public static Model readPom(Artifact artifact) {
+        MavenXpp3Reader reader = new MavenXpp3Reader();
+        try {
+            return reader.read(new FileReader(artifact.getFile()));
+        } catch (IOException | XmlPullParserException e) {
+            return null;
+        }
+    }
+
+    private static Properties toProperties(Map<String, String> properties) {
+        Properties props = new Properties();
+        if (properties == null || properties.isEmpty()) {
+            return props;
+        }
+        properties.entrySet().forEach(e -> props.setProperty(e.getKey(), e.getValue()));
+        return props;
     }
 
     private static RemoteRepository newCentralRepository() {

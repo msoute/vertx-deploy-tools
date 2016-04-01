@@ -240,7 +240,7 @@ public class DeployConfiguration {
         return this;
     }
 
-    public List<String> getAutoScalingProperies() {
+    public List<String> getAutoScalingProperties() {
         return autoScalingProperies;
     }
 }

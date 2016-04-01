@@ -38,6 +38,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private boolean ignoreInStandby;
     @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
     private boolean deploySnapshots;
+    @Parameter(required = false, defaultValue = "", property = "deploy.as.properties")
+    protected String properties;
     @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
     private String authToken;
 
@@ -47,6 +49,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
         final DeployUtils utils = new DeployUtils(getLog(), project);
         activeConfiguration = this.createConfiguration();
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
+        activeConfiguration.getAutoScalingProperties().addAll(utils.parseProperties(properties));
         final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
         final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration);

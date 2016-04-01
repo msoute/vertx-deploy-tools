@@ -8,6 +8,7 @@ import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
 import nl.jpoint.vertx.mod.deploy.util.AetherUtil;
+import org.apache.maven.model.Model;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,8 +65,11 @@ public class AutoDiscoverDeployService {
         if (deployArtifact != null) {
             List<Artifact> dependencies = getDeployDependencies(deployArtifact,
                     getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
-                    getProperties(tags.getOrDefault(AwsAutoScalingUtil.PROPERTIES_TAGS, "")),
-                    Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")));
+                    Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")),
+                    getProperties(tags.getOrDefault(AwsAutoScalingUtil.PROPERTIES_TAGS, "")));
+
+            dependencies.stream().forEach(a -> LOG.error("{}:{}:{}:{}", a.getGroupId(), a.getArtifactId(), a.getClassifier(), a.getVersion()));
+
 
             DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
             LOG.info("[{}] : Starting auto discover deploy ", request.getId());
@@ -107,7 +112,6 @@ public class AutoDiscoverDeployService {
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
         artifactRequest.setRepositories(AetherUtil.newRepositories(deployConfig));
-
         try {
             ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
             return artifactResult.getArtifact();
@@ -117,26 +121,38 @@ public class AutoDiscoverDeployService {
         return null;
     }
 
-    private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, Map<String, String> properties, boolean testScope) {
+    private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, boolean testScope, Map<String, String> properties) {
         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
         descriptorRequest.setRepositories(AetherUtil.newRepositories(deployConfig));
         descriptorRequest.setArtifact(artifact);
+
+        Model model = AetherUtil.readPom(artifact);
+
         try {
             ArtifactDescriptorResult descriptorResult = system.readArtifactDescriptor(session, descriptorRequest);
-
-            if (!properties.isEmpty()) {
-                descriptorResult.getProperties().putAll(properties);
-            }
 
             return descriptorResult.getDependencies().stream()
                     .filter(d -> "compile".equalsIgnoreCase(d.getScope()) || ("test".equalsIgnoreCase(d.getScope()) && testScope))
                     .filter(d -> !exclusions.contains(new Exclusion(d.getArtifact().getGroupId(), d.getArtifact().getArtifactId(), null, null)))
                     .map(Dependency::getArtifact)
+                    .map(d -> this.checkWithModel(model, d, properties))
                     .collect(Collectors.toList());
+
         } catch (ArtifactDescriptorException e) {
             LOG.error("Unable to resolve dependencies for deploy artifact '{}', unable to auto-discover ", artifact);
         }
         return Collections.emptyList();
+    }
+
+    private Artifact checkWithModel(Model model, Artifact artifact, Map<String, String> properties) {
+        Optional<org.apache.maven.model.Dependency> result = model.getDependencies().stream()
+                .filter(d -> d.getGroupId().equals(artifact.getGroupId()))
+                .filter(d -> d.getArtifactId().equals(artifact.getArtifactId()))
+                .filter(d -> d.getClassifier() != null && properties.containsKey(d.getClassifier().substring(2, d.getClassifier().length() - 1)))
+                .findFirst();
+        return result.isPresent() ?
+                new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), properties.get(result.get().getClassifier().substring(2, result.get().getClassifier().length() - 1)), artifact.getExtension(), artifact.getVersion(), artifact.getProperties(), artifact.getFile())
+                : artifact;
     }
 
     private List<Exclusion> getExclusions(String exclusionString) {
@@ -165,4 +181,5 @@ public class AutoDiscoverDeployService {
         String[] ex = s.split(":", 2);
         return new Exclusion(ex[0], ex[1], null, null);
     }
+
 }
