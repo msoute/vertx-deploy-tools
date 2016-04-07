@@ -32,7 +32,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
         if (activeConfiguration.useAutoScaling()) {
-            AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog());
+            AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog(), project.getProperties());
             service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else if (activeConfiguration.useOpsWorks()) {
             OpsWorksDeployService service = new OpsWorksDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog());

@@ -26,9 +26,10 @@ import java.util.stream.Collectors;
 
 public class AwsAutoScalingDeployUtils {
 
-    private static final String LATEST_VERSION_TAG = "deploy:latest:version";
+    private static final String LATEST_REQUEST_TAG = "deploy:latest:version";
     private static final String SCOPE_TAG = "deploy:scope:tst";
     private static final String EXCLUSION_TAG = "deploy:exclusions";
+    private static final String PROPERTIES_TAGS = "deploy:classifier:properties";
 
     private final AmazonAutoScalingClient awsAsClient;
     private final AmazonElasticLoadBalancingClient awsElbClient;
@@ -143,7 +144,7 @@ public class AwsAutoScalingDeployUtils {
         }
     }
 
-    public void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
+    private void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
         DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(loadBalancerName));
         instances.stream().forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
     }
@@ -209,18 +210,24 @@ public class AwsAutoScalingDeployUtils {
         return instanceTerminated;
     }
 
-    public void setDeployMetadataTags(final String version) {
-        List<Tag> tags = Arrays.asList(
-                new Tag().withPropagateAtLaunch(true)
+    public void setDeployMetadataTags(final String version, Properties properties) {
+        List<Tag> tags = new ArrayList<>();
+        tags.add(new Tag().withPropagateAtLaunch(true)
                         .withResourceType("auto-scaling-group")
-                        .withKey(LATEST_VERSION_TAG).withValue(version)
-                        .withResourceId(activeConfiguration.getAutoScalingGroupId()),
-                new Tag().withPropagateAtLaunch(true)
+                .withKey(LATEST_REQUEST_TAG).withValue(version)
+                .withResourceId(activeConfiguration.getAutoScalingGroupId()));
+        tags.add(new Tag().withPropagateAtLaunch(true)
                         .withResourceType("auto-scaling-group")
                         .withKey(SCOPE_TAG).withValue(Boolean.toString(activeConfiguration.isTestScope()))
-                        .withResourceId(activeConfiguration.getAutoScalingGroupId())
-        );
+                .withResourceId(activeConfiguration.getAutoScalingGroupId()));
 
+        if (!activeConfiguration.getAutoScalingProperties().isEmpty()) {
+            tags.add(new Tag().withPropagateAtLaunch(true)
+                    .withResourceType("auto-scaling-group")
+                    .withKey(PROPERTIES_TAGS).withValue(activeConfiguration.getAutoScalingProperties().stream().map(key -> key + ":" + getProperty(key, properties)).collect(Collectors.joining(";")))
+                    .withResourceId(activeConfiguration.getAutoScalingGroupId())
+            );
+        }
         if (!activeConfiguration.getExclusions().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
                     .withResourceType("auto-scaling-group")
@@ -228,5 +235,9 @@ public class AwsAutoScalingDeployUtils {
                     .withResourceId(activeConfiguration.getAutoScalingGroupId()));
         }
         awsAsClient.createOrUpdateTags(new CreateOrUpdateTagsRequest().withTags(tags));
+    }
+
+    private String getProperty(String key, Properties properties) {
+        return System.getProperty(key, properties.getProperty(key));
     }
 }
