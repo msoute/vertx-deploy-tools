@@ -41,6 +41,7 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
 * **vertx.clustering** : (boolean) Enables -cluster
+* **aws.as.autodiscover** (boolean) Enables auto discovery of artifacts that need to be deployed (default false)
 
 # Deploy configuration 
 ## Deploy artifacts.
@@ -251,6 +252,10 @@ The deploy application adds an JVM property that indicates on what port the depl
 
 If an application reports an error the deploy wil fail, the same error is reported back to the maven pluging.
 
+# Auto(scaling)discover deploys
+If autoscaling is setup the deploy application can try to auto-discover what needs to be deployed on initial run. In order to do this the maven plugin
+  will store all needed data (version, scope) as a tag on the autoscaling group. The deploy application wil read these tags and create a deploy command.
+
 # AWS IAM Policy
 
 The following AWS actions are needed for the deploy applications
@@ -268,7 +273,13 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
-## 3.0.0-SNAPSHOT
+## 3.0.2
+* [Enhancement] Enable / disable auto-discover deploys) disabled by default ( **aws.as.autodiscover** )
+
+## 3.0.1
+* [BUG] Fix bug in autodiscover builds when a classifier is used to create artifacts for multiple environments
+
+## 3.0.0
 
 * [Upgrade] Move to vertx.3
 * [Feature] Add phone home function
