@@ -12,6 +12,7 @@ import rx.Observable;
 import rx.Observer;
 
 import java.net.URI;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class RxHttpUtil {
@@ -30,9 +31,9 @@ public class RxHttpUtil {
 
     }
 
-    public Observable<HttpClientResponse> get(URI location, String filename) {
+    public Observable<HttpClientResponse> get(UUID id, URI location, String filename) {
         return executeGet(httpClient.getAbs(location.toString()), HttpClientRequest::end, filename)
-                .doOnError(t -> LOG.error("Error downloading file {}, {}", t.getMessage(), t));
+                .doOnError(t -> LOG.error("[{}]: Error downloading file {} from location {}, {}", id.toString(), filename, location.toString(), t.getMessage()));
     }
 
     private Observable<HttpClientResponse> executeGet(HttpClientRequest request,
