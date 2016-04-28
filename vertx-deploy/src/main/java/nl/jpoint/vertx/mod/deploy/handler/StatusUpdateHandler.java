@@ -17,10 +17,11 @@ public class StatusUpdateHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext event) {
         String moduleId = event.request().getParam("id");
-        LOG.trace("Received status request {}", event.request().uri());
+        LOG.debug("Received status request {}", event.request().uri());
         if (moduleId != null && !moduleId.isEmpty()) {
             ApplicationDeployState status = ApplicationDeployState.map(event.request().getParam("status"));
             String message = event.request().getParam("errormessage");
+            LOG.trace("Adding result status : {} -> {} , message : {}, id: {} ", status, ApplicationDeployState.OK.equals(status), message, moduleId );
             deployApplicationService.addApplicationDeployResult(ApplicationDeployState.OK.equals(status), message, moduleId);
         }
         event.request().response().end();
