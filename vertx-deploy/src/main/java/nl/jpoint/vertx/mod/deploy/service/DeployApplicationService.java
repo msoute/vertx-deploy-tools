@@ -131,11 +131,11 @@ public class DeployApplicationService implements DeployService<DeployApplication
     public void addApplicationDeployResult(boolean succeeded, String message, String deploymentId) {
         if (succeeded && !deployedApplicationsSuccess.contains(deploymentId)) {
             deployedApplicationsSuccess.add(deploymentId);
-        } else {
-            if (!deployedApplicationsFailed.containsKey(deploymentId)) {
-                deployedApplicationsFailed.put(deploymentId, message != null ? message : "Unknown");
-            }
         }
+        if (!succeeded && !deployedApplicationsFailed.containsKey(deploymentId)) {
+            deployedApplicationsFailed.put(deploymentId, message != null ? message : "No reason provided by application.");
+        }
+
     }
 
     public List<String> getDeployedApplicationsSuccess() {
