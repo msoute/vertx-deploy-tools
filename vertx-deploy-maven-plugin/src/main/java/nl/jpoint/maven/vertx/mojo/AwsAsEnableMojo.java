@@ -17,7 +17,7 @@ public class AwsAsEnableMojo extends AbstractDeployMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         DeployConfiguration deployConfiguration = new DeployConfiguration().withAutoScalingGroup(autoScalingGroupId);
 
-        AwsAutoScalingDeployUtils asUtils = new AwsAutoScalingDeployUtils(getServer(), region, deployConfiguration);
+        AwsAutoScalingDeployUtils asUtils = new AwsAutoScalingDeployUtils(getServer(), region, deployConfiguration, getLog());
 
         AutoScalingGroup asGroup = asUtils.getAutoScalingGroup();
         if(asGroup.getInstances().size() == 0 && asGroup.getDesiredCapacity() == 0) {

@@ -46,7 +46,7 @@ public class AutoScalingDeployService extends DeployService {
 
         getLog().info("Deploy with strategy : " + activeConfiguration.getDeployStrategy().name());
 
-        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(getServer(), region, activeConfiguration);
+        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(getServer(), region, activeConfiguration, getLog());
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
@@ -71,7 +71,7 @@ public class AutoScalingDeployService extends DeployService {
         if (DeployStrategyType.KEEP_CAPACITY.equals(activeConfiguration.getDeployStrategy()) && awsDeployUtils.shouldAddExtraInstance(asGroup)) {
             getLog().info("Adding extra instance");
             // we need to add an extra instance and wait for it to come online
-            awsDeployUtils.setDesiredCapacity(getLog(), asGroup, asGroup.getDesiredCapacity() + 1);
+            awsDeployUtils.setDesiredCapacity(asGroup, asGroup.getDesiredCapacity() + 1);
             WaitForInstanceRequestExecutor waitForInstanceRequestExecutor = new WaitForInstanceRequestExecutor(getLog(), 10);
             waitForInstanceRequestExecutor.executeRequest(asGroup, awsDeployUtils);
             // update the auto scaling group
@@ -85,20 +85,20 @@ public class AutoScalingDeployService extends DeployService {
         if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
             throw new MojoExecutionException("Auto scaling group is not in a deployable state.");
         }
-        awsDeployUtils.suspendScheduledActions(getLog());
+        awsDeployUtils.suspendScheduledActions();
 
         instances = checkInstances(awsDeployUtils, asGroup, instances);
 
         Integer originalMinSize = asGroup.getMinSize();
 
         if (asGroup.getMinSize() >= asGroup.getDesiredCapacity()) {
-            awsDeployUtils.setMinimalCapacity(getLog(), asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
+            awsDeployUtils.setMinimalCapacity(asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
         }
 
         for (Ec2Instance instance : instances) {
             awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
             if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
-                awsDeployUtils.resumeScheduledActions(getLog());
+                awsDeployUtils.resumeScheduledActions();
                 throw new MojoExecutionException("auto scaling group is not in a deployable state.");
             }
 
@@ -125,17 +125,17 @@ public class AutoScalingDeployService extends DeployService {
                 getLog().error("Error during deploy. Resuming auto scaling processes.", e);
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
                 if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, instances)) {
-                    awsDeployUtils.resumeScheduledActions(getLog());
+                    awsDeployUtils.resumeScheduledActions();
                     throw new MojoExecutionException("auto scaling group is not in a deployable state.");
                 }
             }
         }
-        awsDeployUtils.setMinimalCapacity(getLog(), originalMinSize);
+        awsDeployUtils.setMinimalCapacity(originalMinSize);
 
         if (DeployStrategyType.KEEP_CAPACITY.equals(activeConfiguration.getDeployStrategy())) {
-            awsDeployUtils.setDesiredCapacity(getLog(), asGroup, originalDesiredCapacity);
+            awsDeployUtils.setDesiredCapacity(asGroup, originalDesiredCapacity);
         }
-        awsDeployUtils.resumeScheduledActions(getLog());
+        awsDeployUtils.resumeScheduledActions();
     }
 
 
@@ -143,7 +143,7 @@ public class AutoScalingDeployService extends DeployService {
         List<String> removedInstances = asGroup.getInstances().stream()
                 .filter(i -> i.getLifecycleState().equalsIgnoreCase(AwsState.STANDBY.name()))
                 .map(Instance::getInstanceId)
-                .filter(i -> awsDeployUtils.checkEc2Instance(i, getLog()))
+                .filter(awsDeployUtils::checkEc2Instance)
                 .collect(Collectors.toList());
 
         if (removedInstances != null && removedInstances.size() > 0) {

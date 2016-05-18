@@ -136,7 +136,7 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **elb** : When true the deploy application with wait for instances to come InService on attached elb's before continuing deploy. (default : *false*)
 
 #### Aws AutoScaling Configuration Options
-* **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
+* **autoScalingGroupId** : The auto scaling group to get the list of instances from, can be a regex.
 * **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *true*)
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
 * **maxCapacity** : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
