@@ -258,6 +258,18 @@ If autoscaling is setup the deploy application can try to auto-discover what nee
 
 # AWS IAM Policy
 
+The following AWS actions are needed for the maven plugin
+
+        "autoscaling:CreateOrUpdateTags"
+        "autoscaling:DescribeAutoScalingGroups"
+        "autoscaling:DetachInstances"
+        "autoscaling:ResumeProcesses"
+        "autoscaling:SetDesiredCapacity"
+        "autoscaling:SuspendProcesses"
+        "autoscaling:UpdateAutoScalingGroup"
+        "ec2:DescribeInstances"
+        "elasticloadbalancing:DescribeInstanceHealth"
+
 The following AWS actions are needed for the deploy applications
 
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
