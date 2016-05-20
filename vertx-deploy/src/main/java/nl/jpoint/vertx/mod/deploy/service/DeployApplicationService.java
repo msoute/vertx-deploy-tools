@@ -92,10 +92,10 @@ public class DeployApplicationService implements DeployService<DeployApplication
         return vertx;
     }
 
-    public Observable<Boolean> stopContainer() {
+    Observable<Boolean> stopContainer() {
         LOG.info("[{}]: Stopping all running modules", LogConstants.INVOKE_CONTAINER);
         return Observable.from(new ProcessUtils(config).listInstalledAndRunningModules().entrySet())
-                .flatMap(entry -> {
+                .concatMap(entry -> {
                     StopApplication stopApplication = new StopApplication(vertx, config);
                     String[] mavenIds = entry.getKey().split(":", 2);
                     DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), null, "jar");
@@ -107,7 +107,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .flatMap(x -> Observable.just(true));
     }
 
-    public Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
+    Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
         deployedApplicationsSuccess.clear();
         deployedApplicationsFailed.clear();
         return cleanup()

@@ -285,6 +285,10 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.0.4
+
+* [Enhancement] Orderd shutdown of applications to prevent errors in the cluster
+
 ## 3.0.3
 
 * [BUG] Prevent race condition if an application sends multiple status updates causing the deploy to fail.
