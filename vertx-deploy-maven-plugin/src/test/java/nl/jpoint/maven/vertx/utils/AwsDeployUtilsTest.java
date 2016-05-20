@@ -5,8 +5,6 @@ import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,19 +14,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
 @Ignore
 public class AwsDeployUtilsTest {
 
-    private final Settings settings;
     @Mock
     DeployConfiguration deployConfiguration;
     @Mock
@@ -36,13 +30,11 @@ public class AwsDeployUtilsTest {
     private AwsAutoScalingDeployUtils deployUtils;
 
     public AwsDeployUtilsTest() throws IOException, XmlPullParserException {
-        settings = new SettingsXpp3Reader().read(new FileInputStream(System.getProperty("user.home") + "/.m2/settings.xml"));
     }
 
     @Before
     public void init() throws IOException, XmlPullParserException, MojoFailureException {
-        deployUtils = new AwsAutoScalingDeployUtils(settings.getServer("deploy-test"), "eu-west-1", deployConfiguration, null);
-        when(deployConfiguration.getAutoScalingGroupId()).thenReturn(settings.getServer("deploy-test").getPassphrase());
+        deployUtils = new AwsAutoScalingDeployUtils("eu-west-1", deployConfiguration, null);
     }
 
 

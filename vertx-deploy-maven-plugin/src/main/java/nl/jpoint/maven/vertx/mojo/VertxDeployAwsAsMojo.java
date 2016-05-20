@@ -57,7 +57,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
-        AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getServer(), getLog(), project.getProperties());
+        AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
         service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
 
     }

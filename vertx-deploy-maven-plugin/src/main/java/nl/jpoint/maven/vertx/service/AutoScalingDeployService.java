@@ -16,7 +16,6 @@ import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
 
 import java.util.List;
 import java.util.Properties;
@@ -30,8 +29,8 @@ public class AutoScalingDeployService extends DeployService {
     private final Integer requestTimeout;
     private final Properties properties;
 
-    public AutoScalingDeployService(DeployConfiguration activeConfiguration, final String region, final Integer port, final Integer requestTimeout, final Server server, final Log log, Properties properties) throws MojoExecutionException {
-        super(server, log);
+    public AutoScalingDeployService(DeployConfiguration activeConfiguration, final String region, final Integer port, final Integer requestTimeout, final Log log, Properties properties) throws MojoExecutionException {
+        super(log);
         this.activeConfiguration = activeConfiguration;
         this.region = region;
         this.port = port;
@@ -46,11 +45,11 @@ public class AutoScalingDeployService extends DeployService {
 
         getLog().info("Deploy with strategy : " + activeConfiguration.getDeployStrategy().name());
 
-        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(getServer(), region, activeConfiguration, getLog());
+        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(region, activeConfiguration, getLog());
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
-        if(asGroup == null) {
+        if (asGroup == null) {
             throw new MojoFailureException("Invalid auto-scaling group");
         }
 
