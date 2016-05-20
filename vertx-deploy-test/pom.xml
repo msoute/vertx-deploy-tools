@@ -5,7 +5,7 @@
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
-        <version>3.0.4</version>
+        <version>3.0.5-SNAPSHOT</version>
     </parent>
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
@@ -19,19 +19,19 @@
         <dependency>
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
             <artifactId>vertx-deploy-test-config</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5-SNAPSHOT</version>
             <type>config</type>
         </dependency>
         <dependency>
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
             <artifactId>vertx-deploy-test-artifact</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5-SNAPSHOT</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
             <artifactId>vertx-deploy-test-application</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -40,7 +40,7 @@
             <plugin>
                 <groupId>nl.jpoint.vertx-deploy-tools</groupId>
                 <artifactId>vertx-deploy-maven-plugin</artifactId>
-                <version>3.0.4</version>
+                <version>3.0.5-SNAPSHOT</version>
                 <configuration>
                     <remoteIp>localhost</remoteIp>
                     <scopeTest>false</scopeTest>
