@@ -118,7 +118,7 @@ public class DeployUtils {
         try {
             ArtifactDescriptorResult result = repoSystem.readArtifactDescriptor(repoSession, descriptorRequest);
             Optional<org.eclipse.aether.graph.Dependency> snapshotDependency = result.getDependencies().stream()
-                    .filter(d -> d.getArtifact().getVersion().endsWith("-SNAPSHOT"))
+                    .filter(d -> d.getArtifact().isSnapshot())
                     .findFirst();
             return snapshotDependency.isPresent();
         } catch (ArtifactDescriptorException e) {
