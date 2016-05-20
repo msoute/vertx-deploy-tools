@@ -21,8 +21,6 @@ The configured system user needs sudo access to the init.d vertx script and any 
         "http.authUser": "...",
         "http.authPass": "...",
         "maven.repo.uri": "...",
-        "aws.auth.access.key":"****************",
-        "aws.auth.secret.access.key":"**********************",
         "aws.region", "eu-west-1",
         "aws.as.register.maxduration":10,
     }
@@ -35,8 +33,6 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **maven.repo.uri*** : Maven repo url
 * **maven.repo.snapshot.policy**  : Maven snapshot policy (default: always)
 * **config.location** : Location of config file (used for -conf when a verticle is instantiated)
-* **aws.auth.access.key** : Aws access key
-* **aws.auth.secret.access.key** Aws secret access key
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
@@ -105,15 +101,7 @@ identified by classifier site
         </configuration>
     </plugin>
     ...
-    
-### AWS Credendials
-Aws credentials (accessKey / secretKey) should be stored in settings(-security).xml as a server element.
 
-    <server>
-        <id>credentialsId</id>
-        <username>[accessKey]</username>
-        <password>[secretKey]</password>	
-    </server>
 
 ### DeployConfigurations
 
@@ -284,6 +272,10 @@ The following AWS actions are needed for the deploy applications
 
 
 # Changelog
+
+## 3.1.0-SNAPSHOT
+
+* [Enhancement] Drop support for aws access keys in application configuration. The deploy application now uses the default credential provider chain. [AWS Documentation](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html)
 
 ## 3.0.4
 

@@ -2,7 +2,6 @@ package nl.jpoint.maven.vertx.utils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
@@ -18,7 +17,6 @@ import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
 
 import java.util.*;
 import java.util.function.Function;
@@ -38,21 +36,18 @@ public class AwsAutoScalingDeployUtils {
     private final Log log;
 
 
-    public AwsAutoScalingDeployUtils(Server server, String region, DeployConfiguration activeConfiguration, Log log) throws MojoFailureException {
+    public AwsAutoScalingDeployUtils(String region, DeployConfiguration activeConfiguration, Log log) throws MojoFailureException {
         this.activeConfiguration = activeConfiguration;
         this.log = log;
-        if (server == null) {
-            throw new MojoFailureException("No server config provided");
-        }
-        BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
+
         Region awsRegion = Region.getRegion(Regions.fromName(region));
-        awsAsClient = new AmazonAutoScalingClient(credentials);
+        awsAsClient = new AmazonAutoScalingClient();
         awsAsClient.setRegion(awsRegion);
 
-        awsElbClient = new AmazonElasticLoadBalancingClient(credentials);
+        awsElbClient = new AmazonElasticLoadBalancingClient();
         awsElbClient.setRegion(awsRegion);
 
-        awsEc2Client = new AmazonEC2Client(credentials);
+        awsEc2Client = new AmazonEC2Client();
         awsEc2Client.setRegion(awsRegion);
 
         activeConfiguration.withAutoScalingGroup(matchAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
