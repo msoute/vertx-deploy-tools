@@ -5,7 +5,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -71,19 +70,5 @@ abstract class AbstractDeployMojo extends AbstractMojo {
 
     String projectVersionAsString() {
         return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getPackaging() + ":" + project.getVersion();
-    }
-
-    public Server getServer() throws MojoFailureException {
-        if (credentialsId == null || credentialsId.isEmpty()) {
-            throw new MojoFailureException("No CredentialsId set.");
-        }
-
-        Server server = settings.getServer(credentialsId);
-
-        if (server == null) {
-            throw new MojoFailureException("No server for id : " + credentialsId);
-        }
-
-        return server;
     }
 }

@@ -34,7 +34,8 @@ public class AwsElbUtil {
         }
         try {
             return Observable.from(elbAsyncClient.registerInstancesWithLoadBalancerAsync(new RegisterInstancesWithLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
-                    .flatMap(x -> Observable.just(loadBalancer));
+                    .flatMap(x -> Observable.just(loadBalancer))
+                    .doOnError(t -> LOG.error("Error executing request {}.", t));
         } catch (AmazonClientException e) {
             LOG.error("Error executing request {}.", e);
             throw new AwsException(e);

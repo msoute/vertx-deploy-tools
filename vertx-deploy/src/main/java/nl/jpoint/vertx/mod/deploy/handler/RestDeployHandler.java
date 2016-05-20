@@ -70,6 +70,12 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 return;
             }
 
+            if (deployRequest.withAutoScaling() && !awsService.isPresent()) {
+                LOG.error("Asking for an Aws Enabled deploy. AWS is disabled");
+                respondFailed(deployRequest.getId().toString(), context.request(), "Aws support disabled");
+                return;
+            }
+
             LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
                     deployRequest.getId().toString(),
                     deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,

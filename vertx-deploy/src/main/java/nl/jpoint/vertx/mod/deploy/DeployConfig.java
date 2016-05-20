@@ -30,6 +30,7 @@ public class DeployConfig {
     private static final String MAVEN_SNAPSHOT_POLICY = "maven.repo.snapshot.policy";
     private static final String CLUSTER = "vertx.clustering";
     private static final String DEFAULT_JAVA_OPTS = "vertx.default.java.opts";
+    private static final String AWS_AS_AUTODISCOVER = "aws.as.autodiscover";
 
     private static final String AUTH_TOKEN = "auth.token";
 
@@ -56,6 +57,8 @@ public class DeployConfig {
     private String defaultJavaOpts;
     private String runDir;
     private String statFile;
+
+    private boolean awsAutoDiscover = false;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -166,6 +169,7 @@ public class DeployConfig {
         this.awsRegion = validateField(AWS_REGION, config, AWS_DEFAULT_REGION);
         this.awsLoadbalancerId = validateField(AWS_INSTANCE_ID, config);
         this.awsEnabled = validateField(AWS_ENABLED, config, false);
+        this.awsAutoDiscover = validateField(AWS_AS_AUTODISCOVER, config, false);
 
         this.awsMaxRegistrationDuration = config.getInteger(AWS_REGISTER_MAX_DURATION, 4);
         config.remove(AWS_REGISTER_MAX_DURATION);
@@ -272,4 +276,9 @@ public class DeployConfig {
     public String getStatFile() {
         return statFile;
     }
+
+    public boolean isAwsAutoDiscover() {
+        return awsAutoDiscover;
+    }
+
 }

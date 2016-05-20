@@ -20,7 +20,6 @@ public class FileDigestUtilTest {
         fileDigestUtil = new FileDigestUtil();
     }
 
-
     @Test
     public void testFileMd5SumEquals_SameFile() throws Exception {
         Path path1 = Paths.get(FileDigestUtilTest.class.getResource("file1.txt").toURI());

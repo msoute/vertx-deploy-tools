@@ -59,6 +59,13 @@ public class DeployUtils {
         return createDeployListByType(activeConfiguration, CONFIG_TYPE).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
     }
 
+    public List<String> parseProperties(String properties) {
+        if (StringUtils.isBlank(properties)) {
+            return new ArrayList<>();
+        }
+        return Pattern.compile(";").splitAsStream(properties).collect(Collectors.toList());
+    }
+
     public List<Exclusion> parseExclusions(String exclusions) {
         List<Exclusion> result = new ArrayList<>();
         if (StringUtils.isBlank(exclusions)) {

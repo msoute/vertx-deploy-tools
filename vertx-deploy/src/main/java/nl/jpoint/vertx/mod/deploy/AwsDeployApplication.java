@@ -65,7 +65,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         server.listen(deployconfig.getHttpPort());
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
-        if (deployconfig.isAwsEnabled()) {
+        if (deployconfig.isAwsEnabled() && deployconfig.isAwsAutoDiscover()) {
             autoDiscoverDeployService.autoDiscoverFirstDeploy();
         }
     }

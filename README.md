@@ -21,8 +21,6 @@ The configured system user needs sudo access to the init.d vertx script and any 
         "http.authUser": "...",
         "http.authPass": "...",
         "maven.repo.uri": "...",
-        "aws.auth.access.key":"****************",
-        "aws.auth.secret.access.key":"**********************",
         "aws.region", "eu-west-1",
         "aws.as.register.maxduration":10,
     }
@@ -35,12 +33,11 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **maven.repo.uri*** : Maven repo url
 * **maven.repo.snapshot.policy**  : Maven snapshot policy (default: always)
 * **config.location** : Location of config file (used for -conf when a verticle is instantiated)
-* **aws.auth.access.key** : Aws access key
-* **aws.auth.secret.access.key** Aws secret access key
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
 * **vertx.clustering** : (boolean) Enables -cluster
+* **aws.as.autodiscover** (boolean) Enables auto discovery of artifacts that need to be deployed (default false)
 
 # Deploy configuration 
 ## Deploy artifacts.
@@ -104,15 +101,7 @@ identified by classifier site
         </configuration>
     </plugin>
     ...
-    
-### AWS Credendials
-Aws credentials (accessKey / secretKey) should be stored in settings(-security).xml as a server element.
 
-    <server>
-        <id>credentialsId</id>
-        <username>[accessKey]</username>
-        <password>[secretKey]</password>	
-    </server>
 
 ### DeployConfigurations
 
@@ -135,7 +124,7 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **elb** : When true the deploy application with wait for instances to come InService on attached elb's before continuing deploy. (default : *false*)
 
 #### Aws AutoScaling Configuration Options
-* **autoScalingGroupId** : The auto scaling group to get the list of instances from. 
+* **autoScalingGroupId** : The auto scaling group to get the list of instances from, can be a regex.
 * **ignoreInStandby** : When true, any instance that is in standby in the auto scaling group will also be added as host to deploy to. InStandby instances will always be deployed to first. (default : *true*)
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
 * **maxCapacity** : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
@@ -251,7 +240,23 @@ The deploy application adds an JVM property that indicates on what port the depl
 
 If an application reports an error the deploy wil fail, the same error is reported back to the maven pluging.
 
+# Auto(scaling)discover deploys
+If autoscaling is setup the deploy application can try to auto-discover what needs to be deployed on initial run. In order to do this the maven plugin
+  will store all needed data (version, scope) as a tag on the autoscaling group. The deploy application wil read these tags and create a deploy command.
+
 # AWS IAM Policy
+
+The following AWS actions are needed for the maven plugin
+
+        "autoscaling:CreateOrUpdateTags"
+        "autoscaling:DescribeAutoScalingGroups"
+        "autoscaling:DetachInstances"
+        "autoscaling:ResumeProcesses"
+        "autoscaling:SetDesiredCapacity"
+        "autoscaling:SuspendProcesses"
+        "autoscaling:UpdateAutoScalingGroup"
+        "ec2:DescribeInstances"
+        "elasticloadbalancing:DescribeInstanceHealth"
 
 The following AWS actions are needed for the deploy applications
 
@@ -268,7 +273,25 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
-## 3.0.0-SNAPSHOT
+## 3.1.0-SNAPSHOT
+
+* [Enhancement] Drop support for aws access keys in application configuration. The deploy application now uses the default credential provider chain. [AWS Documentation](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html)
+
+## 3.0.4
+
+* [Enhancement] Orderd shutdown of applications to prevent errors in the cluster
+
+## 3.0.3
+
+* [BUG] Prevent race condition if an application sends multiple status updates causing the deploy to fail.
+
+## 3.0.2
+* [Enhancement] Enable / disable auto-discover deploys) disabled by default ( **aws.as.autodiscover** )
+
+## 3.0.1
+* [BUG] Fix bug in autodiscover builds when a classifier is used to create artifacts for multiple environments
+
+## 3.0.0
 
 * [Upgrade] Move to vertx.3
 * [Feature] Add phone home function

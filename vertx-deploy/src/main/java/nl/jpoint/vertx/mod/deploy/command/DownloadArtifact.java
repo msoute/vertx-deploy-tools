@@ -27,7 +27,7 @@ public class DownloadArtifact<T extends ModuleRequest> implements Command<T> {
     @Override
     public Observable<T> executeAsync(T request) {
         final URI location = config.getNexusUrl().resolve(config.getNexusUrl().getPath() + "/" + request.getRemoteLocation());
-        return new RxHttpUtil(rxVertx, config).get(location, config.getArtifactRepo() + "/" + request.getFileName())
+        return new RxHttpUtil(rxVertx, config).get(request.getId(), location, config.getArtifactRepo() + "/" + request.getFileName())
                 .flatMap(x -> {
                     if (x.statusCode() != HttpResponseStatus.OK.code()) {
                         LOG.error("[{} - {}]: Error downloading artifact {} for url {}.", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId(), location);
