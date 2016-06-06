@@ -118,6 +118,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
         List<String> runningApplications = new ProcessUtils(config).listModules();
         FileSystem fs = new io.vertx.rxjava.core.Vertx(vertx).fileSystem();
 
+
         return fs.readDirObservable(config.getRunDir())
                 .flatMapIterable(x -> x)
                 .flatMap(s -> just(Pattern.compile("/").splitAsStream(s).reduce((a, b) -> b).orElse("")))
