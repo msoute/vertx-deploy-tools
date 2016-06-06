@@ -12,6 +12,7 @@ public class DeployApplicationRequest extends ModuleRequest {
     private String javaOpts = "";
     private String instances = "1";
     private boolean installed = false;
+    private boolean testScope = false;
 
     @JsonCreator
     public DeployApplicationRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
@@ -48,6 +49,14 @@ public class DeployApplicationRequest extends ModuleRequest {
 
     public void withInstances(String instances) {
         this.instances = instances;
+    }
+
+    public void withTestScope(boolean testScope) {
+        this.testScope = testScope;
+    }
+
+    public boolean isTestScope() {
+        return this.testScope;
     }
 
     public String getJavaOpts() {

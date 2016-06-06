@@ -17,6 +17,7 @@ public abstract class ModuleRequest {
     private String remoteBase;
 
     private boolean restart = false;
+    private boolean scopeTest = false;
 
     private Optional<String> restartCommand;
     private Optional<String> testCommand;
@@ -130,4 +131,8 @@ public abstract class ModuleRequest {
     public abstract boolean checkConfig();
 
     public abstract String getLogName();
+
+    public void withTestScope(boolean scopeTest) {
+        this.scopeTest = scopeTest;
+    }
 }
