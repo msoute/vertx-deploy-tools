@@ -276,6 +276,7 @@ The following AWS actions are needed for the deploy applications
 ## 3.1.0-SNAPSHOT
 
 * [Enhancement] Drop support for aws access keys in application configuration. The deploy application now uses the default credential provider chain. [AWS Documentation](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html)
+* [Enhancement] add jvm param `deploy.scope.test` during start of verticle. Based on maven deploy config `testScope` value (default : false)
 
 ## 3.0.4
 

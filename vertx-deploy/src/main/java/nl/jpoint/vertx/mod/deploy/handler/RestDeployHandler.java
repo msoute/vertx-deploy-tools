@@ -173,6 +173,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> deployApplications(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_APPLICATIONS, deployRequest.getId().toString()));
         if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
+            deployRequest.getModules().forEach(m -> m.withTestScope(deployRequest.isScopeTest()));
             return deployService.deployApplications(deployRequest.getId(), deployRequest.getModules())
                     .flatMap(x -> just(deployRequest));
         }

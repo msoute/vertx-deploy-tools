@@ -111,6 +111,7 @@ public class AutoScalingDeployService extends DeployService {
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
                     .withDecrementDesiredCapacity(activeConfiguration.isDecrementDesiredCapacity())
                     .withRestart(activeConfiguration.doRestart())
+                    .withTestScope(activeConfiguration.isTestScope())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
