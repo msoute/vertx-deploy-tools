@@ -101,7 +101,7 @@ public class AutoDiscoverDeployService {
 
         List<DeployApplicationRequest> applications = dependencies.stream()
                 .filter(a -> "jar".equals(a.getExtension()))
-                .map(a -> DeployApplicationRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
+                .map(a -> DeployApplicationRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier(), testScope))
                 .collect(Collectors.toList());
 
         return new DeployRequest(applications, artifacts, configs, false, false, "", false, testScope);
