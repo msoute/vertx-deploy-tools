@@ -46,6 +46,13 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         String path = "/etc/default/" + request.getGroupId() + ":" + request.getArtifactId();
         return rxVertx.fileSystem().existsObservable(path)
                 .flatMap(exists -> {
+                    if (!exists) {
+                        return rxVertx.fileSystem().existsObservable(path.replace(":", "~"));
+                    } else {
+                        return just(true);
+                    }
+                })
+                .flatMap(exists -> {
                     if (exists) {
                         return rxVertx.fileSystem().readFileObservable(path)
                                 .flatMap(buffer -> {

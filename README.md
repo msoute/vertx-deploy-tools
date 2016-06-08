@@ -285,9 +285,12 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.0.5
+* [Enhancement] Also check for service config files in the form of [groupId]~[artifactId]
+
 ## 3.0.4
 
-* [Enhancement] Orderd shutdown of applications to prevent errors in the cluster
+* [Enhancement] Ordered shutdown of applications to prevent errors in the cluster
 
 ## 3.0.3
 
