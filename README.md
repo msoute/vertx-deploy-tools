@@ -285,9 +285,12 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
-## 3.0.4
+## 3.0.5
+* [BUG] Do not create AutoDiscoverDeployService if AWS is not enabled.
+* [BUG] Create runDir before starting cleanup.
 
-* [Enhancement] Orderd shutdown of applications to prevent errors in the cluster
+## 3.0.4
+* [Enhancement] Ordered shutdown of applications to prevent errors in the cluster
 
 ## 3.0.3
 
