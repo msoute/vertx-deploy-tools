@@ -90,13 +90,22 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         command.add("-Dvertxdeploy.port=" + config.getHttpPort());
         command.add("-Dvertxdeploy.scope.test=" + deployApplicationRequest.isTestScope());
         ProcessBuilder processBuilder = new ProcessBuilder().command(command);
-        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(deployApplicationRequest, 0, rxVertx);
+        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(deployApplicationRequest, 0, rxVertx, false);
 
         return observableCommand.execute(processBuilder)
+                .flatMap(exitCode -> handleExitCode(deployApplicationRequest, exitCode))
                 .flatMap(x -> just(deployApplicationRequest))
                 .doOnCompleted(() -> LOG.info("[{} - {}]: Started module '{}' with applicationID '{}'", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId(), deployApplicationRequest.getMavenArtifactId()))
                 .doOnError(t -> LOG.error("[{} - {}]: Failed to initialize application {} with error '{}'", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId(), t));
     }
+
+    /*private Observable<Integer> handleExitCode(DeployApplicationRequest request, Integer exitCode) {
+        if (exitCode != 0) {
+            LOG.error("[{} -{}]: Error while running application {} with error {}",LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), ExitCodes.values()[exitCode]);
+            throw new IllegalStateException("Error while running application " + request.getModuleId() + " with error " + ExitCodes.values()[exitCode]);
+        }
+        return just(exitCode);
+    }*/
 
     private String buildRemoteRepo() {
         URI remoteRepo = config.getNexusUrl();
