@@ -29,15 +29,18 @@ public class AwsDeployApplication extends AbstractVerticle {
         final DeployArtifactService deployArtifactService = new DeployArtifactService(getVertx(), deployconfig);
         final DeployConfigService deployConfigService = new DeployConfigService(getVertx(), deployconfig);
         final DefaultDeployService defaultDeployService = new DefaultDeployService(deployApplicationService, deployArtifactService, deployConfigService);
-        final AutoDiscoverDeployService autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService, getVertx());
+
+        this.createRunDir(deployconfig);
 
         deployApplicationService.cleanup().subscribe();
 
-        this.createRunDir(deployconfig);
         AwsService awsService = null;
+        AutoDiscoverDeployService autoDiscoverDeployService = null;
 
         if (deployconfig.isAwsEnabled()) {
             awsService = (new AwsService(getVertx(), deployconfig));
+            autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService, getVertx());
+
         }
 
         Router router = Router.router(getVertx());
@@ -65,7 +68,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         server.listen(deployconfig.getHttpPort());
         initiated = true;
         LOG.info("{}: Instantiated module.", LogConstants.CLUSTER_MANAGER);
-        if (deployconfig.isAwsEnabled() && deployconfig.isAwsAutoDiscover()) {
+        if (deployconfig.isAwsEnabled() && deployconfig.isAwsAutoDiscover() && autoDiscoverDeployService != null) {
             autoDiscoverDeployService.autoDiscoverFirstDeploy();
         }
     }
