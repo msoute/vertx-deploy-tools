@@ -39,7 +39,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.2.0</vertx.platform.version>
+        <vertx.platform.version>3.3.0-SNAPSHOT</vertx.platform.version>
         <aws.sdk.version>1.10.39</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>1.10.19</mockito.version>
@@ -284,6 +284,15 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
     <developers>
         <developer>
             <id>marcel.soute</id>
