@@ -183,8 +183,8 @@ public class DeployConfig {
     }
 
     private DeployConfig withHttpAuth(JsonObject config) {
-        this.httpAuthUser = validateField(HTTP_AUTH_USER, config);
-        this.httpAuthPassword = validateField(HTTP_AUTH_PASSWORD, config);
+        this.httpAuthUser = validateField(HTTP_AUTH_USER, config, "");
+        this.httpAuthPassword = validateField(HTTP_AUTH_PASSWORD, config, "");
 
         if (!httpAuthUser.isEmpty() && !httpAuthPassword.isEmpty()) {
             LOG.info("Enabled http authentication.");

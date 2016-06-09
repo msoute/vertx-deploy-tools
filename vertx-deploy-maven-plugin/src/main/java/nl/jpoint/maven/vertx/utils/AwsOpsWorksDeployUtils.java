@@ -1,7 +1,6 @@
 package nl.jpoint.maven.vertx.utils;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.opsworks.AWSOpsWorksClient;
@@ -10,7 +9,6 @@ import com.amazonaws.services.opsworks.model.DescribeInstancesResult;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
 
 
 public class AwsOpsWorksDeployUtils {
@@ -18,10 +16,9 @@ public class AwsOpsWorksDeployUtils {
     private final AWSOpsWorksClient awsOpsWorksClient;
 
 
-    public AwsOpsWorksDeployUtils(Server server, String region) throws MojoFailureException {
-        BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
+    public AwsOpsWorksDeployUtils(String region) throws MojoFailureException {
         Region awsRegion = Region.getRegion(Regions.fromName(region));
-        awsOpsWorksClient = new AWSOpsWorksClient(credentials);
+        awsOpsWorksClient = new AWSOpsWorksClient();
         awsOpsWorksClient.setRegion(awsRegion);
     }
 

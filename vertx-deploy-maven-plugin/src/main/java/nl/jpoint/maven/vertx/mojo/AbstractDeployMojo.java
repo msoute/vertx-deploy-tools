@@ -4,7 +4,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 
 import java.util.List;
@@ -21,8 +20,6 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     private String activeTarget;
     @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
     protected Integer requestTimeout;
-    @Parameter(property = "deploy.credentialsId")
-    protected String credentialsId;
     @Parameter(defaultValue = "6789")
     protected Integer port;
     @Parameter(defaultValue = "eu-west-1")
@@ -62,19 +59,5 @@ abstract class AbstractDeployMojo extends AbstractMojo {
 
     String projectVersionAsString() {
         return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getPackaging() + ":" + project.getVersion();
-    }
-
-    public Server getServer() throws MojoFailureException {
-        if (credentialsId == null || credentialsId.isEmpty()) {
-            throw new MojoFailureException("No CredentialsId set.");
-        }
-
-        Server server = settings.getServer(credentialsId);
-
-        if (server == null) {
-            throw new MojoFailureException("No server for id : " + credentialsId);
-        }
-
-        return server;
     }
 }

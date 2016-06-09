@@ -17,7 +17,7 @@ public class DefaultDeployService extends DeployService {
     private final Integer requestTimeout;
 
     public DefaultDeployService(DeployConfiguration activeConfiguration, final Integer port, final Integer requestTimeout, Log log) {
-        super(null, log);
+        super(log);
         this.activeConfiguration = activeConfiguration;
         this.port = port;
         this.requestTimeout = requestTimeout;

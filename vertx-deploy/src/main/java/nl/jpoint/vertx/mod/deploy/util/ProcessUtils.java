@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,8 +44,8 @@ public class ProcessUtils {
         List<String> moduleIds = this.listModules();
         return moduleIds.stream()
                 .map(this::parseModuleString)
-                .collect(Collectors.toMap((Function<JsonObject, String>) jsonObject -> jsonObject.getString(Constants.MAVEN_ID),
-                        (Function<JsonObject, String>) jsonObject -> jsonObject.getString(Constants.MODULE_VERSION)));
+                .collect(Collectors.toMap(jsonObject -> jsonObject.getString(Constants.MAVEN_ID),
+                        jsonObject -> jsonObject.getString(Constants.MODULE_VERSION)));
     }
 
     private JsonObject parseModuleString(String moduleString) {
