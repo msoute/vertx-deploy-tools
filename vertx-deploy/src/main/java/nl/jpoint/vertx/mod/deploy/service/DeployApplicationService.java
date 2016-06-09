@@ -114,9 +114,10 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .flatMap(x -> just(deployRequest));
     }
 
-    public Observable<?> cleanup() {
+    public Observable<Boolean> cleanup() {
         List<String> runningApplications = new ProcessUtils(config).listModules();
         FileSystem fs = new io.vertx.rxjava.core.Vertx(vertx).fileSystem();
+
 
         return fs.readDirObservable(config.getRunDir())
                 .flatMapIterable(x -> x)
@@ -124,8 +125,11 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .filter(s -> !s.isEmpty() && !runningApplications.contains(s))
                 .flatMap(file -> fs.deleteObservable(config.getRunDir() + file))
                 .toList()
-                .flatMap(x -> just(null))
-                .doOnError(t -> LOG.error("Error during cleanup of run files {}", t.getMessage()));
+                .flatMap(x -> just(Boolean.TRUE).doOnError(t -> LOG.error("error")))
+                .onErrorReturn(x -> {
+                    LOG.error("Error during cleanup of run files {}", x.getMessage());
+                    return Boolean.FALSE;
+                });
     }
 
     public void addApplicationDeployResult(boolean succeeded, String message, String deploymentId) {
