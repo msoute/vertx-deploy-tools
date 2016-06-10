@@ -33,6 +33,7 @@ public class RxHttpUtil {
 
     public Observable<HttpClientResponse> get(UUID id, URI location, String filename) {
         return executeGet(httpClient.getAbs(location.toString()), HttpClientRequest::end, filename)
+                .retry(3)
                 .doOnError(t -> LOG.error("[{}]: Error downloading file {} from location {}, {}", id.toString(), filename, location.toString(), t.getMessage()));
     }
 
