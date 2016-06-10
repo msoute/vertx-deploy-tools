@@ -40,10 +40,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <vertx.platform.version>3.3.0-SNAPSHOT</vertx.platform.version>
-        <aws.sdk.version>1.10.39</aws.sdk.version>
+        <aws.sdk.version>1.11.7</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>1.10.19</mockito.version>
-        <aetherVersion>1.0.2.v20150114</aetherVersion>
+        <aetherVersion>1.1.0</aetherVersion>
         <mavenVersion>3.1.0</mavenVersion>
     </properties>
 
@@ -52,7 +52,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.2.6</version>
+                <version>4.3.5</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
