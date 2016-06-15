@@ -12,11 +12,10 @@
 
 . /etc/default/vertx
 
-DEPLOY_MOD=nl.jpoint.vertx-deploy-tools~vertx-deploy-mod~$VERTX_DEPLOY_MOD_VERSION
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DEPLOY_APP=nl.jpoint.vertx-deploy-tools:vertx-deploy:$VERTX_DEPLOY_MOD_VERSION
 DAEMON=$VERTX_HOME/bin/vertx
-DAEMON_OPTS="runmod $VERTICLE -instances 1 -cluster $"
-BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
+BOOTSTRAP_OPTS="start maven:$DEPLOY_APP -instances 1 -conf /etc/vertx/config.json -id $DEPLOY_APP"
 
 PIDDIR=/var/run/vertx
 PIDFILE=$PIDDIR/$VERTICLE.pid
@@ -53,17 +52,6 @@ stop_module () {
 		log_end_msg 0
 		exit 0
 	fi
-}
-
-bootstrap_container () {
-    PIDFILE=$PIDDIR/$DEPLOY_MOD.pid
-	if [ -f $PIDFILE ]; then
-	        stop_module $PIDFILE
-	fi
-    rm -rf /opt/vert.x/sys-mods/nl.jpoint.vertx-deploy-tools~vertx-deploy-mod*
-    $DAEMON install $DEPLOY_MOD
-	BOOTSTRAP_OPTS="runmod $DEPLOY_MOD -instances 1 -conf /etc/vertx/deploy.json"
-    start-stop-daemon --user $VERTX_USER -c $VERTX_USER:$VERTX_USER --chuid $VERTX_USER --umask 0000 --chdir $VERTX_HOME --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON  -- $BOOTSTRAP_OPTS || true
 }
 
 start_deploy_mod () {
