@@ -7,9 +7,18 @@
         </encoder>
     </appender>
 
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
     <logger name="io.netty" level="off"/>
 
     <root level="INFO">
+        <appender-ref ref="STDOUT"/>
         <appender-ref ref="DEPLOY-FILE"/>
     </root>
 </configuration>

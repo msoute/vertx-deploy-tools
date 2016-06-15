@@ -17,6 +17,7 @@ RUN wget -P /usr/local/vertx/lib http://central.maven.org/maven2/org/slf4j/slf4j
 COPY init/defaults /etc/default/vertx
 COPY init/debian.vertx.deploy /etc/init.d/vertx-deploy
 COPY config/config.json /etc/vertx/config.json
+COPY config/service-config.json /etc/vertx/service-config.json
 COPY config/logback.xml /usr/local/vertx/conf/logback.xml
 
 RUN chown -R vertx:vertx /usr/local/vertx
@@ -26,7 +27,9 @@ RUN chown -R vertx:vertx /var/cache/vertx
 
 #USER vertx
 
-#ENTRYPOINT vertx run maven:nl.jpoint.vertx-deploy-tools:vertx-deploy-mod:3.0.5 -instances 1 -conf /etc/vertx/config.json -id nl.jpoint.vertx-deploy-tools:vertx-deploy-mod:3.0.5
+EXPOSE 6789 6789
+
+ENTRYPOINT vertx run -Dvertx.maven.remoteRepos=https://oss.sonatype.org/content/repositories/snapshots/ -Dvertx.maven.remoteSnapshotPolicy=always maven:nl.jpoint.vertx-deploy-tools:vertx-deploy:3.1.0-SNAPSHOT -instances 1 -conf /etc/vertx/config.json -id nl.jpoint.vertx-deploy-tools:vertx-deploy:3.1.0-SNAPSHOT
 
 
 

@@ -23,7 +23,7 @@
 
 #sysconfig="/etc/sysconfig/$prog"
 
-DEPLOY_MOD=nl.jpoint.vertx-deploy-tools:vertx-deploy-mod:3.0.0-alpha3
+DEPLOY_MOD=nl.jpoint.vertx-deploy-tools:vertx-deploy-mod:3.0.5
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=$VERTX_HOME/bin/vertx
 BOOTSTRAP_OPTS="start maven:$DEPLOY_MOD -instances 1 -conf /etc/vertx/config.json -id $DEPLOY_MOD"
