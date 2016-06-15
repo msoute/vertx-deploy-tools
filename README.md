@@ -6,6 +6,12 @@ Tooling to deploy Vert.X applications, generic artifacts and (application) confi
 
 # Installation / Configuration
 
+## Docker
+for deploy mod 3.0.5 
+`docker run --net=[networkname] --name vertx-deploy msoute/vertx-deploy:3.0.5`
+for the latest
+`docker run --net=[networkname] --name vertx-deploy msoute/vertx-deploy:devel`
+
 ## Installation.
 Install as any other application in with max 1 verticle instance.
 Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
