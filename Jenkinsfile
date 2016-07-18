@@ -1,11 +1,6 @@
 node {
     stage 'Checkout'
-    checkout changelog: true, poll: true, scm: [
-            $class: 'GitSCM',
-            branches: [[name: '*/master']],
-            browser: [$class: 'GitLab', repoUrl: '<repo-url>', version: '8.6'],
-            userRemoteConfigs: [[credentialsId: '<credentials-id>', url: '<git-url>']]
-    ]
+    checkout changelog: true, poll: true
 
     stage name: 'Build', concurrency: 1
     gitlabCommitStatus {
