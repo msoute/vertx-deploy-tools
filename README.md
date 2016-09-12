@@ -13,11 +13,13 @@ for the latest
 `docker run --net=[networkname] --name vertx-deploy msoute/vertx-deploy:devel`
 
 ## Installation.
-Install as any other application in with max 1 verticle instance.
+Install as any other application with max 1 verticle instance.
 Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
 Place defaults in /etc/defaults/vertx and configure as needed.
 
 The configured system user needs sudo access to the init.d vertx script and any (test) command. The user also needs write access to directories configured for artifacts
+
+*note* Prior to Vert.x 3.2.1 a custom distribution needs to be used since the maven service factory depended on an older version of httpclient. 
 
 ## Configuration
 
@@ -283,6 +285,8 @@ The following AWS actions are needed for the deploy applications
 
 * [Enhancement] Drop support for aws access keys in application configuration. The deploy application now uses the default credential provider chain. [AWS Documentation](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html)
 * [Enhancement] add jvm param `deploy.scope.test` during start of verticle. Based on maven deploy config `testScope` value (default : false)
+* [Upgrade] Updated to vert.x 3.3
+* [Upgrade] Updated dependency versions 
 
 ## 3.0.5
 * [BUG] Create runDir before starting cleanup #35

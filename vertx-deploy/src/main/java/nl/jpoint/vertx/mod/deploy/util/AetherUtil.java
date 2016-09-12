@@ -21,7 +21,10 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class AetherUtil {
 
@@ -84,15 +87,6 @@ public class AetherUtil {
         } catch (IOException | XmlPullParserException e) {
             return null;
         }
-    }
-
-    private static Properties toProperties(Map<String, String> properties) {
-        Properties props = new Properties();
-        if (properties == null || properties.isEmpty()) {
-            return props;
-        }
-        properties.entrySet().forEach(e -> props.setProperty(e.getKey(), e.getValue()));
-        return props;
     }
 
     private static RemoteRepository newCentralRepository() {

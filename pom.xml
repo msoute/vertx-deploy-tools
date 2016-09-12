@@ -8,8 +8,7 @@
     <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <description>Vert.x application for deploying of other Vert.x applications with support for AWS based
-        infrastructure.
+    <description>Vert.x application for deploying of other Vert.x applications with support for AWS based infrastructure.
     </description>
     <url>https://github.com/msoute/vertx-deploy-tools</url>
     <licenses>
@@ -44,7 +43,7 @@
         <aws.sdk.version>1.11.23</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>1.10.19</mockito.version>
-        <aetherVersion>1.0.2.v20150114</aetherVersion>
+        <aetherVersion>1.1.0</aetherVersion>
         <mavenVersion>3.1.0</mavenVersion>
     </properties>
 
@@ -53,7 +52,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.2.6</version>
+                <version>4.3.5</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
@@ -302,6 +301,15 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
     <developers>
         <developer>
             <id>marcel.soute</id>
