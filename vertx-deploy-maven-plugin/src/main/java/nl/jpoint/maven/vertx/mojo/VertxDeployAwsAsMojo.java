@@ -46,7 +46,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DeployUtils utils = new DeployUtils(getLog(), project);
+        final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
+
         activeConfiguration = this.createConfiguration();
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
         activeConfiguration.getAutoScalingProperties().addAll(utils.parseProperties(properties));

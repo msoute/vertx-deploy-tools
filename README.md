@@ -295,7 +295,7 @@ The following AWS actions are needed for the deploy applications
 
 ## 3.0.4
 
-* [Enhancement] Orderd shutdown of applications to prevent errors in the cluster
+* [Enhancement] Ordered shutdown of applications to prevent errors in the cluster
 
 ## 3.0.3
 

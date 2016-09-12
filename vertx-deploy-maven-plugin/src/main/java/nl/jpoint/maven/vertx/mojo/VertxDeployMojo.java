@@ -22,7 +22,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
             throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has both OpsWorks and Autoscaling enabled");
         }
 
-        final DeployUtils utils = new DeployUtils(getLog(), project);
+        final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
 
         final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
         final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);

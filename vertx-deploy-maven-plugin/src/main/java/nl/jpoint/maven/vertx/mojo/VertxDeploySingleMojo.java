@@ -34,7 +34,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DeployUtils utils = new DeployUtils(getLog(), project);
+        final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
         setActiveDeployConfig();
 
         if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsWorks()) {
