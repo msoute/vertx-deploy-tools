@@ -89,6 +89,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         }
         command.add("-Dvertxdeploy.port=" + config.getHttpPort());
         command.add("-Dvertxdeploy.scope.test=" + deployApplicationRequest.isTestScope());
+
         ProcessBuilder processBuilder = new ProcessBuilder().command(command);
         ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(deployApplicationRequest, 0, rxVertx, false);
 
