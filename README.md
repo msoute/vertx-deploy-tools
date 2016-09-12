@@ -324,7 +324,7 @@ The following AWS actions are needed for the deploy applications
 
 ## 1.2.0
 
-* [Feature] Auto remove InStandby instances from an autoscaling group if the instances has already been terminated [#11](vertx-deploy-tools/issues/11).
+* [Feature] Auto remove InStandby instances from an autoscaling group if the instances has already been terminated (#11).
 * [Feature] Add support to check if config has changed and force a restart of the container.
 * [Feature] Add support for seamless deploy without capacity loss to autoscaling groups with option `keepCurrentCapacity` defaults to true.
 * [Feature] Add local run support `deploy.internal`.
