@@ -32,8 +32,10 @@ public class DeployRequest {
     private final String asGroupId;
     @JsonProperty(value = "as_decrement_desired_capacity")
     private final boolean decrementDesiredCapacity;
+    @JsonProperty(value = "test_scope")
+    private final boolean testScope;
 
-    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String asGroupId, boolean decrementDesiredCapacity) {
+    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String asGroupId, boolean decrementDesiredCapacity, boolean testScope) {
         this.modules = modules;
         this.artifacts = artifacts;
         this.configs = configs;
@@ -42,6 +44,7 @@ public class DeployRequest {
         this.asGroupId = asGroupId;
         this.decrementDesiredCapacity = decrementDesiredCapacity;
         this.autoScaling = (asGroupId != null);
+        this.testScope = testScope;
     }
 
     public String toJson(boolean pretty) {
@@ -69,6 +72,7 @@ public class DeployRequest {
         private boolean restart = true;
         private boolean decrementDesiredCapacity = true;
         private String autoScalingGroup = "";
+        private boolean testScope = false;
 
         public Builder withElb(final boolean elb) {
             this.elb = elb;
@@ -95,6 +99,11 @@ public class DeployRequest {
             return this;
         }
 
+        public Builder withTestScope(boolean testScope) {
+            this.testScope = testScope;
+            return this;
+        }
+
         public Builder withAutoScalingGroup(final String autoScalingGroup) {
             this.autoScalingGroup = autoScalingGroup;
             return this;
@@ -107,7 +116,7 @@ public class DeployRequest {
 
 
         public DeployRequest build() {
-            return new DeployRequest(modules, artifacts, configs, elb, restart, autoScalingGroup, decrementDesiredCapacity);
+            return new DeployRequest(modules, artifacts, configs, elb, restart, autoScalingGroup, decrementDesiredCapacity, testScope);
         }
     }
 }

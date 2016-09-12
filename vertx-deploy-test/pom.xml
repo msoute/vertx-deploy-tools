@@ -46,7 +46,7 @@
                     <scopeTest>false</scopeTest>
                     <withConfig>true</withConfig>
                     <allowSnapshots>true</allowSnapshots>
-                    <authToken>token</authToken>
+                    <authToken>vertx</authToken>
                     <restart>true</restart>
                 </configuration>
             </plugin>

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.io.*;
-import java.util.Map;
 
 import static rx.Observable.just;
 
@@ -18,22 +17,24 @@ public class ObservableCommand<R extends ModuleRequest> {
     private static Process process;
     private final Integer expectedResultCode;
     private final Vertx rxVertx;
+    private final boolean throwException;
     private final R request;
 
-    public ObservableCommand(R request, Integer expectedResultCode, Vertx vertx) {
+    public ObservableCommand(R request, Integer expectedResultCode, Vertx vertx, boolean throwException) {
         this.request = request;
         this.expectedResultCode = expectedResultCode;
         this.rxVertx = vertx;
+        this.throwException = throwException;
     }
 
-    public Observable<R> execute(ProcessBuilder builder) {
+    public Observable<Integer> execute(ProcessBuilder builder) {
         return observableCommand(builder)
                 .flatMap(x -> waitForExit())
                 .flatMap(x -> {
-                    if (process.exitValue() != expectedResultCode) {
+                    if (process.exitValue() != expectedResultCode && throwException) {
                         throw new IllegalStateException("Error executing process");
                     }
-                    return just(request);
+                    return just(x);
                 });
     }
 
@@ -43,7 +44,7 @@ public class ObservableCommand<R extends ModuleRequest> {
                     if (process.isAlive()) {
                         return waitForExit();
                     } else {
-                        if (process.exitValue() != expectedResultCode) {
+                        if (process.exitValue() != expectedResultCode && throwException) {
                             throw new IllegalStateException("Error while executing process");
                         }
                         return just(process.exitValue());

@@ -61,17 +61,18 @@ public class AutoDiscoverDeployService {
         }
 
         Artifact deployArtifact = getDeployArtifact(tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG));
+        boolean testScope = Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false"));
 
         if (deployArtifact != null) {
             List<Artifact> dependencies = getDeployDependencies(deployArtifact,
                     getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
-                    Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false")),
+                    testScope,
                     getProperties(tags.getOrDefault(AwsAutoScalingUtil.PROPERTIES_TAGS, "")));
 
             dependencies.stream().forEach(a -> LOG.error("{}:{}:{}:{}", a.getGroupId(), a.getArtifactId(), a.getClassifier(), a.getVersion()));
 
 
-            DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies);
+            DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies, testScope);
             LOG.info("[{}] : Starting auto discover deploy ", request.getId());
             just(request)
                     .flatMap(x -> defaultDeployService.deployConfigs(request.getId(), request.getConfigs()))
@@ -87,7 +88,7 @@ public class AutoDiscoverDeployService {
 
     }
 
-    private DeployRequest createAutoDiscoverDeployRequest(List<Artifact> dependencies) {
+    private DeployRequest createAutoDiscoverDeployRequest(List<Artifact> dependencies, boolean testScope) {
         List<DeployConfigRequest> configs = dependencies.stream()
                 .filter(a -> "config".equals(a.getExtension()))
                 .map(a -> DeployConfigRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
@@ -100,10 +101,10 @@ public class AutoDiscoverDeployService {
 
         List<DeployApplicationRequest> applications = dependencies.stream()
                 .filter(a -> "jar".equals(a.getExtension()))
-                .map(a -> DeployApplicationRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
+                .map(a -> DeployApplicationRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier(), testScope))
                 .collect(Collectors.toList());
 
-        return new DeployRequest(applications, artifacts, configs, false, false, "", false);
+        return new DeployRequest(applications, artifacts, configs, false, false, "", false, testScope);
     }
 
 

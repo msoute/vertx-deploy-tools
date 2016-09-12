@@ -99,7 +99,7 @@ public class AwsAutoScalingDeployUtils {
             List<Ec2Instance> ec2Instances = instancesResult.getReservations().stream().flatMap(r -> r.getInstances().stream()).map(this::toEc2Instance).collect(Collectors.toList());
             log.debug("describing elb status");
             autoScalingGroup.getLoadBalancerNames().forEach(elb -> this.updateInstancesStateOnLoadBalancer(elb, ec2Instances));
-            ec2Instances.stream().forEach(i -> i.updateAsState(AwsState.map(instanceMap.get(i.getInstanceId()).getLifecycleState())));
+            ec2Instances.forEach(i -> i.updateAsState(AwsState.map(instanceMap.get(i.getInstanceId()).getLifecycleState())));
             Collections.sort(ec2Instances, (o1, o2) -> {
 
                 int sComp = o1.getAsState().compareTo(o2.getAsState());
@@ -145,7 +145,7 @@ public class AwsAutoScalingDeployUtils {
 
     private void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
         DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(loadBalancerName));
-        instances.stream().forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
+        instances.forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
     }
 
     public void updateInstanceState(Ec2Instance instance, List<String> loadBalancerNames) {
@@ -252,7 +252,7 @@ public class AwsAutoScalingDeployUtils {
         if (matchedGroups == null || matchedGroups.isEmpty() || matchedGroups.size() != 1) {
             int matchSize = matchedGroups == null ? -1 : matchedGroups.size();
             if (matchSize > 0) {
-                matchedGroups.stream().forEach(group -> log.error("Matched group : " + group));
+                matchedGroups.forEach(group -> log.error("Matched group : " + group));
             }
             throw new IllegalStateException("Unable to match group regex, matched group size " + matchSize);
         }

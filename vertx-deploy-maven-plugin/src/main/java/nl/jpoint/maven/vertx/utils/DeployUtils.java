@@ -94,7 +94,7 @@ public class DeployUtils {
 
         Iterator<Dependency> it = dependencies.iterator();
 
-        FilterTestArtifacts(activeConfiguration, it);
+        filterTestArtifacts(activeConfiguration, it);
 
         for (Dependency dependency : dependencies) {
             if ((dependency.getVersion().endsWith("-SNAPSHOT") || hasTransitiveSnapshots(dependency)) && !activeConfiguration.isDeploySnapshots()) {
@@ -140,7 +140,7 @@ public class DeployUtils {
         return false;
     }
 
-    private void FilterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<Dependency> it) {
+    private void filterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<Dependency> it) {
         if (!activeConfiguration.isTestScope()) {
             while (it.hasNext()) {
                 Dependency dependency = it.next();
