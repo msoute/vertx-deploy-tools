@@ -6,13 +6,15 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.*;
+import com.amazonaws.services.autoscaling.model.Instance;
+import com.amazonaws.services.autoscaling.model.Tag;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthResult;
-import com.amazonaws.services.elasticloadbalancing.model.InstanceState;
+import com.amazonaws.services.elasticloadbalancing.model.*;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -28,6 +30,7 @@ public class AwsAutoScalingDeployUtils {
     private static final String SCOPE_TAG = "deploy:scope:tst";
     private static final String EXCLUSION_TAG = "deploy:exclusions";
     private static final String PROPERTIES_TAGS = "deploy:classifier:properties";
+    private static final String DEPLOY_STICKINESS_POLICY = "deploy-stickiness-policy";
 
     private final AmazonAutoScalingClient awsAsClient;
     private final AmazonElasticLoadBalancingClient awsElbClient;
@@ -118,6 +121,39 @@ public class AwsAutoScalingDeployUtils {
             throw new MojoFailureException(e.getMessage());
         }
 
+    }
+
+    public void enableStickiness(String loadbalancerName, List<Integer> ports) {
+        awsElbClient.createLBCookieStickinessPolicy(new CreateLBCookieStickinessPolicyRequest().withPolicyName(DEPLOY_STICKINESS_POLICY + "-" + loadbalancerName).withLoadBalancerName(loadbalancerName));
+        describeMatchingElbListeners(loadbalancerName, ports).forEach(l -> enableStickinessOnListener(loadbalancerName, l));
+    }
+
+    public void disableStickiness(String loadbalancerName, List<Integer> ports) {
+        describeMatchingElbListeners(loadbalancerName, ports).forEach(l -> disableStickinessOnListener(loadbalancerName, l));
+        awsElbClient.deleteLoadBalancerPolicy(new DeleteLoadBalancerPolicyRequest().withLoadBalancerName(loadbalancerName).withPolicyName(DEPLOY_STICKINESS_POLICY + "-" + loadbalancerName));
+    }
+
+    private List<ListenerDescription> describeMatchingElbListeners(String loadbalancerName, List<Integer> ports) {
+        DescribeLoadBalancersResult loadbalancer = awsElbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withLoadBalancerNames(loadbalancerName));
+        LoadBalancerDescription description = loadbalancer.getLoadBalancerDescriptions().get(0);
+        return description.getListenerDescriptions().stream()
+                .filter(d -> ports.contains(d.getListener().getInstancePort()))
+                .filter(d -> d.getListener().getProtocol().startsWith("HTTP"))
+                .collect(Collectors.toList());
+    }
+
+    private void enableStickinessOnListener(String loadbalancerName, ListenerDescription listenerDescription) {
+        log.info("Enable stickiness on loadbalancer " + loadbalancerName + " : " + listenerDescription.getListener().getInstancePort());
+        List<String> policyNames = new ArrayList<>(listenerDescription.getPolicyNames());
+        policyNames.add(DEPLOY_STICKINESS_POLICY + "-" + loadbalancerName);
+        awsElbClient.setLoadBalancerPoliciesOfListener(new SetLoadBalancerPoliciesOfListenerRequest().withLoadBalancerName(loadbalancerName).withPolicyNames(policyNames).withLoadBalancerPort(listenerDescription.getListener().getLoadBalancerPort()));
+    }
+
+    private void disableStickinessOnListener(String loadbalancerName, ListenerDescription listenerDescription) {
+        log.info("Disable stickiness on loadbalancer " + loadbalancerName + " : " + listenerDescription.getListener().getInstancePort());
+        List<String> policyNames = new ArrayList<>(listenerDescription.getPolicyNames());
+        policyNames.remove(DEPLOY_STICKINESS_POLICY + "-" + loadbalancerName);
+        awsElbClient.setLoadBalancerPoliciesOfListener(new SetLoadBalancerPoliciesOfListenerRequest().withLoadBalancerName(loadbalancerName).withPolicyNames(policyNames).withLoadBalancerPort(listenerDescription.getListener().getLoadBalancerPort()));
     }
 
     public boolean shouldAddExtraInstance(AutoScalingGroup autoScalingGroup) {
