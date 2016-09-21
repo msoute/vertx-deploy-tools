@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
@@ -13,7 +14,6 @@ import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DefaultDeployService;
 import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
-import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,8 +203,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         if (!request.response().ended()) {
             if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
                 JsonObject result = new JsonObject();
-                result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
-                result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
+                result.put(ApplicationDeployState.OK.name(), new JsonArray(deployService.getDeployedApplicationsSuccess()));
+                result.put(ApplicationDeployState.ERROR.name(), new JsonObject(deployService.getDeployedApplicationsFailed()));
                 if (result.isEmpty()) {
                     request.response().end();
                 } else {
@@ -220,8 +220,8 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
             request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
             JsonObject result = new JsonObject();
-            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
-            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
+            result.put(ApplicationDeployState.OK.name(), new JsonArray(deployService.getDeployedApplicationsSuccess()));
+            result.put(ApplicationDeployState.ERROR.name(), new JsonObject(deployService.getDeployedApplicationsFailed()));
             result.put("message", message);
             if (result.isEmpty()) {
                 request.response().end();
