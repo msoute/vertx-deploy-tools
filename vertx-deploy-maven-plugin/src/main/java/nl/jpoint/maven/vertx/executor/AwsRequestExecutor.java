@@ -3,6 +3,7 @@ package nl.jpoint.maven.vertx.executor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.LogUtil;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -48,8 +49,15 @@ public class AwsRequestExecutor extends RequestExecutor {
 
             ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
+            final RequestConfig requestConfig = RequestConfig.custom()
+                    .setSocketTimeout(5000)
+                    .setConnectTimeout(5000)
+                    .setConnectionRequestTimeout(5000)
+                    .build();
+
             exec.scheduleAtFixedRate(() -> {
                 HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
+                get.setConfig(requestConfig);
                 try (CloseableHttpResponse response = httpClient.execute(get)) {
                     int code = response.getStatusLine().getStatusCode();
                     String state = response.getStatusLine().getReasonPhrase();
