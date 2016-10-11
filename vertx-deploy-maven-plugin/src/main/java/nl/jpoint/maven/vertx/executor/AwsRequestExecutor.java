@@ -57,7 +57,8 @@ public class AwsRequestExecutor extends RequestExecutor {
 
             exec.scheduleAtFixedRate(() -> {
                 HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
-                get.setConfig(requestConfig);
+                /* Disable for now */
+                // get.setConfig(requestConfig);
                 try (CloseableHttpResponse response = httpClient.execute(get)) {
                     int code = response.getStatusLine().getStatusCode();
                     String state = response.getStatusLine().getReasonPhrase();
