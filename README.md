@@ -41,6 +41,7 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **maven.repo.uri*** : Maven repo url
 * **maven.repo.snapshot.policy**  : Maven snapshot policy (default: always)
 * **config.location** : Location of config file (used for -conf when a verticle is instantiated)
+* **service.config.location** : Location of the defaults file per service (default: /etc/default)
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")

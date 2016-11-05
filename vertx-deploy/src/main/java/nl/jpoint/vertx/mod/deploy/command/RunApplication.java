@@ -78,9 +78,10 @@ public class RunApplication implements Command<DeployApplicationRequest> {
             command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
             command.add("-Dvertx.maven.remoteSnapshotPolicy=" + deployConfig.getRemoteRepoPolicy());
         }
-        if (!deployConfig.getConfigLocation().isEmpty()) {
+        String applicationConfig = deployApplicationRequest.getConfigLocation().isEmpty() ? deployConfig.getConfigLocation() : deployApplicationRequest.getConfigLocation();
+        if (!applicationConfig.isEmpty()) {
             command.add("-conf");
-            command.add(deployApplicationRequest.getConfigLocation().isEmpty() ? deployConfig.getConfigLocation() : deployApplicationRequest.getConfigLocation());
+            command.add(applicationConfig);
         }
         if (!deployApplicationRequest.getJavaOpts().isEmpty() || !deployConfig.getDefaultJavaOpts().isEmpty()) {
             command.add("--java-opts");

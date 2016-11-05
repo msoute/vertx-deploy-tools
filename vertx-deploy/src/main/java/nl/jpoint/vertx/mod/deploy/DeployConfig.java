@@ -24,10 +24,10 @@ public class DeployConfig {
     private static final String AWS_DEFAULT_REGION = "eu-west-1";
     private static final String AWS_REGISTER_MAX_DURATION = "aws.as.register.maxduration";
     private static final String CONFIG_LOCATION = "config.location";
-    private static final String SERVICE_CONFIG_LOCATION = "config.location";
+    private static final String SERVICE_CONFIG_LOCATION = "service.config.location";
     private static final String HTTP_AUTH_USER = "http.authUser";
     private static final String HTTP_PORT = "http.port";
-    private static final String HTTP_AUTH_PASSWORD = "http.authPass";
+    private static final String HTTP_AUTH_PASS = "http.authPass";
     private static final String MAVEN_REPO_URI = "maven.repo.uri";
     private static final String MAVEN_SNAPSHOT_POLICY = "maven.repo.snapshot.policy";
     private static final String CLUSTER = "vertx.clustering";
@@ -141,13 +141,13 @@ public class DeployConfig {
     }
 
     private DeployConfig withServiceConfigLocation(JsonObject config) {
-        this.configLocation = config.getString(CONFIG_LOCATION, DEFAULT_SERVICE_CONFIG_LOCATION);
+        this.serviceConfigLocation = config.getString(SERVICE_CONFIG_LOCATION, DEFAULT_SERVICE_CONFIG_LOCATION);
         config.remove(CONFIG_LOCATION);
         return this;
     }
 
     private DeployConfig withRunDir(JsonObject config) {
-        this.runDir = config.getString(RUN_DIR, getVertxHome()+"/run/");
+        this.runDir = config.getString(RUN_DIR, getVertxHome() + "/run/");
         if (!runDir.endsWith("/")) {
             runDir = runDir + "/";
         }
@@ -193,7 +193,7 @@ public class DeployConfig {
 
     private DeployConfig withHttpAuth(JsonObject config) {
         this.httpAuthUser = validateField(HTTP_AUTH_USER, config, "");
-        this.httpAuthPassword = validateField(HTTP_AUTH_PASSWORD, config, "");
+        this.httpAuthPassword = validateField(HTTP_AUTH_PASS, config, "");
 
         if (!httpAuthUser.isEmpty() && !httpAuthPassword.isEmpty()) {
             LOG.info("Enabled http authentication.");
