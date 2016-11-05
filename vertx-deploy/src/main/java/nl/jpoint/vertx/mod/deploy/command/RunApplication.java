@@ -42,27 +42,29 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
     }
 
-    private Observable<DeployApplicationRequest> readServiceDefaults(DeployApplicationRequest request) {
+    Observable<DeployApplicationRequest> readServiceDefaults(DeployApplicationRequest request) {
         Properties serviceProperties = new Properties();
-        String path = "/etc/default/" + request.getGroupId() + ":" + request.getArtifactId();
+        String path = config.getServiceConfigLocation() + request.getGroupId() + ":" + request.getArtifactId();
         return rxVertx.fileSystem().existsObservable(path)
-                .flatMap(exists -> {
-                    if (exists) {
-                        return rxVertx.fileSystem().readFileObservable(path)
+                .filter(Boolean.TRUE::equals)
+                .map(x -> path)
+                .switchIfEmpty(rxVertx.fileSystem().existsObservable(path.replace(":", "~"))
+                        .filter(Boolean.TRUE::equals)
+                        .map(x -> path.replace(":", "~")))
+                .flatMap(location ->
+                        rxVertx.fileSystem()
+                                .readFileObservable(location)
                                 .flatMap(buffer -> {
                                     try {
                                         serviceProperties.load(new ByteArrayInputStream(buffer.toString().getBytes()));
                                     } catch (IOException e) {
                                         LOG.error("[{} - {}]: Failed to initialize properties for module  {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e.getMessage(), e);
+                                        return just(request);
                                     }
-                                    request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS));
+                                    request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS, ""));
                                     request.withInstances(serviceProperties.getProperty(INSTANCES, "1"));
                                     return just(request);
-                                });
-                    } else {
-                        return just(request);
-                    }
-                });
+                                }));
     }
 
     private Observable<DeployApplicationRequest> startApplication(DeployApplicationRequest deployApplicationRequest) {
