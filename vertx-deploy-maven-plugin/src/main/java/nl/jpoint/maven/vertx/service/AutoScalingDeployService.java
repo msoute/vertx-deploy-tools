@@ -56,7 +56,7 @@ public class AutoScalingDeployService extends DeployService {
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
-        if (instances.stream().anyMatch((i -> !i.isReachable(activeConfiguration.getAwsPrivateIp(), port, getLog())))) {
+        if (instances.stream().anyMatch(i -> !i.isReachable(activeConfiguration.getAwsPrivateIp(), port, getLog()))) {
             getLog().error("Error connecting to deploy module on some instances");
             throw new MojoExecutionException("Error connecting to deploy module on some instances");
         }
@@ -117,7 +117,7 @@ public class AutoScalingDeployService extends DeployService {
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-                AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.getDeployStrategy().ordinal() > 1);
+                AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy().ordinal() > 1);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
                 awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion(), properties);
@@ -146,7 +146,7 @@ public class AutoScalingDeployService extends DeployService {
                 .filter(awsDeployUtils::checkEc2Instance)
                 .collect(Collectors.toList());
 
-        if (removedInstances != null && removedInstances.size() > 0) {
+        if (removedInstances != null && removedInstances.isEmpty()) {
             instances = instances.stream()
                     .filter(i -> !removedInstances.contains(i.getInstanceId()))
                     .collect(Collectors.toList());

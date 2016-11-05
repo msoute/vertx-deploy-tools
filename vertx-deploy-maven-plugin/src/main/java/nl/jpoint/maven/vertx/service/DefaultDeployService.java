@@ -38,7 +38,7 @@ public class DefaultDeployService extends DeployService {
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
         getLog().debug("Sending request -> " + deployRequest.toJson(true));
 
-        if (activeConfiguration.getHosts().stream().anyMatch(host -> !InstanceUtils.isReachable(host, port, getLog()))) {
+        if (activeConfiguration.getHosts().stream().anyMatch(host -> !InstanceUtils.isReachable(host, port, host, getLog()))) {
             getLog().error("Error connecting to deploy module on some instances");
             throw new MojoExecutionException("Error connecting to deploy module on some instances");
         }

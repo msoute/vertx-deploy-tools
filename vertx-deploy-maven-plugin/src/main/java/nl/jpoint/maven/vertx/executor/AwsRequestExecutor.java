@@ -3,7 +3,6 @@ package nl.jpoint.maven.vertx.executor;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.LogUtil;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -22,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AwsRequestExecutor extends RequestExecutor {
+
+    public static final String ERROR_DEPLOYING_MODULE = "Error deploying module.";
 
     public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
         super(log, requestTimeout, port, authToken);
@@ -49,16 +50,8 @@ public class AwsRequestExecutor extends RequestExecutor {
 
             ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
-            final RequestConfig requestConfig = RequestConfig.custom()
-                    .setSocketTimeout(5000)
-                    .setConnectTimeout(5000)
-                    .setConnectionRequestTimeout(5000)
-                    .build();
-
             exec.scheduleAtFixedRate(() -> {
                 HttpGet get = new HttpGet(postRequest.getURI().getScheme() + "://" + postRequest.getURI().getHost() + ":" + postRequest.getURI().getPort() + "/deploy/status/" + buildId);
-                /* Disable for now */
-                // get.setConfig(requestConfig);
                 try (CloseableHttpResponse response = httpClient.execute(get)) {
                     int code = response.getStatusLine().getStatusCode();
                     String state = response.getStatusLine().getReasonPhrase();
@@ -92,6 +85,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                     }
 
                 } catch (IOException e) {
+                    log.error(e.getMessage(), e);
                     if (status.get() != 200) {
                         status.set(500);
                     }
@@ -108,15 +102,16 @@ public class AwsRequestExecutor extends RequestExecutor {
             log.info("awaiting termination of executor");
             exec.awaitTermination(30, TimeUnit.SECONDS);
             if (status.get() != 200 && !ignoreFailure) {
-                throw new MojoFailureException("Error deploying module.");
+                throw new MojoFailureException(ERROR_DEPLOYING_MODULE);
             }
             return status.get() == 200 ? AwsState.INSERVICE : AwsState.UNKNOWN;
         } catch (IOException e) {
             log.error("IOException ", e);
-            throw new MojoExecutionException("Error deploying module.", e);
+            throw new MojoExecutionException(ERROR_DEPLOYING_MODULE, e);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             log.error("InterruptedException ", e);
-            throw new MojoExecutionException("Error deploying module.", e);
+            throw new MojoExecutionException(ERROR_DEPLOYING_MODULE, e);
         }
     }
 }
