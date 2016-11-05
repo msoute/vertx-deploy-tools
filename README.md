@@ -281,7 +281,7 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
-## 3.2.0
+## 3.2.0-SNAPSHOT
 
 * [Enhancement] Also check for service config files in the form of [groupId]~[artifactId]
 
