@@ -283,7 +283,9 @@ The following AWS actions are needed for the deploy applications
 
 ## 3.2.0-SNAPSHOT
 
-* [Enhancement] Also check for service config files in the form of [groupId]~[artifactId]
+* [Enhancement] Also check for service config files in the form of [groupId]~[artifactId] [#34](vertx-deploy-tools/issues/34)
+* [Enhancement] Add option to temporarily set stickyness to ELB's during deploy  [#42](vertx-deploy-tools/issues/42)
+* [Enhancement] Add option to use a config file per application to deploy [#25](vertx-deploy-tools/issues/25)
 
 ## 3.1.0
 
