@@ -50,7 +50,7 @@ public class WaitForInstanceRequestExecutor {
                     log.info("Found new instance with id " + newInstance.getInstanceId());
                 }
             }
-            if (!autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames(), log)) {
+            if (!autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames())) {
                 waitFor.decrementAndGet();
             }
         },  30, 30, TimeUnit.SECONDS);

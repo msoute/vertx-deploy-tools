@@ -130,4 +130,5 @@ public abstract class ModuleRequest {
     public abstract boolean checkConfig();
 
     public abstract String getLogName();
+
 }

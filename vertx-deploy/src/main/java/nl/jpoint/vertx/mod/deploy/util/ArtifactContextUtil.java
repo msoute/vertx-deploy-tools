@@ -1,6 +1,7 @@
 package nl.jpoint.vertx.mod.deploy.util;
 
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -17,7 +18,8 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.HashMap;
 
-public class ArtifactContextUtil<T extends ModuleRequest> {
+public class ArtifactContextUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(ArtifactContextUtil.class);
 
     public static final String ARTIFACT_CONTEXT = "artifact_context.xml";
 
@@ -42,6 +44,7 @@ public class ArtifactContextUtil<T extends ModuleRequest> {
             document = builder.parse(
                     new ByteArrayInputStream(data));
         } catch (ParserConfigurationException | SAXException | IOException e) {
+            LOG.error(e.getMessage(), e);
             document = null;
         }
     }
@@ -50,6 +53,7 @@ public class ArtifactContextUtil<T extends ModuleRequest> {
         try {
             return document != null ? (String) xPath.compile(BASE_LOCATION).evaluate(document, XPathConstants.STRING) : null;
         } catch (XPathExpressionException e) {
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }
@@ -58,6 +62,7 @@ public class ArtifactContextUtil<T extends ModuleRequest> {
         try {
             return Boolean.valueOf(document != null ? (String) xPath.compile(RESTART_ON_CHANGED_CONTENT).evaluate(document, XPathConstants.STRING) : null);
         } catch (XPathExpressionException e) {
+            LOG.error(e.getMessage(), e);
             return false;
         }
     }
@@ -66,7 +71,7 @@ public class ArtifactContextUtil<T extends ModuleRequest> {
         try {
             return document != null ? (String) xPath.compile(RESTART_COMMAND).evaluate(document, XPathConstants.STRING) : null;
         } catch (XPathExpressionException e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }
@@ -75,6 +80,7 @@ public class ArtifactContextUtil<T extends ModuleRequest> {
         try {
             return document != null ? (String) xPath.compile(TEST_COMMAND).evaluate(document, XPathConstants.STRING) : null;
         } catch (XPathExpressionException e) {
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }

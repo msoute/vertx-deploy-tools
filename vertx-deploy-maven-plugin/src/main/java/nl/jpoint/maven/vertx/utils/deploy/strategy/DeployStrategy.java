@@ -8,7 +8,8 @@ import nl.jpoint.maven.vertx.utils.Ec2Instance;
 
 import java.util.List;
 
-public interface DeployStrategy {
+@FunctionalInterface
+interface DeployStrategy {
 
     default boolean isDeployable(DeployConfiguration activeConfiguration, AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
         long healthyInstances = autoScalingGroup.getInstances().stream()

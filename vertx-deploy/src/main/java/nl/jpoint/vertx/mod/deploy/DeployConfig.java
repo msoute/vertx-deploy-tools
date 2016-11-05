@@ -13,7 +13,8 @@ public class DeployConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsDeployApplication.class);
 
-    //   private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
+    private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
+    private static final String DEFAULT_SERVICE_CONFIG_LOCATION = "/etc/default/";
 
     private static final String VERTX_HOME = "vertx.home";
     private static final String RUN_DIR = "vertx.run";
@@ -23,6 +24,7 @@ public class DeployConfig {
     private static final String AWS_DEFAULT_REGION = "eu-west-1";
     private static final String AWS_REGISTER_MAX_DURATION = "aws.as.register.maxduration";
     private static final String CONFIG_LOCATION = "config.location";
+    private static final String SERVICE_CONFIG_LOCATION = "config.location";
     private static final String HTTP_AUTH_USER = "http.authUser";
     private static final String HTTP_PORT = "http.port";
     private static final String HTTP_AUTH_PASSWORD = "http.authPass";
@@ -30,10 +32,10 @@ public class DeployConfig {
     private static final String MAVEN_SNAPSHOT_POLICY = "maven.repo.snapshot.policy";
     private static final String CLUSTER = "vertx.clustering";
     private static final String DEFAULT_JAVA_OPTS = "vertx.default.java.opts";
+    private static final String AWS_AS_AUTODISCOVER = "aws.as.autodiscover";
 
     private static final String AUTH_TOKEN = "auth.token";
 
-    private static final String AWS_ELB_ID = "aws.elb.loadbalancer";
     private static final String AWS_INSTANCE_ID = "aws.elb.instanceid";
     private static final String STAT_FILE = ".initial";
 
@@ -56,6 +58,9 @@ public class DeployConfig {
     private String defaultJavaOpts;
     private String runDir;
     private String statFile;
+
+    private boolean awsAutoDiscover = false;
+    private String serviceConfigLocation;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -102,11 +107,12 @@ public class DeployConfig {
 
         if (mavenRepo.isEmpty()) {
             LOG.warn("'maven.repo.uri', using maven central");
-            // mavenRepo = MAVEN_CENTRAL;
+            mavenRepo = MAVEN_CENTRAL;
         }
 
         DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)
                 .withConfigLocation(config)
+                .withServiceConfigLocation(config)
                 .withHttpPort(config)
                 .withAwsConfig(config)
                 .withHttpAuth(config)
@@ -130,6 +136,12 @@ public class DeployConfig {
 
     private DeployConfig withConfigLocation(JsonObject config) {
         this.configLocation = config.getString(CONFIG_LOCATION, "");
+        config.remove(CONFIG_LOCATION);
+        return this;
+    }
+
+    private DeployConfig withServiceConfigLocation(JsonObject config) {
+        this.configLocation = config.getString(CONFIG_LOCATION, DEFAULT_SERVICE_CONFIG_LOCATION);
         config.remove(CONFIG_LOCATION);
         return this;
     }
@@ -166,6 +178,7 @@ public class DeployConfig {
         this.awsRegion = validateField(AWS_REGION, config, AWS_DEFAULT_REGION);
         this.awsLoadbalancerId = validateField(AWS_INSTANCE_ID, config);
         this.awsEnabled = validateField(AWS_ENABLED, config, false);
+        this.awsAutoDiscover = validateField(AWS_AS_AUTODISCOVER, config, false);
 
         this.awsMaxRegistrationDuration = config.getInteger(AWS_REGISTER_MAX_DURATION, 4);
         config.remove(AWS_REGISTER_MAX_DURATION);
@@ -179,8 +192,8 @@ public class DeployConfig {
     }
 
     private DeployConfig withHttpAuth(JsonObject config) {
-        this.httpAuthUser = validateField(HTTP_AUTH_USER, config);
-        this.httpAuthPassword = validateField(HTTP_AUTH_PASSWORD, config);
+        this.httpAuthUser = validateField(HTTP_AUTH_USER, config, "");
+        this.httpAuthPassword = validateField(HTTP_AUTH_PASSWORD, config, "");
 
         if (!httpAuthUser.isEmpty() && !httpAuthPassword.isEmpty()) {
             LOG.info("Enabled http authentication.");
@@ -271,5 +284,13 @@ public class DeployConfig {
 
     public String getStatFile() {
         return statFile;
+    }
+
+    public boolean isAwsAutoDiscover() {
+        return awsAutoDiscover;
+    }
+
+    public String getServiceConfigLocation() {
+        return serviceConfigLocation;
     }
 }

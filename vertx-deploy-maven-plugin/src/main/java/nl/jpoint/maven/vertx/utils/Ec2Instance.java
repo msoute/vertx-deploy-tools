@@ -2,10 +2,6 @@ package nl.jpoint.maven.vertx.utils;
 
 import org.apache.maven.plugin.logging.Log;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 public class Ec2Instance {
     private final String instanceId;
     private final String publicIp;
@@ -46,7 +42,15 @@ public class Ec2Instance {
     }
 
     public void updateAsState(AwsState awsState) {
-            asState = awsState;
+        asState = awsState;
+    }
+
+    public boolean isReachable(boolean usePrivate, int port, Log log) {
+        if (usePrivate ? privateIp == null : publicIp == null) {
+            log.error("Instance has no IP, probably still booting");
+            return false;
+        }
+        return InstanceUtils.isReachable(usePrivate ? privateIp : publicIp, port, instanceId, log);
     }
 
     public static class Builder {
@@ -72,31 +76,6 @@ public class Ec2Instance {
 
         public Ec2Instance build() {
             return new Ec2Instance(instanceId, publicIp, privateIp);
-        }
-    }
-
-    public boolean isReachable(boolean usePrivate, int port, Log log) {
-        if (usePrivate ? privateIp == null : publicIp == null) {
-            log.error("Instance has no IP, probably still booting");
-            return false;
-        }
-
-        Socket socket = null;
-        try {
-            socket = new Socket();
-            socket.connect(new InetSocketAddress(usePrivate ? privateIp : publicIp, port), 5000);
-            return socket.isConnected();
-        } catch (IOException e) {
-            log.error("Error while checking if instance "+ instanceId + " is reachable", e);
-            return false;
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    log.error("Error while closing connection to "+ instanceId, e);
-                }
-            }
         }
     }
 }

@@ -92,10 +92,10 @@ public class DeployApplicationService implements DeployService<DeployApplication
         return vertx;
     }
 
-    public Observable<Boolean> stopContainer() {
+    Observable<Boolean> stopContainer() {
         LOG.info("[{}]: Stopping all running modules", LogConstants.INVOKE_CONTAINER);
         return Observable.from(new ProcessUtils(config).listInstalledAndRunningModules().entrySet())
-                .flatMap(entry -> {
+                .concatMap(entry -> {
                     StopApplication stopApplication = new StopApplication(vertx, config);
                     String[] mavenIds = entry.getKey().split(":", 2);
                     DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), null, "jar");
@@ -107,16 +107,17 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .flatMap(x -> Observable.just(true));
     }
 
-    public Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
+    Observable<DeployRequest> cleanup(DeployRequest deployRequest) {
         deployedApplicationsSuccess.clear();
         deployedApplicationsFailed.clear();
         return cleanup()
                 .flatMap(x -> just(deployRequest));
     }
 
-    public Observable<?> cleanup() {
+    public Observable<Boolean> cleanup() {
         List<String> runningApplications = new ProcessUtils(config).listModules();
         FileSystem fs = new io.vertx.rxjava.core.Vertx(vertx).fileSystem();
+
 
         return fs.readDirObservable(config.getRunDir())
                 .flatMapIterable(x -> x)
@@ -124,18 +125,21 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 .filter(s -> !s.isEmpty() && !runningApplications.contains(s))
                 .flatMap(file -> fs.deleteObservable(config.getRunDir() + file))
                 .toList()
-                .flatMap(x -> just(null))
-                .doOnError(t -> LOG.error("Error during cleanup of run files {}", t.getMessage()));
+                .flatMap(x -> just(Boolean.TRUE).doOnError(t -> LOG.error("error")))
+                .onErrorReturn(x -> {
+                    LOG.error("Error during cleanup of run files {}", x.getMessage());
+                    return Boolean.FALSE;
+                });
     }
 
     public void addApplicationDeployResult(boolean succeeded, String message, String deploymentId) {
         if (succeeded && !deployedApplicationsSuccess.contains(deploymentId)) {
             deployedApplicationsSuccess.add(deploymentId);
-        } else {
-            if (!deployedApplicationsFailed.containsKey(deploymentId)) {
-                deployedApplicationsFailed.put(deploymentId, message != null ? message : "Unknown");
-            }
         }
+        if (!succeeded && !deployedApplicationsFailed.containsKey(deploymentId)) {
+            deployedApplicationsFailed.put(deploymentId, message != null ? message : "No reason provided by application.");
+        }
+
     }
 
     public List<String> getDeployedApplicationsSuccess() {

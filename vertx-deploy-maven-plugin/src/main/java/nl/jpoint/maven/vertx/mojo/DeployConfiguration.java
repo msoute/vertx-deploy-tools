@@ -61,6 +61,7 @@ public class DeployConfiguration {
     private DeployStrategyType deployStrategy = DeployStrategyType.KEEP_CAPACITY;
     private Integer maxCapacity = -1;
     private Integer minCapacity = 1;
+    private List<String> autoScalingProperies = new ArrayList<>();
 
     /**
      * AWS OpsWorks Properties
@@ -237,5 +238,9 @@ public class DeployConfiguration {
     public DeployConfiguration withProjectVersion(String projectVersion) {
         this.projectVersion = projectVersion;
         return this;
+    }
+
+    public List<String> getAutoScalingProperties() {
+        return autoScalingProperies;
     }
 }

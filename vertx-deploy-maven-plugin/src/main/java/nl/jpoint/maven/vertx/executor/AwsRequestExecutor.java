@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AwsRequestExecutor extends RequestExecutor {
 
+    public static final String ERROR_DEPLOYING_MODULE = "Error deploying module.";
+
     public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
         super(log, requestTimeout, port, authToken);
     }
@@ -83,6 +85,7 @@ public class AwsRequestExecutor extends RequestExecutor {
                     }
 
                 } catch (IOException e) {
+                    log.error(e.getMessage(), e);
                     if (status.get() != 200) {
                         status.set(500);
                     }
@@ -99,15 +102,16 @@ public class AwsRequestExecutor extends RequestExecutor {
             log.info("awaiting termination of executor");
             exec.awaitTermination(30, TimeUnit.SECONDS);
             if (status.get() != 200 && !ignoreFailure) {
-                throw new MojoFailureException("Error deploying module.");
+                throw new MojoFailureException(ERROR_DEPLOYING_MODULE);
             }
             return status.get() == 200 ? AwsState.INSERVICE : AwsState.UNKNOWN;
         } catch (IOException e) {
             log.error("IOException ", e);
-            throw new MojoExecutionException("Error deploying module.", e);
+            throw new MojoExecutionException(ERROR_DEPLOYING_MODULE, e);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             log.error("InterruptedException ", e);
-            throw new MojoExecutionException("Error deploying module.", e);
+            throw new MojoExecutionException(ERROR_DEPLOYING_MODULE, e);
         }
     }
 }

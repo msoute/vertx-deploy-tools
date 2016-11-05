@@ -21,6 +21,8 @@ public class DeployRequest {
     private boolean restart;
     private DeployState state;
     private long timestamp;
+    private boolean testScope;
+
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployApplicationRequest> modules,
@@ -29,11 +31,12 @@ public class DeployRequest {
                          @JsonProperty("with_elb") boolean elb,
                          @JsonProperty("with_as") boolean autoScaling,
                          @JsonProperty("as_group_id") String autoScalingGroup,
-                         @JsonProperty("restart") boolean restart) {
+                         @JsonProperty("restart") boolean restart,
+                         @JsonProperty("test_scope") boolean testScope) {
         this.modules = modules != null ? modules : Collections.emptyList();
         this.artifacts = artifacts != null ? artifacts : Collections.emptyList();
         this.configs = configs != null ? configs : Collections.emptyList();
-
+        this.testScope = testScope;
         this.elb = elb;
         this.autoScaling = autoScaling;
         this.autoScalingGroup = autoScalingGroup;
@@ -82,6 +85,10 @@ public class DeployRequest {
 
     public boolean isDecrementDesiredCapacity() {
         return decrementDesiredCapacity;
+    }
+
+    public boolean isScopeTest() {
+        return this.testScope;
     }
 
     @JsonProperty("as_decrement_desired_capacity")

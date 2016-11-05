@@ -18,7 +18,7 @@ import static rx.Observable.just;
 
 public class DefaultDeployService {
 
-    private final Logger LOG = LoggerFactory.getLogger(DefaultDeployService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDeployService.class);
 
     private final DeployApplicationService applicationDeployService;
     private final DeployArtifactService artifactDeployService;

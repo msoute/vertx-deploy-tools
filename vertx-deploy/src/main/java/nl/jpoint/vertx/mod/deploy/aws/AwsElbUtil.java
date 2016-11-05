@@ -14,6 +14,7 @@ import rx.Observable;
 
 import java.util.Optional;
 
+import static nl.jpoint.vertx.mod.deploy.util.LogConstants.ERROR_EXECUTING_REQUEST;
 import static rx.Observable.just;
 
 public class AwsElbUtil {
@@ -27,22 +28,23 @@ public class AwsElbUtil {
         this.instanceId = EC2MetadataUtils.getInstanceId();
     }
 
-    public Observable<String> registerInstanceWithLoadBalancer(String loadBalancer) throws AwsException {
+    public Observable<String> registerInstanceWithLoadBalancer(String loadBalancer) {
         if (instanceId == null || loadBalancer == null) {
             LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
             throw new IllegalStateException();
         }
         try {
             return Observable.from(elbAsyncClient.registerInstancesWithLoadBalancerAsync(new RegisterInstancesWithLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
-                    .flatMap(x -> Observable.just(loadBalancer));
+                    .flatMap(x -> Observable.just(loadBalancer))
+                    .doOnError(t -> LOG.error(ERROR_EXECUTING_REQUEST, t));
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
 
     }
 
-    public Observable<String> deRegisterInstanceFromLoadbalancer(String loadBalancer) throws AwsException {
+    public Observable<String> deRegisterInstanceFromLoadbalancer(String loadBalancer) {
 
         if (instanceId == null || loadBalancer == null) {
             LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
@@ -53,13 +55,13 @@ public class AwsElbUtil {
             return Observable.from(elbAsyncClient.deregisterInstancesFromLoadBalancerAsync(new DeregisterInstancesFromLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(x -> Observable.just(loadBalancer));
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
 
 
-    public Observable<AwsState> pollForInstanceState(final String loadBalancer) throws AwsException {
+    public Observable<AwsState> pollForInstanceState(final String loadBalancer) {
         try {
             return Observable.from(elbAsyncClient.describeInstanceHealthAsync(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(result -> {
@@ -67,7 +69,7 @@ public class AwsElbUtil {
                         return just(state.isPresent() ? AwsState.map(state.get().getState()) : AwsState.UNKNOWN);
                     });
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }

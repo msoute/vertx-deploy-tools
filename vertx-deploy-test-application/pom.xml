@@ -5,20 +5,23 @@
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>3.1.2-SNAPSHOT</version>
     </parent>
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
     <artifactId>vertx-deploy-test-application</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
 
     <name>Vert.x Deploy Tools : Test Application</name>
     <description>Vert.x deploy test application.</description>
+    <properties>
+        <default>3.3.3</default>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
+            <version>${default}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

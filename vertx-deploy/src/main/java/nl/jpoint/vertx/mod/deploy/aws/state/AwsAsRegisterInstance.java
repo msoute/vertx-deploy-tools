@@ -25,6 +25,7 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
                 , AwsState.INSERVICE);
     }
 
+    @Override
     public Observable<DeployRequest> executeAsync(DeployRequest request) {
         if (!awsAsUtil.exitStandby(request.getAutoScalingGroup())) {
             LOG.error("[{} - {}]: InstanceId {} failed to exit standby in auto scaling group {}", LogConstants.AWS_AS_REQUEST, request.getId(), awsAsUtil.getInstanceId(), request.getAutoScalingGroup());
