@@ -12,11 +12,18 @@ public class DeployApplicationRequest extends ModuleRequest {
     private String javaOpts = "";
     private String instances = "1";
     private boolean installed = false;
+    private boolean testScope = false;
 
     @JsonCreator
     public DeployApplicationRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
                                     @JsonProperty("version") final String version,@JsonProperty("classifier") final String classifier, @JsonProperty("type") final String type) {
         super(groupId, artifactId, version, classifier, type);
+    }
+
+    private DeployApplicationRequest(final String groupId, final String artifactId,
+                                     final String version, final String classifier, final String type, boolean testScope) {
+        this(groupId, artifactId, version, classifier, type);
+        this.testScope = testScope;
     }
 
     @Override
@@ -50,6 +57,14 @@ public class DeployApplicationRequest extends ModuleRequest {
         this.instances = instances;
     }
 
+    public void withTestScope(boolean testScope) {
+        this.testScope = testScope;
+    }
+
+    public boolean isTestScope() {
+        return this.testScope;
+    }
+
     public String getJavaOpts() {
         return javaOpts;
     }
@@ -66,7 +81,7 @@ public class DeployApplicationRequest extends ModuleRequest {
         this.installed = installed;
     }
 
-    public static DeployApplicationRequest build(String groupId, String artifactId, String version, String classifier) {
-        return new DeployApplicationRequest(groupId, artifactId, version, classifier, "jar");
+    public static DeployApplicationRequest build(String groupId, String artifactId, String version, String classifier, boolean testScope) {
+        return new DeployApplicationRequest(groupId, artifactId, version, classifier, "jar", testScope);
     }
 }

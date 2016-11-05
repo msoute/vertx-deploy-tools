@@ -6,12 +6,20 @@ Tooling to deploy Vert.X applications, generic artifacts and (application) confi
 
 # Installation / Configuration
 
+## Docker
+for deploy mod 3.0.5
+`docker run --net=[networkname] --name vertx-deploy msoute/vertx-deploy:3.0.5`
+for the latest
+`docker run --net=[networkname] --name vertx-deploy msoute/vertx-deploy:devel`
+
 ## Installation.
-Install as any other application in with max 1 verticle instance.
+Install as any other application with max 1 verticle instance.
 Init.d scripts are provided for redhad and debian based systems. install as vertx (debian|redhat.vertx) and vertx-deploy (debian|redhat.vertx.deploy).
 Place defaults in /etc/defaults/vertx and configure as needed.
 
 The configured system user needs sudo access to the init.d vertx script and any (test) command. The user also needs write access to directories configured for artifacts
+
+*note* Prior to Vert.x 3.2.1 a custom distribution needs to be used since the maven service factory depended on an older version of httpclient.
 
 ## Configuration
 
@@ -21,8 +29,6 @@ The configured system user needs sudo access to the init.d vertx script and any 
         "http.authUser": "...",
         "http.authPass": "...",
         "maven.repo.uri": "...",
-        "aws.auth.access.key":"****************",
-        "aws.auth.secret.access.key":"**********************",
         "aws.region", "eu-west-1",
         "aws.as.register.maxduration":10,
     }
@@ -35,8 +41,6 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **maven.repo.uri*** : Maven repo url
 * **maven.repo.snapshot.policy**  : Maven snapshot policy (default: always)
 * **config.location** : Location of config file (used for -conf when a verticle is instantiated)
-* **aws.auth.access.key** : Aws access key
-* **aws.auth.secret.access.key** Aws secret access key
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
@@ -105,15 +109,7 @@ identified by classifier site
         </configuration>
     </plugin>
     ...
-    
-### AWS Credendials
-Aws credentials (accessKey / secretKey) should be stored in settings(-security).xml as a server element.
 
-    <server>
-        <id>credentialsId</id>
-        <username>[accessKey]</username>
-        <password>[secretKey]</password>	
-    </server>
 
 ### DeployConfigurations
 
@@ -285,8 +281,22 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
-## 3.0.5
+## 3.2.0
+
 * [Enhancement] Also check for service config files in the form of [groupId]~[artifactId]
+
+## 3.1.0
+
+* [Enhancement] Drop support for aws access keys in application configuration. The deploy application now uses the default credential provider chain. [AWS Documentation](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html) [#31](vertx-deploy-tools/issues/31).
+* [Enhancement] add jvm param `deploy.scope.test` during start of verticle. Based on maven deploy config `testScope` value (default : false) [#36](vertx-deploy-tools/issues/36).
+* [Enhancement] Handle and report vertx exit codes [#33](vertx-deploy-tools/issues/33).
+* [Enhancement] Also check if service includes snapshot dependencies [#23](vertx-deploy-tools/issues/23).
+* [Upgrade] Updated to vert.x 3.3.3
+* [Upgrade] Updated dependency versions
+
+## 3.0.5
+* [BUG] Create runDir before starting cleanup #35
+* [BUG] Do not create AutoDiscoverDeployService if AWS is not enabled.
 
 ## 3.0.4
 

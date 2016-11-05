@@ -1,7 +1,6 @@
 package nl.jpoint.maven.vertx.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -26,14 +25,6 @@ public abstract class Request {
         this.version = version;
         this.classifier = classifier;
         this.type = type;
-    }
-
-    public String toJson() {
-        try {
-            return writer.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            return "";
-        }
     }
 
     public abstract String getEndpoint();

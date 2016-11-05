@@ -1,10 +1,8 @@
 package nl.jpoint.vertx.mod.deploy.handler;
 
-import com.amazonaws.util.StringUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -14,23 +12,21 @@ import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DefaultDeployService;
 import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
 import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.io.IOException;
 import java.util.Optional;
 
+import static nl.jpoint.vertx.mod.deploy.util.LogConstants.DEPLOY_REQUEST;
 import static rx.Observable.just;
 
 public class RestDeployHandler implements Handler<RoutingContext> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
     private final DefaultDeployService deployService;
     private final Optional<AwsService> awsService;
     private final String authToken;
-
-    private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
     public RestDeployHandler(final DefaultDeployService deployService,
                              final AwsService awsService,
@@ -44,60 +40,63 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     public void handle(final RoutingContext context) {
 
         context.request().bodyHandler(buffer -> {
-            ObjectReader reader = new ObjectMapper().readerFor(DeployRequest.class);
 
-            DeployRequest deployRequest;
-            if (StringUtils.isNullOrEmpty(context.request().getHeader("authToken")) || !authToken.equals(context.request().getHeader("authToken"))) {
-                LOG.error("{}: Invalid authToken in request.", LogConstants.DEPLOY_REQUEST);
-                respondFailed(null, context.request(), "Invalid authToken in request.");
+            DeployRequest deployRequest = verifyIncomingRequest(context, buffer);
+
+            if (deployRequest == null) {
                 return;
             }
 
-            String eventBody = new String(buffer.getBytes());
+            deployRequest.setTimestamp(System.currentTimeMillis());
 
-            if (eventBody.isEmpty()) {
-                LOG.error("{}: No POST data in request.", LogConstants.DEPLOY_REQUEST);
-                respondFailed(null, context.request(), "No POST data in request.");
-                return;
-            }
-            LOG.debug("{}: received POST data -> {} ", LogConstants.DEPLOY_REQUEST, eventBody);
-            try {
-                deployRequest = reader.readValue(eventBody);
-                deployRequest.setTimestamp(System.currentTimeMillis());
-            } catch (IOException e) {
-                LOG.error("{}: Error while reading POST data -> {}.", LogConstants.DEPLOY_REQUEST, e.getMessage());
-                respondFailed(null, context.request(), "Error wile reading post data -> " + e.getMessage());
-                return;
-            }
-
-            if (deployRequest.withAutoScaling() && !awsService.isPresent()) {
-                LOG.error("Asking for an Aws Enabled deploy. AWS is disabled");
-                respondFailed(deployRequest.getId().toString(), context.request(), "Aws support disabled");
-                return;
-            }
-
-            LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
+            LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", DEPLOY_REQUEST,
                     deployRequest.getId().toString(),
                     deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,
                     deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
                     deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);
 
-            just(deployRequest)
-                    .flatMap(this::registerRequest)
-                    .flatMap(r -> respondContinue(r, context.request()))
-                    .flatMap(this::cleanup)
-                    .flatMap(this::deRegisterInstanceFromAutoScalingGroup)
-                    .flatMap(this::deRegisterInstanceFromLoadBalancer)
-                    .flatMap(this::deployConfigs)
-                    .flatMap(this::deployArtifacts)
-                    .flatMap(this::stopContainer)
-                    .flatMap(this::deployApplications)
-                    .flatMap(this::registerInstanceInAutoScalingGroup)
-                    .flatMap(this::checkElbStatus)
-                    .doOnCompleted(() -> this.respond(deployRequest, context.request()))
-                    .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
-                    .subscribe();
+            executeDeploy(context, deployRequest);
         });
+    }
+
+    private DeployRequest verifyIncomingRequest(RoutingContext context, Buffer buffer) {
+        if (!HttpUtils.hasCorrectAuthHeader(context, authToken, DEPLOY_REQUEST)) {
+            respondFailed(null, context.request(), "Invalid authToken in request.");
+            return null;
+        }
+
+        DeployRequest deployRequest = HttpUtils.readPostData(buffer, DeployRequest.class, DEPLOY_REQUEST);
+
+        if (deployRequest == null) {
+            respondFailed(null, context.request(), "Error wile reading post data ");
+            return null;
+        }
+
+        if (deployRequest.withAutoScaling() && !awsService.isPresent()) {
+            LOG.error("Asking for an Aws Enabled deploy. AWS is disabled");
+            respondFailed(deployRequest.getId().toString(), context.request(), "Aws support disabled");
+            return null;
+        }
+
+        return deployRequest;
+    }
+
+    private void executeDeploy(RoutingContext context, DeployRequest deployRequest) {
+        just(deployRequest)
+                .flatMap(this::registerRequest)
+                .flatMap(r -> respondContinue(r, context.request()))
+                .flatMap(this::cleanup)
+                .flatMap(this::deRegisterInstanceFromAutoScalingGroup)
+                .flatMap(this::deRegisterInstanceFromLoadBalancer)
+                .flatMap(this::deployConfigs)
+                .flatMap(this::deployArtifacts)
+                .flatMap(this::stopContainer)
+                .flatMap(this::deployApplications)
+                .flatMap(this::registerInstanceInAutoScalingGroup)
+                .flatMap(this::checkElbStatus)
+                .doOnCompleted(() -> this.respond(deployRequest, context.request()))
+                .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
+                .subscribe();
     }
 
 
@@ -173,6 +172,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private Observable<DeployRequest> deployApplications(DeployRequest deployRequest) {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_APPLICATIONS, deployRequest.getId().toString()));
         if (deployRequest.getModules() != null && !deployRequest.getModules().isEmpty()) {
+            deployRequest.getModules().forEach(m -> m.withTestScope(deployRequest.isScopeTest()));
             return deployService.deployApplications(deployRequest.getId(), deployRequest.getModules())
                     .flatMap(x -> just(deployRequest));
         }

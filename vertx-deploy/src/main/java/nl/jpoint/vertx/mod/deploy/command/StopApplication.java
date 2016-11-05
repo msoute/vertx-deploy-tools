@@ -12,7 +12,6 @@ import rx.Observable;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Map;
 
 import static rx.Observable.just;
 
@@ -34,6 +33,7 @@ public class StopApplication implements Command<DeployApplicationRequest> {
         this.timeout = LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration());
     }
 
+    @Override
     public Observable<DeployApplicationRequest> executeAsync(DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Waiting for module {} to stop.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
         return this.stopApplication(request)
@@ -59,8 +59,10 @@ public class StopApplication implements Command<DeployApplicationRequest> {
         moduleIdToStop = request.getMavenArtifactId() + ":"+new ProcessUtils(config).getRunningVersion(request);
         LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), moduleIdToStop);
         ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", moduleIdToStop}));
-        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx);
+        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx, true);
         return observableCommand.execute(processBuilder)
+                .flatMap(exitCode -> handleExitCode(request, exitCode))
+                .flatMap(x -> just(request))
                 .doOnError(t -> LOG.error("[{} - {}]: Failed to stop module {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId()));
     }
 

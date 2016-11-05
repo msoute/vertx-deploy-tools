@@ -13,8 +13,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class FileDigestUtil {
 
-    private final Logger LOG = LoggerFactory.getLogger(FileDigestUtil.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(FileDigestUtil.class);
 
     private MessageDigest md;
 

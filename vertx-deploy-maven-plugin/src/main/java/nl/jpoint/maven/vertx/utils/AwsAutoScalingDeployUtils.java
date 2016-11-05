@@ -2,7 +2,6 @@ package nl.jpoint.maven.vertx.utils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
@@ -18,7 +17,6 @@ import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
 
 import java.util.*;
 import java.util.function.Function;
@@ -30,6 +28,7 @@ public class AwsAutoScalingDeployUtils {
     private static final String SCOPE_TAG = "deploy:scope:tst";
     private static final String EXCLUSION_TAG = "deploy:exclusions";
     private static final String PROPERTIES_TAGS = "deploy:classifier:properties";
+    public static final String AUTO_SCALING_GROUP = "auto-scaling-group";
 
     private final AmazonAutoScalingClient awsAsClient;
     private final AmazonElasticLoadBalancingClient awsElbClient;
@@ -38,21 +37,18 @@ public class AwsAutoScalingDeployUtils {
     private final Log log;
 
 
-    public AwsAutoScalingDeployUtils(Server server, String region, DeployConfiguration activeConfiguration, Log log) throws MojoFailureException {
+    public AwsAutoScalingDeployUtils(String region, DeployConfiguration activeConfiguration, Log log) throws MojoFailureException {
         this.activeConfiguration = activeConfiguration;
         this.log = log;
-        if (server == null) {
-            throw new MojoFailureException("No server config provided");
-        }
-        BasicAWSCredentials credentials = new BasicAWSCredentials(server.getUsername(), server.getPassword());
+
         Region awsRegion = Region.getRegion(Regions.fromName(region));
-        awsAsClient = new AmazonAutoScalingClient(credentials);
+        awsAsClient = new AmazonAutoScalingClient();
         awsAsClient.setRegion(awsRegion);
 
-        awsElbClient = new AmazonElasticLoadBalancingClient(credentials);
+        awsElbClient = new AmazonElasticLoadBalancingClient();
         awsElbClient.setRegion(awsRegion);
 
-        awsEc2Client = new AmazonEC2Client(credentials);
+        awsEc2Client = new AmazonEC2Client();
         awsEc2Client.setRegion(awsRegion);
 
         activeConfiguration.withAutoScalingGroup(matchAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
@@ -104,7 +100,7 @@ public class AwsAutoScalingDeployUtils {
             List<Ec2Instance> ec2Instances = instancesResult.getReservations().stream().flatMap(r -> r.getInstances().stream()).map(this::toEc2Instance).collect(Collectors.toList());
             log.debug("describing elb status");
             autoScalingGroup.getLoadBalancerNames().forEach(elb -> this.updateInstancesStateOnLoadBalancer(elb, ec2Instances));
-            ec2Instances.stream().forEach(i -> i.updateAsState(AwsState.map(instanceMap.get(i.getInstanceId()).getLifecycleState())));
+            ec2Instances.forEach(i -> i.updateAsState(AwsState.map(instanceMap.get(i.getInstanceId()).getLifecycleState())));
             Collections.sort(ec2Instances, (o1, o2) -> {
 
                 int sComp = o1.getAsState().compareTo(o2.getAsState());
@@ -120,6 +116,7 @@ public class AwsAutoScalingDeployUtils {
             }
             return ec2Instances;
         } catch (AmazonClientException e) {
+            log.error(e.getMessage(), e);
             throw new MojoFailureException(e.getMessage());
         }
 
@@ -143,14 +140,14 @@ public class AwsAutoScalingDeployUtils {
                     .withHonorCooldown(false));
             return true;
         } catch (AmazonClientException e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return false;
         }
     }
 
     private void updateInstancesStateOnLoadBalancer(String loadBalancerName, List<Ec2Instance> instances) {
         DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(loadBalancerName));
-        instances.stream().forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
+        instances.forEach(i -> result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(i.getInstanceId())).findFirst().ifPresent(s -> i.updateState(AwsState.map(s.getState()))));
     }
 
     public void updateInstanceState(Ec2Instance instance, List<String> loadBalancerNames) {
@@ -217,24 +214,24 @@ public class AwsAutoScalingDeployUtils {
     public void setDeployMetadataTags(final String version, Properties properties) {
         List<Tag> tags = new ArrayList<>();
         tags.add(new Tag().withPropagateAtLaunch(true)
-                .withResourceType("auto-scaling-group")
+                .withResourceType(AUTO_SCALING_GROUP)
                 .withKey(LATEST_REQUEST_TAG).withValue(version)
                 .withResourceId(activeConfiguration.getAutoScalingGroupId()));
         tags.add(new Tag().withPropagateAtLaunch(true)
-                .withResourceType("auto-scaling-group")
+                .withResourceType(AUTO_SCALING_GROUP)
                 .withKey(SCOPE_TAG).withValue(Boolean.toString(activeConfiguration.isTestScope()))
                 .withResourceId(activeConfiguration.getAutoScalingGroupId()));
 
         if (!activeConfiguration.getAutoScalingProperties().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
-                    .withResourceType("auto-scaling-group")
+                    .withResourceType(AUTO_SCALING_GROUP)
                     .withKey(PROPERTIES_TAGS).withValue(activeConfiguration.getAutoScalingProperties().stream().map(key -> key + ":" + getProperty(key, properties)).collect(Collectors.joining(";")))
                     .withResourceId(activeConfiguration.getAutoScalingGroupId())
             );
         }
         if (!activeConfiguration.getExclusions().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
-                    .withResourceType("auto-scaling-group")
+                    .withResourceType(AUTO_SCALING_GROUP)
                     .withKey(EXCLUSION_TAG).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getGroupId()).collect(Collectors.joining(";")))
                     .withResourceId(activeConfiguration.getAutoScalingGroupId()));
         }
@@ -257,7 +254,7 @@ public class AwsAutoScalingDeployUtils {
         if (matchedGroups == null || matchedGroups.isEmpty() || matchedGroups.size() != 1) {
             int matchSize = matchedGroups == null ? -1 : matchedGroups.size();
             if (matchSize > 0) {
-                matchedGroups.stream().forEach(group -> log.error("Matched group : " + group));
+                matchedGroups.forEach(group -> log.error("Matched group : " + group));
             }
             throw new IllegalStateException("Unable to match group regex, matched group size " + matchSize);
         }

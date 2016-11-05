@@ -15,6 +15,7 @@ import rx.Observable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static nl.jpoint.vertx.mod.deploy.util.LogConstants.ERROR_EXECUTING_REQUEST;
 import static rx.Observable.just;
 
 public class AwsAutoScalingUtil {
@@ -40,7 +41,7 @@ public class AwsAutoScalingUtil {
         return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
     }
 
-    public Observable<AwsState> pollForInstanceState() throws AwsException {
+    public Observable<AwsState> pollForInstanceState() {
         try {
             return Observable.from(asyncClient.describeAutoScalingInstancesAsync(new DescribeAutoScalingInstancesRequest().withInstanceIds(instanceId)))
                     .flatMap(result -> {
@@ -48,18 +49,18 @@ public class AwsAutoScalingUtil {
                         return just(optState.isPresent() ? AwsState.map(optState.get()) : AwsState.UNKNOWN);
                     });
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
 
-    public Observable<String> listLoadBalancers(final String groupId) throws AwsException {
+    public Observable<String> listLoadBalancers(final String groupId) {
         try {
             return Observable.from(asyncClient.describeLoadBalancersAsync(new DescribeLoadBalancersRequest().withAutoScalingGroupName(groupId)))
                     .map(result -> result.getLoadBalancers().stream().map(LoadBalancerState::getLoadBalancerName).collect(Collectors.toList()))
                     .flatMap(Observable::from);
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
@@ -78,7 +79,7 @@ public class AwsAutoScalingUtil {
                 return true;
             }
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             return false;
         }
     }
@@ -88,7 +89,7 @@ public class AwsAutoScalingUtil {
             asyncClient.exitStandby(new ExitStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId));
             return true;
         } catch (AmazonClientException e) {
-            LOG.error("Error executing request {}.", e);
+            LOG.error(ERROR_EXECUTING_REQUEST, e);
             return false;
         }
     }
@@ -102,7 +103,7 @@ public class AwsAutoScalingUtil {
                     new Filter().withName("auto-scaling-group").withValues(details.get().getAutoScalingGroupName())
             );
             DescribeTagsResult result = asyncClient.describeTags(new DescribeTagsRequest().withFilters(filters));
-            result.getTags().stream().forEach(t -> tags.put(t.getKey(), t.getValue()));
+            result.getTags().forEach(t -> tags.put(t.getKey(), t.getValue()));
         }
         return tags;
     }

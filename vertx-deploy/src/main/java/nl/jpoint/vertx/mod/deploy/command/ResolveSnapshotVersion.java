@@ -26,6 +26,7 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
         this.config = config;
     }
 
+    @Override
     public Observable<T> executeAsync(T request) {
         final URI location = config.getNexusUrl().resolve(config.getNexusUrl().getPath() + "/" + request.getMetadataLocation());
         String filename = createTempFile(request.getArtifactId());
@@ -33,7 +34,7 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
                 .flatMap(x -> {
                     request.setVersion(retrieveAndParseMetadata(filename, request));
                     return just(request);
-                }).onErrorReturn((x) -> {
+                }).onErrorReturn(x -> {
                     LOG.error("[{} - {}]: Error downloading artifact {} for url {} -> .", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId(), location, x);
                     return request;
                 });

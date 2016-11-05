@@ -6,7 +6,11 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 
-public class LogUtil {
+public final class LogUtil {
+
+    private LogUtil() {
+        //hide
+    }
 
     public static void logDeployResult(Log log, String result) {
         if (result == null || result.isEmpty()) {
@@ -22,8 +26,8 @@ public class LogUtil {
                 deployResult.getError().forEach((key, entry) -> log.error(key + " -> " + entry));
             }
         } catch (IOException e) {
+            log.error(e.getMessage(), e);
             log.warn("Unable to parse deploy result -> " + result);
-            e.printStackTrace();
         }
     }
 }

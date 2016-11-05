@@ -16,7 +16,6 @@ import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
 
 import java.util.List;
 import java.util.Properties;
@@ -30,8 +29,8 @@ public class AutoScalingDeployService extends DeployService {
     private final Integer requestTimeout;
     private final Properties properties;
 
-    public AutoScalingDeployService(DeployConfiguration activeConfiguration, final String region, final Integer port, final Integer requestTimeout, final Server server, final Log log, Properties properties) throws MojoExecutionException {
-        super(server, log);
+    public AutoScalingDeployService(DeployConfiguration activeConfiguration, final String region, final Integer port, final Integer requestTimeout, final Log log, Properties properties) throws MojoExecutionException {
+        super(log);
         this.activeConfiguration = activeConfiguration;
         this.region = region;
         this.port = port;
@@ -46,18 +45,18 @@ public class AutoScalingDeployService extends DeployService {
 
         getLog().info("Deploy with strategy : " + activeConfiguration.getDeployStrategy().name());
 
-        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(getServer(), region, activeConfiguration, getLog());
+        AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(region, activeConfiguration, getLog());
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
 
-        if(asGroup == null) {
+        if (asGroup == null) {
             throw new MojoFailureException("Invalid auto-scaling group");
         }
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
         List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
-        if (instances.stream().anyMatch((i -> !i.isReachable(activeConfiguration.getAwsPrivateIp(), port, getLog())))) {
+        if (instances.stream().anyMatch(i -> !i.isReachable(activeConfiguration.getAwsPrivateIp(), port, getLog()))) {
             getLog().error("Error connecting to deploy module on some instances");
             throw new MojoExecutionException("Error connecting to deploy module on some instances");
         }
@@ -112,12 +111,13 @@ public class AutoScalingDeployService extends DeployService {
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
                     .withDecrementDesiredCapacity(activeConfiguration.isDecrementDesiredCapacity())
                     .withRestart(activeConfiguration.doRestart())
+                    .withTestScope(activeConfiguration.isTestScope())
                     .build();
             getLog().debug("Sending deploy request  -> " + deployRequest.toJson(true));
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-                AwsState newState = executor.executeRequest(deployRequest, (activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp()), activeConfiguration.getDeployStrategy().ordinal() > 1);
+                AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy().ordinal() > 1);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
                 awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion(), properties);
@@ -146,7 +146,7 @@ public class AutoScalingDeployService extends DeployService {
                 .filter(awsDeployUtils::checkEc2Instance)
                 .collect(Collectors.toList());
 
-        if (removedInstances != null && removedInstances.size() > 0) {
+        if (removedInstances != null && removedInstances.isEmpty()) {
             instances = instances.stream()
                     .filter(i -> !removedInstances.contains(i.getInstanceId()))
                     .collect(Collectors.toList());
