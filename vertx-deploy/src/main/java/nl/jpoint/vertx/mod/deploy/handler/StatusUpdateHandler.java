@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatusUpdateHandler implements Handler<RoutingContext> {
-    private final Logger LOG = LoggerFactory.getLogger(StatusUpdateHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StatusUpdateHandler.class);
     private final DeployApplicationService deployApplicationService;
 
     public StatusUpdateHandler(DeployApplicationService deployApplicationService) {

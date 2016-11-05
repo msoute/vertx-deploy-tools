@@ -33,6 +33,7 @@ public class StopApplication implements Command<DeployApplicationRequest> {
         this.timeout = LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration());
     }
 
+    @Override
     public Observable<DeployApplicationRequest> executeAsync(DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Waiting for module {} to stop.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
         return this.stopApplication(request)

@@ -14,11 +14,11 @@ public class ObservableCommand<R extends ModuleRequest> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObservableCommand.class);
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
-    private static Process process;
     private final Integer expectedResultCode;
     private final Vertx rxVertx;
     private final boolean throwException;
     private final R request;
+    private Process process;
 
     public ObservableCommand(R request, Integer expectedResultCode, Vertx vertx, boolean throwException) {
         this.request = request;

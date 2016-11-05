@@ -26,13 +26,14 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
         this.poller = new AwsPollingElbStateObservable(vertx, "fakeId", awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), s -> true, AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
     }
 
+    @Override
     public Observable<DeployRequest> executeAsync(DeployRequest request) {
         try {
             return awsAsUtil.listLoadBalancers(request.getAutoScalingGroup())
                     .flatMap(awsElbUtil::deRegisterInstanceFromLoadbalancer)
                     .flatMap(elb -> poller.poll(request, elb));
         } catch (AwsException e) {
-            LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage());
+            LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage(), e);
             throw new IllegalStateException();
         }
     }

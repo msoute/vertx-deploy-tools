@@ -18,6 +18,8 @@ import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,6 +29,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class AetherUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(AetherUtil.class);
+
+    private AetherUtil() {
+        // Hide
+    }
 
     public static RepositorySystem newRepositorySystem() {
         /*
@@ -42,7 +49,7 @@ public class AetherUtil {
         locator.setErrorHandler(new DefaultServiceLocator.ErrorHandler() {
             @Override
             public void serviceCreationFailed(Class<?> type, Class<?> impl, Throwable exception) {
-                exception.printStackTrace();
+                LOG.error(exception.getMessage(), exception);
             }
         });
         return locator.getService(RepositorySystem.class);
@@ -85,6 +92,7 @@ public class AetherUtil {
         try {
             return reader.read(new FileReader(artifact.getFile()));
         } catch (IOException | XmlPullParserException e) {
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }

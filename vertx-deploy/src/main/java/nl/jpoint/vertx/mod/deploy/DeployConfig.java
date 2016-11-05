@@ -13,7 +13,7 @@ public class DeployConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(AwsDeployApplication.class);
 
-    //   private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
+    private static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven/";
 
     private static final String VERTX_HOME = "vertx.home";
     private static final String RUN_DIR = "vertx.run";
@@ -34,7 +34,6 @@ public class DeployConfig {
 
     private static final String AUTH_TOKEN = "auth.token";
 
-    private static final String AWS_ELB_ID = "aws.elb.loadbalancer";
     private static final String AWS_INSTANCE_ID = "aws.elb.instanceid";
     private static final String STAT_FILE = ".initial";
 
@@ -105,7 +104,7 @@ public class DeployConfig {
 
         if (mavenRepo.isEmpty()) {
             LOG.warn("'maven.repo.uri', using maven central");
-            // mavenRepo = MAVEN_CENTRAL;
+            mavenRepo = MAVEN_CENTRAL;
         }
 
         DeployConfig deployconfig = new DeployConfig(vertxHome, artifactRepo, mavenRepo)

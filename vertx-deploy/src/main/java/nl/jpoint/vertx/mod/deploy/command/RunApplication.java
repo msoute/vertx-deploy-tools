@@ -33,6 +33,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         this.config = config;
     }
 
+    @Override
     public Observable<DeployApplicationRequest> executeAsync(final DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
         return this.readServiceDefaults(request)
@@ -52,7 +53,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                                     try {
                                         serviceProperties.load(new ByteArrayInputStream(buffer.toString().getBytes()));
                                     } catch (IOException e) {
-                                        LOG.error("[{} - {}]: Failed to initialize properties for module  {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e.getMessage());
+                                        LOG.error("[{} - {}]: Failed to initialize properties for module  {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e.getMessage(), e);
                                     }
                                     request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS));
                                     request.withInstances(serviceProperties.getProperty(INSTANCES, "1"));
@@ -99,14 +100,6 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                 .doOnCompleted(() -> LOG.info("[{} - {}]: Started module '{}' with applicationID '{}'", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId(), deployApplicationRequest.getMavenArtifactId()))
                 .doOnError(t -> LOG.error("[{} - {}]: Failed to initialize application {} with error '{}'", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId(), t));
     }
-
-    /*private Observable<Integer> handleExitCode(DeployApplicationRequest request, Integer exitCode) {
-        if (exitCode != 0) {
-            LOG.error("[{} -{}]: Error while running application {} with error {}",LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), ExitCodes.values()[exitCode]);
-            throw new IllegalStateException("Error while running application " + request.getModuleId() + " with error " + ExitCodes.values()[exitCode]);
-        }
-        return just(exitCode);
-    }*/
 
     private String buildRemoteRepo() {
         URI remoteRepo = config.getNexusUrl();
