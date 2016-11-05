@@ -24,13 +24,15 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String INSTANCES = "INSTANCES";
+    private static final String CONFIG_FILE = "CONFIG_FILE";
+
     private static final Logger LOG = LoggerFactory.getLogger(RunApplication.class);
     private final Vertx rxVertx;
-    private final DeployConfig config;
+    private final DeployConfig deployConfig;
 
-    public RunApplication(final io.vertx.core.Vertx vertx, final DeployConfig config) {
+    public RunApplication(final io.vertx.core.Vertx vertx, final DeployConfig deployConfig) {
         this.rxVertx = new Vertx(vertx);
-        this.config = config;
+        this.deployConfig = deployConfig;
     }
 
     @Override
@@ -44,7 +46,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
     Observable<DeployApplicationRequest> readServiceDefaults(DeployApplicationRequest request) {
         Properties serviceProperties = new Properties();
-        String path = config.getServiceConfigLocation() + request.getGroupId() + ":" + request.getArtifactId();
+        String path = deployConfig.getServiceConfigLocation() + request.getGroupId() + ":" + request.getArtifactId();
         return rxVertx.fileSystem().existsObservable(path)
                 .filter(Boolean.TRUE::equals)
                 .map(x -> path)
@@ -62,6 +64,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                                         return just(request);
                                     }
                                     request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS, ""));
+                                    request.withConfigLocation(serviceProperties.getProperty(CONFIG_FILE, ""));
                                     request.withInstances(serviceProperties.getProperty(INSTANCES, "1"));
                                     return just(request);
                                 }));
@@ -70,27 +73,28 @@ public class RunApplication implements Command<DeployApplicationRequest> {
     private Observable<DeployApplicationRequest> startApplication(DeployApplicationRequest deployApplicationRequest) {
 
         List<String> command = new ArrayList<>();
-        command.addAll(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + deployApplicationRequest.getModuleId(), "-id", deployApplicationRequest.getModuleId()));
-        if (config.isMavenRemote()) {
+        command.addAll(Arrays.asList(deployConfig.getVertxHome().resolve("bin/vertx").toString(), "start", "maven:" + deployApplicationRequest.getModuleId(), "-id", deployApplicationRequest.getModuleId()));
+        if (deployConfig.isMavenRemote()) {
             command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
-            command.add("-Dvertx.maven.remoteSnapshotPolicy=" + config.getRemoteRepoPolicy());
+            command.add("-Dvertx.maven.remoteSnapshotPolicy=" + deployConfig.getRemoteRepoPolicy());
         }
-        if (!config.getConfigLocation().isEmpty()) {
+        String applicationConfig = deployApplicationRequest.getConfigLocation().isEmpty() ? deployConfig.getConfigLocation() : deployApplicationRequest.getConfigLocation();
+        if (!applicationConfig.isEmpty()) {
             command.add("-conf");
-            command.add(config.getConfigLocation());
+            command.add(applicationConfig);
         }
-        if (!deployApplicationRequest.getJavaOpts().isEmpty() || !config.getDefaultJavaOpts().isEmpty()) {
+        if (!deployApplicationRequest.getJavaOpts().isEmpty() || !deployConfig.getDefaultJavaOpts().isEmpty()) {
             command.add("--java-opts");
             command.add(deployApplicationRequest.getJavaOpts());
-            command.add(config.getDefaultJavaOpts());
+            command.add(deployConfig.getDefaultJavaOpts());
         }
         command.add("--instances");
         command.add(deployApplicationRequest.getInstances());
 
-        if (config.asCluster()) {
+        if (deployConfig.asCluster()) {
             command.add("-cluster");
         }
-        command.add("-Dvertxdeploy.port=" + config.getHttpPort());
+        command.add("-Dvertxdeploy.port=" + deployConfig.getHttpPort());
         command.add("-Dvertxdeploy.scope.test=" + deployApplicationRequest.isTestScope());
 
         ProcessBuilder processBuilder = new ProcessBuilder().command(command);
@@ -104,13 +108,13 @@ public class RunApplication implements Command<DeployApplicationRequest> {
     }
 
     private String buildRemoteRepo() {
-        URI remoteRepo = config.getNexusUrl();
-        if (remoteRepo != null && config.isHttpAuthentication()) {
+        URI remoteRepo = deployConfig.getNexusUrl();
+        if (remoteRepo != null && deployConfig.isHttpAuthentication()) {
             URIBuilder builder = new URIBuilder(remoteRepo);
-            builder.setUserInfo(config.getHttpAuthUser() + ":" + config.getHttpAuthPassword());
+            builder.setUserInfo(deployConfig.getHttpAuthUser() + ":" + deployConfig.getHttpAuthPassword());
             return builder.toString();
         }
-        return config.getNexusUrl().toString();
+        return deployConfig.getNexusUrl().toString();
     }
 }
 

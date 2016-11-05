@@ -41,6 +41,7 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **maven.repo.uri*** : Maven repo url
 * **maven.repo.snapshot.policy**  : Maven snapshot policy (default: always)
 * **config.location** : Location of config file (used for -conf when a verticle is instantiated)
+* **service.config.location** : Location of the defaults file per service (default: /etc/default)
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
@@ -283,7 +284,9 @@ The following AWS actions are needed for the deploy applications
 
 ## 3.2.0-SNAPSHOT
 
-* [Enhancement] Also check for service config files in the form of [groupId]~[artifactId]
+* [Enhancement] Also check for service config files in the form of [groupId]~[artifactId] [#34](vertx-deploy-tools/issues/34)
+* [Enhancement] Add option to temporarily set stickyness to ELB's during deploy  [#42](vertx-deploy-tools/issues/42)
+* [Enhancement] Add option to use a config file per application to deploy [#25](vertx-deploy-tools/issues/25)
 
 ## 3.1.0
 
