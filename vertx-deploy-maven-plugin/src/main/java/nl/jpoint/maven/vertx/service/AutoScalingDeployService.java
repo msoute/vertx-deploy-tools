@@ -84,6 +84,11 @@ public class AutoScalingDeployService extends DeployService {
         if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
             throw new MojoExecutionException("Auto scaling group is not in a deployable state.");
         }
+
+        if (activeConfiguration.isSticky()) {
+            asGroup.getLoadBalancerNames().forEach(elbName -> awsDeployUtils.enableStickiness(elbName, activeConfiguration.getStickyPorts()));
+        }
+
         awsDeployUtils.suspendScheduledActions();
 
         instances = checkInstances(awsDeployUtils, asGroup, instances);
@@ -98,6 +103,9 @@ public class AutoScalingDeployService extends DeployService {
             awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
             if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
                 awsDeployUtils.resumeScheduledActions();
+                if (activeConfiguration.isSticky()) {
+                    asGroup.getLoadBalancerNames().forEach(elbName -> awsDeployUtils.disableStickiness(elbName, activeConfiguration.getStickyPorts()));
+                }
                 throw new MojoExecutionException("auto scaling group is not in a deployable state.");
             }
 
@@ -126,6 +134,9 @@ public class AutoScalingDeployService extends DeployService {
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
                 if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, instances)) {
                     awsDeployUtils.resumeScheduledActions();
+                    if (activeConfiguration.isSticky()) {
+                        asGroup.getLoadBalancerNames().forEach(elbName -> awsDeployUtils.disableStickiness(elbName, activeConfiguration.getStickyPorts()));
+                    }
                     throw new MojoExecutionException("auto scaling group is not in a deployable state.");
                 }
             }
@@ -135,6 +146,11 @@ public class AutoScalingDeployService extends DeployService {
         if (DeployStrategyType.KEEP_CAPACITY.equals(activeConfiguration.getDeployStrategy())) {
             awsDeployUtils.setDesiredCapacity(asGroup, originalDesiredCapacity);
         }
+
+        if (activeConfiguration.isSticky()) {
+            asGroup.getLoadBalancerNames().forEach(elbName -> awsDeployUtils.disableStickiness(elbName, activeConfiguration.getStickyPorts()));
+        }
+
         awsDeployUtils.resumeScheduledActions();
     }
 

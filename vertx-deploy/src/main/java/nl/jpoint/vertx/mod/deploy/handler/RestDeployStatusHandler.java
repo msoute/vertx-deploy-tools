@@ -49,7 +49,6 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
             default:
                 respondContinue(context.request(), deployState);
         }
-
     }
 
     private JsonObject createStatusObject() {

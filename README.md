@@ -198,8 +198,23 @@ Deploys a single artifact to a DeployTarget
 
 #### mvn deploy-single-as
 Deploys to an autoscaling group
+mvn target options (-D):
 
-TODO
+* **deploy.auth.token** :
+* **deploy.exclusions** :
+* **deploy.as.id** :
+* **deploy.as.strategy** :
+* **deploy.as.private** :
+* **deploy.as.elb** :
+* **deploy.as.test** :
+* **deploy.as.config** :
+* **deploy.as.restart** :
+* **deploy.as.decrement** :
+* **deploy.as.stickiness** : Enables stickiness during deploy (default: *false*)
+* **deploy.as.allowSnapshots** :
+
+* **deploy.as.properties** : See Autodiscover deploys
+
 
 ### mvn deploy:as-enable
 Mojo to add one instance to an as_group if current instances size equals 0.
@@ -252,6 +267,12 @@ If an application reports an error the deploy wil fail, the same error is report
 # Auto(scaling)discover deploys
 If autoscaling is setup the deploy application can try to auto-discover what needs to be deployed on initial run. In order to do this the maven plugin
   will store all needed data (version, scope) as a tag on the autoscaling group. The deploy application wil read these tags and create a deploy command.
+
+## deploy.as.properties
+
+Comma separated list of build options that who's values are stored in order to execute an autodiscover deploy.
+i.e. If a build uses a propertie ${target.env} in its pom the resovled value needs to be persisted to an autoscaling group tag in order for an autodiscover deploy
+to deploy the exact same version.
 
 # AWS IAM Policy
 

@@ -4,16 +4,17 @@ import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.model.Exclusion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DeployConfiguration {
+
     /**
      * The maven project version as String (groupId:artifactId:version)
      */
     private String projectVersion;
-
     /**
-
      * The configuration target id
      **/
     private String target;
@@ -52,6 +53,9 @@ public class DeployConfiguration {
     private boolean useAutoScaling = false;
     private boolean elb = false;
 
+    private boolean stickiness = false;
+
+    private List<String> stickyPorts = new ArrayList<>(Collections.singletonList("443"));
     /**
      * AWS AutoScaling Properties
      **/
@@ -161,6 +165,19 @@ public class DeployConfiguration {
         this.deployStrategy = deployStrategy;
     }
 
+    public boolean isSticky() {
+        return stickiness;
+    }
+
+    public List<Integer> getStickyPorts() {
+        return stickyPorts.stream().map(Integer::valueOf).collect(Collectors.toList());
+    }
+
+    public DeployConfiguration withStickyPorts(List<String> stickyPorts) {
+        this.stickyPorts = stickyPorts;
+        return this;
+    }
+
     public DeployConfiguration withAutoScalingGroup(String autoScalingGroup) {
         this.autoScalingGroupId = autoScalingGroup;
         return this;
@@ -228,6 +245,11 @@ public class DeployConfiguration {
 
     public DeployConfiguration withAuthToken(String authToken) {
         this.authToken = authToken;
+        return this;
+    }
+
+    public DeployConfiguration withStickiness(boolean stickiness) {
+        this.stickiness = stickiness;
         return this;
     }
 

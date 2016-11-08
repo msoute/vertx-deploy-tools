@@ -38,6 +38,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private boolean ignoreInStandby;
     @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
     private boolean deploySnapshots;
+    @Parameter(required = false, defaultValue = "false", property = "deploy.as.stickiness")
+    private boolean enableStickiness;
     @Parameter(required = false, defaultValue = "", property = "deploy.as.properties")
     protected String properties;
     @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
@@ -78,6 +80,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withIgnoreInStandby(ignoreInStandby)
                 .withDeploySnapshots(deploySnapshots)
                 .withAuthToken(authToken)
+                .withStickiness(useElb && enableStickiness)
                 .withProjectVersion(projectVersionAsString());
     }
 }
