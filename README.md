@@ -210,6 +210,7 @@ mvn target options (-D):
 * **deploy.as.config** :
 * **deploy.as.restart** :
 * **deploy.as.decrement** :
+* **deploy.as.stickiness** : Enables stickiness during deploy (default: *false*)
 * **deploy.as.allowSnapshots** :
 
 * **deploy.as.properties** : See Autodiscover deploys
