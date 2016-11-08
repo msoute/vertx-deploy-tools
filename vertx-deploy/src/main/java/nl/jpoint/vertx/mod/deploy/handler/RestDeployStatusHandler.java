@@ -1,14 +1,13 @@
 package nl.jpoint.vertx.mod.deploy.handler;
 
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployState;
 import nl.jpoint.vertx.mod.deploy.service.AwsService;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
 import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
+import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +54,8 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
 
     private JsonObject createStatusObject() {
         JsonObject result = new JsonObject();
-        result.put(ApplicationDeployState.OK.name(), new JsonArray(deployApplicationService.getDeployedApplicationsSuccess()));
-        result.put(ApplicationDeployState.ERROR.name(), new JsonObject(deployApplicationService.getDeployedApplicationsFailed()));
+        result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployApplicationService.getDeployedApplicationsSuccess()));
+        result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployApplicationService.getDeployedApplicationsFailed()));
         return result;
     }
 }
