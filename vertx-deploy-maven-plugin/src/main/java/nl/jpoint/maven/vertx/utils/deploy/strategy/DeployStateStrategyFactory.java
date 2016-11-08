@@ -6,7 +6,11 @@ import nl.jpoint.maven.vertx.utils.Ec2Instance;
 
 import java.util.List;
 
-public class DeployStateStrategyFactory {
+public final class DeployStateStrategyFactory {
+
+    private DeployStateStrategyFactory() {
+        // Hide
+    }
 
     public static boolean isDeployable(DeployConfiguration activeConfiguration, AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
         boolean canDeploy = false;

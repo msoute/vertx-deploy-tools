@@ -16,6 +16,9 @@ import rx.Observable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nl.jpoint.vertx.mod.deploy.util.LogConstants.REQUEST_ALREADY_REGISTERED;
+import static nl.jpoint.vertx.mod.deploy.util.LogConstants.REQUEST_NOT_REGISTERED;
+
 public class AwsService {
     private static final Logger LOG = LoggerFactory.getLogger(AwsService.class);
     private final Vertx vertx;
@@ -29,7 +32,7 @@ public class AwsService {
 
     public void registerRequest(DeployRequest deployRequest) {
         if (runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error("[{} - {}]: Request already registered.", LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
+            LOG.error(REQUEST_ALREADY_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
             throw new IllegalStateException("Request already registered.");
         }
         runningRequests.put(deployRequest.getId().toString(), deployRequest);
@@ -37,7 +40,7 @@ public class AwsService {
 
     public Observable<DeployRequest> autoScalingDeRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error("[{} - {}]: Request not registered.", LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
@@ -48,7 +51,7 @@ public class AwsService {
 
     public Observable<DeployRequest> autoScalingRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error("[{} - {}]: Request not registered.", LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
@@ -59,7 +62,7 @@ public class AwsService {
 
     public Observable<DeployRequest> loadBalancerRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error("[{} - {}]: Request not registered.", LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
@@ -71,7 +74,7 @@ public class AwsService {
 
     public Observable<DeployRequest> loadBalancerDeRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error("[{} - {}]: Request not registered.", LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }

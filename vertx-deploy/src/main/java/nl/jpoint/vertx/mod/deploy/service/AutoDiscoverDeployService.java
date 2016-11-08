@@ -61,7 +61,7 @@ public class AutoDiscoverDeployService {
         }
 
         Artifact deployArtifact = getDeployArtifact(tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG));
-        boolean testScope = Boolean.valueOf(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false"));
+        boolean testScope = Boolean.parseBoolean(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false"));
 
         if (deployArtifact != null) {
             List<Artifact> dependencies = getDeployDependencies(deployArtifact,
@@ -117,7 +117,7 @@ public class AutoDiscoverDeployService {
             ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
             return artifactResult.getArtifact();
         } catch (ArtifactResolutionException e) {
-            LOG.error("Unable to resolve deploy artifact '{}', unable to auto-discover ", mavenCoords);
+            LOG.error("Unable to resolve deploy artifact '{}', unable to auto-discover ", mavenCoords, e);
         }
         return null;
     }
@@ -140,7 +140,7 @@ public class AutoDiscoverDeployService {
                     .collect(Collectors.toList());
 
         } catch (ArtifactDescriptorException e) {
-            LOG.error("Unable to resolve dependencies for deploy artifact '{}', unable to auto-discover ", artifact);
+            LOG.error("Unable to resolve dependencies for deploy artifact '{}', unable to auto-discover ", artifact, e);
         }
         return Collections.emptyList();
     }

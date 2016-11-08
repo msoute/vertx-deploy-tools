@@ -43,7 +43,7 @@ public class OpsWorksDeployService extends DeployService {
                 .withRestart(activeConfiguration.doRestart())
                 .build();
 
-        if (activeConfiguration.getHosts().stream().anyMatch(host -> !InstanceUtils.isReachable(host, port, getLog()))) {
+        if (activeConfiguration.getHosts().stream().anyMatch(host -> !InstanceUtils.isReachable(host, port, host, getLog()))) {
             getLog().error("Error connecting to deploy module on some instances");
             throw new MojoExecutionException("Error connecting to deploy module on some instances");
         }

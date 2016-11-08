@@ -11,6 +11,7 @@ public class DeployApplicationRequest extends ModuleRequest {
     private boolean running = false;
     private String javaOpts = "";
     private String instances = "1";
+    private String configLocation = "";
     private boolean installed = false;
     private boolean testScope = false;
 
@@ -53,6 +54,10 @@ public class DeployApplicationRequest extends ModuleRequest {
         this.javaOpts = javaOpts != null ? javaOpts : "";
     }
 
+    public void withConfigLocation(String configLocation) {
+        this.configLocation = configLocation != null ? configLocation : "";
+    }
+
     public void withInstances(String instances) {
         this.instances = instances;
     }
@@ -71,6 +76,10 @@ public class DeployApplicationRequest extends ModuleRequest {
 
     public String getInstances() {
         return instances;
+    }
+
+    public String getConfigLocation() {
+        return this.configLocation;
     }
 
     public boolean isInstalled() {

@@ -42,21 +42,22 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
                 removeBasePath(request, basePath);
             }
             final Path zipRoot = zipFs.getPath("/");
-            Files.walkFileTree(zipRoot, CopyingFileVisitor(basePath, request));
+            Files.walkFileTree(zipRoot, copyingFileVisitor(basePath, request));
             LOG.info("[{} - {}]: Extracted artifact {} to {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath);
             return just(request)
                     .doOnError(t -> LOG.error("Unable to extract artifact {}, {}", t.getMessage(), t));
         } catch (IOException | InvalidPathException e) {
-            LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", request.getLogName(), request.getId(), request.getModuleId(), e.getMessage());
+            LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", request.getLogName(), request.getId(), request.getModuleId(), e.getMessage(), e);
             throw new IllegalStateException();
         }
     }
 
-    private SimpleFileVisitor<Path> CopyingFileVisitor(final Path basePath, T request) {
+    private SimpleFileVisitor<Path> copyingFileVisitor(final Path basePath, T request) {
         return new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
-                byte[] oldDigest = null, newDigest = null;
+                byte[] oldDigest = null;
+                byte[] newDigest = null;
                 if (ArtifactContextUtil.ARTIFACT_CONTEXT.equals(file.getFileName().toString())) {
                     return FileVisitResult.CONTINUE;
                 }

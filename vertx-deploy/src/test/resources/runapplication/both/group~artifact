@@ -1,0 +1,2 @@
+JAVA_OPTS=oldformat
+INSTANCES=3

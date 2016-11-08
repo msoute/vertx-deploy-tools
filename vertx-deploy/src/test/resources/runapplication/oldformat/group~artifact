@@ -1,0 +1,2 @@
+JAVA_OPTS=test
+INSTANCES=2

@@ -13,6 +13,7 @@ import org.apache.maven.plugin.logging.Log;
 
 public class AwsOpsWorksDeployUtils {
 
+    public static final String ONLINE = "online";
     private final AWSOpsWorksClient awsOpsWorksClient;
 
 
@@ -30,7 +31,7 @@ public class AwsOpsWorksDeployUtils {
         try {
             DescribeInstancesResult result = awsOpsWorksClient.describeInstances(new DescribeInstancesRequest().withLayerId(activeConfiguration.getOpsWorksLayerId()));
             result.getInstances().stream()
-                    .filter(i -> i.getStatus().equals("online"))
+                    .filter(i -> i.getStatus().equals(ONLINE))
                     .forEach(i -> {
                                 String ip = activeConfiguration.getAwsPrivateIp() ? i.getPrivateIp() : i.getPublicIp();
                                 log.info("Adding host from opsworks response : " + ip);
@@ -39,6 +40,7 @@ public class AwsOpsWorksDeployUtils {
                     );
 
         } catch (AmazonClientException e) {
+            log.error(e.getMessage(), e);
             throw new MojoFailureException(e.getMessage());
         }
     }

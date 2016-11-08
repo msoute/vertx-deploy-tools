@@ -1,6 +1,5 @@
 package nl.jpoint.vertx.mod.deploy.handler;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -13,8 +12,10 @@ import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static nl.jpoint.vertx.mod.deploy.util.HttpUtils.*;
+
 public class RestDeployStatusHandler implements Handler<RoutingContext> {
-    private final Logger LOG = LoggerFactory.getLogger(RestDeployStatusHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RestDeployStatusHandler.class);
 
     private final AwsService deployAwsService;
     private final DeployApplicationService deployApplicationService;
@@ -38,35 +39,18 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
         DeployState deployState = state != null ? state : DeployState.CONTINUE;
         switch (deployState) {
             case SUCCESS:
-                respondOk(context.request());
+                respondOk(context.request(), createStatusObject());
                 deployApplicationService.cleanup();
                 break;
             case UNKNOWN:
             case FAILED:
-                respondFailed(context.request());
+                respondFailed(context.request(), createStatusObject());
                 deployApplicationService.cleanup();
                 break;
             default:
                 respondContinue(context.request(), deployState);
         }
 
-    }
-
-    private void respondOk(HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.OK.code());
-        request.response().end(createStatusObject().encode());
-
-    }
-
-    private void respondContinue(HttpServerRequest request, DeployState state) {
-        request.response().setStatusCode(HttpResponseStatus.ACCEPTED.code());
-        request.response().setStatusMessage("Deploy in state : " + state.name());
-        request.response().end();
-    }
-
-    private void respondFailed(HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-        request.response().end(createStatusObject().encode());
     }
 
     private JsonObject createStatusObject() {

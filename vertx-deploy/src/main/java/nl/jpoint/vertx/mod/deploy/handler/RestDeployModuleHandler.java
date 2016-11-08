@@ -1,22 +1,20 @@
 package nl.jpoint.vertx.mod.deploy.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
 import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
+import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import static nl.jpoint.vertx.mod.deploy.util.HttpUtils.*;
 
 public class RestDeployModuleHandler implements Handler<RoutingContext> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
     private final DeployApplicationService service;
-    private final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
 
     public RestDeployModuleHandler(final DeployApplicationService service) {
         this.service = service;
@@ -25,21 +23,10 @@ public class RestDeployModuleHandler implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext context) {
         context.request().bodyHandler(buffer -> {
-            String postData = new String(buffer.getBytes());
+            DeployApplicationRequest deployRequest = HttpUtils.readPostData(buffer, DeployApplicationRequest.class, LogConstants.DEPLOY_REQUEST);
 
-            if (postData.isEmpty()) {
-                LOG.error("{}: No postdata in request.", LogConstants.DEPLOY_REQUEST);
-                context.request().response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-                context.request().response().end();
-                return;
-            }
-
-            DeployApplicationRequest deployRequest;
-            try {
-                deployRequest = new ObjectMapper().readerFor(DeployApplicationRequest.class).readValue(postData);
-            } catch (IOException e) {
-                LOG.error("[{}]: Failed to read postdata {}", postData);
-                respondFailed(context.request());
+            if (deployRequest == null) {
+                respondBadRequest(context.request());
                 return;
             }
 
@@ -49,16 +36,6 @@ public class RestDeployModuleHandler implements Handler<RoutingContext> {
                     .doOnCompleted(() -> respondOk(context.request()))
                     .doOnError(t -> respondFailed(context.request()));
         });
-    }
-
-    private void respondOk(HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.OK.code());
-        request.response().end();
-    }
-
-    private void respondFailed(HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-        request.response().end();
     }
 
 }

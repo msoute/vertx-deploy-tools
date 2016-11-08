@@ -31,6 +31,7 @@ public class AwsAutoScalingDeployUtils {
     private static final String EXCLUSION_TAG = "deploy:exclusions";
     private static final String PROPERTIES_TAGS = "deploy:classifier:properties";
     private static final String DEPLOY_STICKINESS_POLICY = "deploy-stickiness-policy";
+    public static final String AUTO_SCALING_GROUP = "auto-scaling-group";
 
     private final AmazonAutoScalingClient awsAsClient;
     private final AmazonElasticLoadBalancingClient awsElbClient;
@@ -118,6 +119,7 @@ public class AwsAutoScalingDeployUtils {
             }
             return ec2Instances;
         } catch (AmazonClientException e) {
+            log.error(e.getMessage(), e);
             throw new MojoFailureException(e.getMessage());
         }
 
@@ -174,7 +176,7 @@ public class AwsAutoScalingDeployUtils {
                     .withHonorCooldown(false));
             return true;
         } catch (AmazonClientException e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return false;
         }
     }
@@ -248,24 +250,24 @@ public class AwsAutoScalingDeployUtils {
     public void setDeployMetadataTags(final String version, Properties properties) {
         List<Tag> tags = new ArrayList<>();
         tags.add(new Tag().withPropagateAtLaunch(true)
-                .withResourceType("auto-scaling-group")
+                .withResourceType(AUTO_SCALING_GROUP)
                 .withKey(LATEST_REQUEST_TAG).withValue(version)
                 .withResourceId(activeConfiguration.getAutoScalingGroupId()));
         tags.add(new Tag().withPropagateAtLaunch(true)
-                .withResourceType("auto-scaling-group")
+                .withResourceType(AUTO_SCALING_GROUP)
                 .withKey(SCOPE_TAG).withValue(Boolean.toString(activeConfiguration.isTestScope()))
                 .withResourceId(activeConfiguration.getAutoScalingGroupId()));
 
         if (!activeConfiguration.getAutoScalingProperties().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
-                    .withResourceType("auto-scaling-group")
+                    .withResourceType(AUTO_SCALING_GROUP)
                     .withKey(PROPERTIES_TAGS).withValue(activeConfiguration.getAutoScalingProperties().stream().map(key -> key + ":" + getProperty(key, properties)).collect(Collectors.joining(";")))
                     .withResourceId(activeConfiguration.getAutoScalingGroupId())
             );
         }
         if (!activeConfiguration.getExclusions().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
-                    .withResourceType("auto-scaling-group")
+                    .withResourceType(AUTO_SCALING_GROUP)
                     .withKey(EXCLUSION_TAG).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getGroupId()).collect(Collectors.joining(";")))
                     .withResourceId(activeConfiguration.getAutoScalingGroupId()));
         }

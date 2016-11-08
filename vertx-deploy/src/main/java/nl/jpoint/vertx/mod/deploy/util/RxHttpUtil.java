@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 public class RxHttpUtil {
 
-    private final Logger LOG = LoggerFactory.getLogger(RxHttpUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RxHttpUtil.class);
 
     private final Vertx rxVertx;
     private final DeployConfig config;
@@ -26,7 +26,7 @@ public class RxHttpUtil {
     public RxHttpUtil(Vertx rxVertx, DeployConfig config) {
         this.rxVertx = rxVertx;
         this.config = config;
-        HttpClientOptions options = new HttpClientOptions().setSsl(config.getNexusUrl().getScheme().equals("https")).setVerifyHost(true);
+        HttpClientOptions options = new HttpClientOptions().setSsl("https".equals(config.getNexusUrl().getScheme())).setVerifyHost(true);
         httpClient = rxVertx.createHttpClient(options);
 
     }

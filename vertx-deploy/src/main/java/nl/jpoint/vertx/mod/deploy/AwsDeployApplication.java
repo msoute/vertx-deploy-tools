@@ -37,7 +37,7 @@ public class AwsDeployApplication extends AbstractVerticle {
         AutoDiscoverDeployService autoDiscoverDeployService = null;
 
         if (deployconfig.isAwsEnabled()) {
-            awsService = (new AwsService(getVertx(), deployconfig));
+            awsService = new AwsService(getVertx(), deployconfig);
             autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService, getVertx());
 
         }

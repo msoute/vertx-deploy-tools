@@ -32,6 +32,7 @@ public class DefaultRequestExecutor extends RequestExecutor {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
+                @Override
                 public void run() {
                     postRequest.abort();
                 }
@@ -64,6 +65,7 @@ public class DefaultRequestExecutor extends RequestExecutor {
         return AwsState.INSERVICE;
     }
 
+    @Override
     public AwsState executeRequest(DeployRequest deployRequest, String host, boolean ignoreFailure) throws MojoExecutionException, MojoFailureException {
         return this.executeRequest(createPost(deployRequest, host));
 
