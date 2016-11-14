@@ -95,7 +95,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
     Observable<Boolean> stopContainer() {
         LOG.info("[{}]: Stopping all running modules", LogConstants.INVOKE_CONTAINER);
         return Observable.from(new ProcessUtils(config).listInstalledAndRunningModules().entrySet())
-                .concatMap(entry -> {
+                .flatMap(entry -> {
                     StopApplication stopApplication = new StopApplication(vertx, config);
                     String[] mavenIds = entry.getKey().split(":", 2);
                     DeployApplicationRequest request = new DeployApplicationRequest(mavenIds[0], mavenIds[1], entry.getValue(), null, "jar");
