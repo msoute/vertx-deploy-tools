@@ -31,7 +31,7 @@ public class AwsAutoScalingDeployUtils {
     private static final String EXCLUSION_TAG = "deploy:exclusions";
     private static final String PROPERTIES_TAGS = "deploy:classifier:properties";
     private static final String DEPLOY_STICKINESS_POLICY = "deploy-stickiness-policy";
-    public static final String AUTO_SCALING_GROUP = "auto-scaling-group";
+    private static final String AUTO_SCALING_GROUP = "auto-scaling-group";
 
     private final AmazonAutoScalingClient awsAsClient;
     private final AmazonElasticLoadBalancingClient awsElbClient;
@@ -104,7 +104,7 @@ public class AwsAutoScalingDeployUtils {
             log.debug("describing elb status");
             autoScalingGroup.getLoadBalancerNames().forEach(elb -> this.updateInstancesStateOnLoadBalancer(elb, ec2Instances));
             ec2Instances.forEach(i -> i.updateAsState(AwsState.map(instanceMap.get(i.getInstanceId()).getLifecycleState())));
-            Collections.sort(ec2Instances, (o1, o2) -> {
+            ec2Instances.sort((o1, o2) -> {
 
                 int sComp = o1.getAsState().compareTo(o2.getAsState());
 
@@ -139,20 +139,20 @@ public class AwsAutoScalingDeployUtils {
         DescribeLoadBalancersResult loadbalancer = awsElbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withLoadBalancerNames(loadbalancerName));
         LoadBalancerDescription description = loadbalancer.getLoadBalancerDescriptions().get(0);
         return description.getListenerDescriptions().stream()
-                .filter(d -> ports.contains(d.getListener().getInstancePort()))
+                .filter(d -> ports.contains(d.getListener().getLoadBalancerPort()))
                 .filter(d -> d.getListener().getProtocol().startsWith("HTTP"))
                 .collect(Collectors.toList());
     }
 
     private void enableStickinessOnListener(String loadbalancerName, ListenerDescription listenerDescription) {
-        log.info("Enable stickiness on loadbalancer " + loadbalancerName + " : " + listenerDescription.getListener().getInstancePort());
+        log.info("Enable stickiness on loadbalancer " + loadbalancerName + " : " + listenerDescription.getListener().getLoadBalancerPort());
         List<String> policyNames = new ArrayList<>(listenerDescription.getPolicyNames());
         policyNames.add(DEPLOY_STICKINESS_POLICY + "-" + loadbalancerName);
         awsElbClient.setLoadBalancerPoliciesOfListener(new SetLoadBalancerPoliciesOfListenerRequest().withLoadBalancerName(loadbalancerName).withPolicyNames(policyNames).withLoadBalancerPort(listenerDescription.getListener().getLoadBalancerPort()));
     }
 
     private void disableStickinessOnListener(String loadbalancerName, ListenerDescription listenerDescription) {
-        log.info("Disable stickiness on loadbalancer " + loadbalancerName + " : " + listenerDescription.getListener().getInstancePort());
+        log.info("Disable stickiness on loadbalancer " + loadbalancerName + " : " + listenerDescription.getListener().getLoadBalancerPort());
         List<String> policyNames = new ArrayList<>(listenerDescription.getPolicyNames());
         policyNames.remove(DEPLOY_STICKINESS_POLICY + "-" + loadbalancerName);
         awsElbClient.setLoadBalancerPoliciesOfListener(new SetLoadBalancerPoliciesOfListenerRequest().withLoadBalancerName(loadbalancerName).withPolicyNames(policyNames).withLoadBalancerPort(listenerDescription.getListener().getLoadBalancerPort()));
@@ -199,6 +199,9 @@ public class AwsAutoScalingDeployUtils {
     }
 
     public boolean checkInstanceInServiceOnAllElb(Instance newInstance, List<String> loadBalancerNames) {
+        if (newInstance == null) {
+            throw new IllegalStateException("Unable to check null instance");
+        }
         for (String elb : loadBalancerNames) {
             DescribeInstanceHealthResult result = awsElbClient.describeInstanceHealth(new DescribeInstanceHealthRequest(elb));
             Optional<InstanceState> state = result.getInstanceStates().stream().filter(s -> s.getInstanceId().equals(newInstance.getInstanceId())).findFirst();
@@ -228,8 +231,7 @@ public class AwsAutoScalingDeployUtils {
                     .collect(Collectors.toList());
             instanceTerminated = instances.isEmpty() || instances.stream()
                     .map(com.amazonaws.services.ec2.model.Instance::getState)
-                    .filter(s -> s.getCode().equals(48))
-                    .findFirst().isPresent();
+                    .anyMatch(s -> s.getCode().equals(48));
         } catch (AmazonServiceException e) {
             log.info(e.toString(), e);
             if (e.getStatusCode() == 400) {

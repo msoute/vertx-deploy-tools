@@ -36,6 +36,7 @@ public class WaitForInstanceRequestExecutor {
 
         log.info("Waiting for new instance in asGroup to come in service...");
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+
         exec.scheduleAtFixedRate(() -> {
             log.info("existing instances : " + Arrays.toString(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
             AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
@@ -44,13 +45,14 @@ public class WaitForInstanceRequestExecutor {
             if (updatedGroup.getInstances().equals(autoScalingGroup.getInstances())) {
                 log.info("no new instance found in auto scaling group.");
             }
+
             if (newInstance == null) {
                 newInstance = findNewInstance(autoScalingGroup, updatedGroup);
                 if (newInstance != null) {
                     log.info("Found new instance with id " + newInstance.getInstanceId());
                 }
             }
-            if (!autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames())) {
+            if (newInstance != null && !autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames())) {
                 waitFor.decrementAndGet();
             }
         },  30, 30, TimeUnit.SECONDS);
@@ -65,8 +67,9 @@ public class WaitForInstanceRequestExecutor {
             exec.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.error(e.getMessage());
+            Thread.currentThread().interrupt();
             inService.get();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("Throwable: ", t);
         }
 
