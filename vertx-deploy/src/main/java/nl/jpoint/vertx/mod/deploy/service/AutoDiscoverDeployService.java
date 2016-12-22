@@ -128,7 +128,9 @@ public class AutoDiscoverDeployService {
         descriptorRequest.setArtifact(artifact);
 
         Model model = AetherUtil.readPom(artifact);
-
+        if (model == null) {
+            throw new IllegalStateException("Unable to read POM for " + artifact.getFile());
+        }
         try {
             ArtifactDescriptorResult descriptorResult = system.readArtifactDescriptor(session, descriptorRequest);
 
