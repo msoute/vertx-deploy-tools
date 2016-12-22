@@ -69,7 +69,7 @@ public class AutoDiscoverDeployService {
                     testScope,
                     getProperties(tags.getOrDefault(AwsAutoScalingUtil.PROPERTIES_TAGS, "")));
 
-            dependencies.stream().forEach(a -> LOG.error("{}:{}:{}:{}", a.getGroupId(), a.getArtifactId(), a.getClassifier(), a.getVersion()));
+            dependencies.forEach(a -> LOG.error("{}:{}:{}:{}", a.getGroupId(), a.getArtifactId(), a.getClassifier(), a.getVersion()));
 
 
             DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies, testScope);
