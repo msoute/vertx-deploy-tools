@@ -33,14 +33,16 @@ public class WaitForInstanceRequestExecutor {
     public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils) throws MojoExecutionException {
         final AtomicInteger waitFor = new AtomicInteger(1);
         final AtomicBoolean inService = new AtomicBoolean(false);
+        final AtomicBoolean found = new AtomicBoolean(false);
+
 
         log.info("Waiting for new instance in asGroup to come in service...");
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
         exec.scheduleAtFixedRate(() -> {
-            log.info("existing instances : " + Arrays.toString(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
+            log.debug("existing instances : " + Arrays.toString(autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
             AutoScalingGroup updatedGroup = awsDeployUtils.getAutoScalingGroup();
-            log.info("Updated instances : " + Arrays.toString(updatedGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
+            log.debug("Updated instances : " + Arrays.toString(updatedGroup.getInstances().stream().map(Instance::getInstanceId).toArray()));
 
             if (updatedGroup.getInstances().equals(autoScalingGroup.getInstances())) {
                 log.info("no new instance found in auto scaling group.");
@@ -48,14 +50,15 @@ public class WaitForInstanceRequestExecutor {
 
             if (newInstance == null) {
                 newInstance = findNewInstance(autoScalingGroup, updatedGroup);
-                if (newInstance != null) {
+                if (newInstance != null && !found.get()) {
+                    found.set(true);
                     log.info("Found new instance with id " + newInstance.getInstanceId());
                 }
             }
             if (newInstance != null && !autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames())) {
                 waitFor.decrementAndGet();
             }
-        },  30, 30, TimeUnit.SECONDS);
+        }, 30, 30, TimeUnit.SECONDS);
 
         try {
             while (waitFor.intValue() > 0 && System.currentTimeMillis() <= timeout) {
