@@ -14,6 +14,7 @@ public class DeployApplicationRequest extends ModuleRequest {
     private String configLocation = "";
     private boolean installed = false;
     private boolean testScope = false;
+    private String mainService;
 
     @JsonCreator
     public DeployApplicationRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
@@ -66,6 +67,11 @@ public class DeployApplicationRequest extends ModuleRequest {
         this.testScope = testScope;
     }
 
+    public DeployApplicationRequest withMainService(String mainService){
+        this.mainService = mainService;
+        return this;
+    }
+
     public boolean isTestScope() {
         return this.testScope;
     }
@@ -80,6 +86,10 @@ public class DeployApplicationRequest extends ModuleRequest {
 
     public String getConfigLocation() {
         return this.configLocation;
+    }
+
+    public String getMainService() {
+        return mainService;
     }
 
     public boolean isInstalled() {
