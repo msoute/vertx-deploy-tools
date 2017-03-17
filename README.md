@@ -255,6 +255,17 @@ config file in the artifact root dir (artifact_context.xml) instructs the applic
 * **restartCommand** : Command to restart a service after extraction, runs after testCommand (i.e. service nginx restart)
 * **checkContent** : Checks if the content in an artifact has changed (i.e. property file content) and forces a container restart.
 
+# Service Configuration files
+ During startup of a service a per service config file is read to overide / set per service config variables. The Directory in which these config files reside can be configured
+ with **config.location**. The config files are matched by [groupId]:[artifactId] or [groupId]~[artifactId]. The config file is in default properties format.
+
+ If an config option exists it wil override the configured default.
+
+* **JAVA_OPTS** : JVM_OPTS for the verticle (--java-opts)
+* **INSTANCES** : The number of verticle instances to start (--instances)
+* **MAIN_SERVICE** : The deploy application expects the service descriptor in the jar to match the maven coordinates. If this is not the case a custom service name can be configured ([groupId]:[artifactId]:[version]::[MAIN_SERVICE])
+* **CONFIG_FILE** : A per service config file (-conf)
+
 # Phone Home
 
 Applications deployed through the deploy application should report to the deploy application if de deploy was successful or failed. All verticles can do this by
@@ -308,6 +319,7 @@ The following AWS actions are needed for the deploy applications
 * [Enhancement] Also check for service config files in the form of [groupId]~[artifactId] [#34](vertx-deploy-tools/issues/34)
 * [Enhancement] Add option to temporarily set stickyness to ELB's during deploy  [#42](vertx-deploy-tools/issues/42)
 * [Enhancement] Add option to use a config file per application to deploy [#25](vertx-deploy-tools/issues/25)
+* [Enhancement] Add option to configure service name [#50](https://github.com/msoute/vertx-deploy-tools/issues/50)
 
 ## 3.1.0
 
