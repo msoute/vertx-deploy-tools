@@ -73,7 +73,6 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                                 }));
     }
 
-
     private Observable<DeployApplicationRequest> startApplication(DeployApplicationRequest deployApplicationRequest) {
 
         List<String> command = new ArrayList<>();
@@ -115,7 +114,6 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         if(!StringUtils.isBlank(request.getMainService())){
             return String.format("maven:%s::%s", request.getModuleId(), request.getMainService());
         }
-
         return String.format("maven:%s", request.getModuleId());
     }
 
