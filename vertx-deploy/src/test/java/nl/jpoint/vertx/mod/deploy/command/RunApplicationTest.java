@@ -14,6 +14,7 @@ import rx.observers.TestSubscriber;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,6 +68,56 @@ public class RunApplicationTest {
         verify(request).withInstances("2");
     }
 
+    @Test
+    public void getOnNextEvents_oldFormat_requestToNotContainMainService(){
+        when(config.getServiceConfigLocation()).thenReturn("runapplication/oldformat/");
+        List<DeployApplicationRequest> result = execute();
+        assertThat(result, hasSize(1));
+
+        verify(request).withMainService("");
+    }
+
+    @Test
+    public void getOnNextEvents_bothFormat_requestToNotContainMainService(){
+        when(config.getServiceConfigLocation()).thenReturn("runapplication/both/");
+        List<DeployApplicationRequest> result = execute();
+        assertThat(result, hasSize(1));
+
+        verify(request).withMainService("");
+    }
+
+    @Test
+    public void getOnNextEvents_withMainService_requestToContainMainService(){
+        when(config.getServiceConfigLocation()).thenReturn("runapplication/mainservice/");
+        List<DeployApplicationRequest> result = execute();
+        assertThat(result, hasSize(1));
+
+        verify(request).withMainService("my-service");
+    }
+
+    @Test
+    public void getMavenCommand_noMainService_normalMavenCommand(){
+        String result = new RunApplication(Vertx.vertx(), config).getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type"));
+
+        assertThat(result, is("maven:group:artifact:version"));
+    }
+
+    @Test
+    public void getMavenCommand_withMainService_mavenCommandWithMainService(){
+        String result = new RunApplication(Vertx.vertx(), config)
+                .getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type")
+                .withMainService("main_service"));
+
+        assertThat(result, is("maven:group:artifact:version::main_service"));
+    }
+    @Test
+    public void getMavenCommand_withEmptyMainService_normalMavenCommand(){
+        String result = new RunApplication(Vertx.vertx(), config)
+                .getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type").withMainService(" "));
+
+        assertThat(result, is("maven:group:artifact:version"));
+    }
+    
     private List<DeployApplicationRequest> execute() {
         RunApplication command = new RunApplication(Vertx.vertx(), config);
         Observable<DeployApplicationRequest> observable = command.readServiceDefaults(request);
