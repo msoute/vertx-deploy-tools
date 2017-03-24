@@ -66,9 +66,10 @@ public class AwsAutoScalingDeployUtils {
 
     public void suspendScheduledActions() {
         awsAsClient.suspendProcesses(new SuspendProcessesRequest()
+                .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy", "AZRebalance", "AlarmNotification")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
         log.info("Should a build fail the processes can be resumed using the AWS CLI.");
-        log.info("aws autoscaling resume-processes --auto-scaling-group-name " + activeConfiguration.getAutoScalingGroupId() + " --scaling-processes ");
+        log.info("aws autoscaling resume-processes --auto-scaling-group-name " + activeConfiguration.getAutoScalingGroupId() + " --scaling-processes AZRebalance ReplaceUnhealthy Terminate ScheduledActions AlarmNotification");
         log.info("Suspended auto scaling processes.");
     }
 
@@ -79,6 +80,7 @@ public class AwsAutoScalingDeployUtils {
 
     public void resumeScheduledActions() {
         awsAsClient.resumeProcesses(new ResumeProcessesRequest()
+                .withScalingProcesses("ScheduledActions", "Terminate", "ReplaceUnhealthy", "AZRebalance", "AlarmNotification")
                 .withAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
         log.info("Resumed auto scaling processes.");
     }
