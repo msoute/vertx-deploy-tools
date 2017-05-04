@@ -3,7 +3,6 @@ package nl.jpoint.maven.vertx.mojo;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
-import nl.jpoint.maven.vertx.service.OpsWorksDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -18,11 +17,7 @@ class VertxDeployMojo extends AbstractDeployMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         setActiveDeployConfig();
 
-        if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsWorks()) {
-            throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has both OpsWorks and Autoscaling enabled");
-        }
-
-        final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
+        final DeployUtils utils = new DeployUtils(getLog(), artifacts, remoteRepos, repoSystem, repoSession);
 
         final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
         final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
@@ -34,9 +29,6 @@ class VertxDeployMojo extends AbstractDeployMojo {
         if (activeConfiguration.useAutoScaling()) {
             AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
             service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        } else if (activeConfiguration.useOpsWorks()) {
-            OpsWorksDeployService service = new OpsWorksDeployService(activeConfiguration, region, port, requestTimeout, getLog());
-            service.deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else {
             DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
             service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);

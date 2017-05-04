@@ -1,5 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.model.DeployDependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -38,6 +39,8 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected String region;
     @Parameter(required = false, defaultValue = "", property = "deploy.exclusions")
     protected String exclusions;
+    @Parameter()
+    protected List<DeployDependency> artifacts;
 
     DeployConfiguration activeConfiguration;
 

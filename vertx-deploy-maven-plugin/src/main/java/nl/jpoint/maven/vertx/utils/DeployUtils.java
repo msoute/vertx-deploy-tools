@@ -1,5 +1,6 @@
 package nl.jpoint.maven.vertx.utils;
 
+import nl.jpoint.maven.vertx.model.DeployDependency;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
@@ -10,7 +11,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -33,15 +33,15 @@ public class DeployUtils {
     public static final String CONFIG_TYPE = "config";
 
     private final Log log;
-    private final MavenProject project;
+    private final List<DeployDependency> deployDependencies;
     private final List<RemoteRepository> remoteRepos;
     private final RepositorySystem repoSystem;
     private final RepositorySystemSession repoSession;
 
-    public DeployUtils(Log log, MavenProject project, List<RemoteRepository> remoteRepos, RepositorySystem repoSystem, RepositorySystemSession repoSession) {
+    public DeployUtils(Log log, List<DeployDependency> deployDependencies, List<RemoteRepository> remoteRepos, RepositorySystem repoSystem, RepositorySystemSession repoSession) {
 
         this.log = log;
-        this.project = project;
+        this.deployDependencies = deployDependencies;
         this.remoteRepos = remoteRepos;
         this.repoSystem = repoSystem;
         this.repoSession = repoSession;
@@ -90,13 +90,12 @@ public class DeployUtils {
     private List<Dependency> createDeployListByType(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {
         List<Dependency> deployModuleDependencies = new ArrayList<>();
 
-        List<Dependency> dependencies = project.getDependencies();
 
-        Iterator<Dependency> it = dependencies.iterator();
+        Iterator<DeployDependency> it = this.deployDependencies.iterator();
 
         filterTestArtifacts(activeConfiguration, it);
 
-        for (Dependency dependency : dependencies) {
+        for (Dependency dependency : deployDependencies) {
             if ((dependency.getVersion().endsWith("-SNAPSHOT") || hasTransitiveSnapshots(dependency)) && !activeConfiguration.isDeploySnapshots()) {
                 throw new MojoFailureException("Target does not allow for snapshots to be deployed");
             }
@@ -140,7 +139,7 @@ public class DeployUtils {
         return false;
     }
 
-    private void filterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<Dependency> it) {
+    private void filterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<DeployDependency> it) {
         if (!activeConfiguration.isTestScope()) {
             while (it.hasNext()) {
                 Dependency dependency = it.next();

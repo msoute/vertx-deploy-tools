@@ -49,7 +49,6 @@ public class DeployConfiguration {
      * Use public / private AWS ip's
      **/
     private boolean awsPrivateIp = false;
-    private boolean useOpsWorks = false;
     private boolean useAutoScaling = false;
     private boolean elb = false;
 
@@ -83,10 +82,6 @@ public class DeployConfiguration {
 
     public boolean useAutoScaling() {
         return useAutoScaling;
-    }
-
-    public boolean useOpsWorks() {
-        return useOpsWorks;
     }
 
     public boolean isDeploySnapshots() {
