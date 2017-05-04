@@ -74,11 +74,11 @@ public class StopApplication implements Command<DeployApplicationRequest> {
                                 LOG.error("[{} - {}]: Timeout while waiting for application to stop. ", LogConstants.DEPLOY_REQUEST, request.getId());
                                 throw new IllegalStateException();
                             }
-                            if (!request.isRunning()) {
+                    if (!result.isRunning()) {
                                 LOG.info("[{} - {}]: Application {} stopped.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
                                 return just(request);
                             } else {
-                                LOG.trace("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
+                        LOG.info("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
                                 return doPoll(request);
                             }
                         }

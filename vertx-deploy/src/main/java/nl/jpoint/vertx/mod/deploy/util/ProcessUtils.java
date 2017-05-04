@@ -49,6 +49,7 @@ public class ProcessUtils {
     }
 
     private JsonObject parseModuleString(String moduleString) {
+        LOG.info("Parsing module String {} ", moduleString);
         JsonObject module = new JsonObject();
         if (moduleString != null && !moduleString.isEmpty()) {
             String[] vars = moduleString.split(":", 3);
@@ -57,7 +58,7 @@ public class ProcessUtils {
                 module.put(Constants.MAVEN_ID, vars[0] + ":" + vars[1]);
             }
         }
-
+        LOG.info("Parsing module String {} ", module);
         return module;
     }
 
@@ -95,9 +96,12 @@ public class ProcessUtils {
     }
 
     public Observable<DeployApplicationRequest> checkModuleRunning(DeployApplicationRequest request) {
+        LOG.info("Check if module running {} ", request.getModuleId());
         Map<String, String> installedModules = listInstalledAndRunningModules();
+        LOG.info("Check if module running {} -> Listed Modules ", request.getModuleId());
         request.setRunning(installedModules.containsKey(request.getMavenArtifactId()));
         request.setInstalled(installedModules.containsKey(request.getMavenArtifactId()) && installedModules.get(request.getMavenArtifactId()).equals(request.getVersion()));
+        LOG.info("Check if module running {} -> {}", request.getModuleId(), request.isRunning());
         return just(request);
     }
 
