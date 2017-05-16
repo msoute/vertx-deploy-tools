@@ -11,6 +11,7 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -20,10 +21,7 @@ import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -45,6 +43,12 @@ public class DeployUtils {
         this.remoteRepos = remoteRepos;
         this.repoSystem = repoSystem;
         this.repoSession = repoSession;
+    }
+
+    public List<Request> createServiceDeployRequest(DeployConfiguration activeConfiguration, MavenProject project) {
+        Request request = new DeployApplicationRequest(project.getArtifact().getGroupId(), project.getArtifact().getArtifactId(), project.getArtifact().getVersion(), project.getArtifact().getClassifier(), project.getArtifact().getType(), activeConfiguration.doRestart());
+
+        return Collections.singletonList(request);
     }
 
     public List<Request> createDeployApplicationList(DeployConfiguration activeConfiguration) throws MojoFailureException {

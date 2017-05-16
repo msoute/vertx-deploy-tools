@@ -315,6 +315,8 @@ The following AWS actions are needed for the deploy applications
 # Changelog
 
 ## 3.3.0-SNAPSHOT
+* [Cleanup] Remove Aws OpsWorks support
+* [Enhancement] Add mojo (deploy-service-as) to allow deploying of a single service to an ASG
 * [Bug] Also suspend AlarmNotification process during deploy to an autoscaling group [#52](vertx-deploy-tools/issues/52)
 
 ## 3.2.0

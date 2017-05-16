@@ -2,16 +2,17 @@ package nl.jpoint.maven.vertx.utils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
+import com.amazonaws.services.autoscaling.AmazonAutoScaling;
+import com.amazonaws.services.autoscaling.AmazonAutoScalingClientBuilder;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.Tag;
-import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancing;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder;
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
@@ -33,9 +34,9 @@ public class AwsAutoScalingDeployUtils {
     private static final String DEPLOY_STICKINESS_POLICY = "deploy-stickiness-policy";
     private static final String AUTO_SCALING_GROUP = "auto-scaling-group";
 
-    private final AmazonAutoScalingClient awsAsClient;
-    private final AmazonElasticLoadBalancingClient awsElbClient;
-    private final AmazonEC2Client awsEc2Client;
+    private final AmazonAutoScaling awsAsClient;
+    private final AmazonElasticLoadBalancing awsElbClient;
+    private final AmazonEC2 awsEc2Client;
     private final DeployConfiguration activeConfiguration;
     private final Log log;
 
@@ -44,15 +45,9 @@ public class AwsAutoScalingDeployUtils {
         this.activeConfiguration = activeConfiguration;
         this.log = log;
 
-        Region awsRegion = Region.getRegion(Regions.fromName(region));
-        awsAsClient = new AmazonAutoScalingClient();
-        awsAsClient.setRegion(awsRegion);
-
-        awsElbClient = new AmazonElasticLoadBalancingClient();
-        awsElbClient.setRegion(awsRegion);
-
-        awsEc2Client = new AmazonEC2Client();
-        awsEc2Client.setRegion(awsRegion);
+        awsAsClient = AmazonAutoScalingClientBuilder.standard().withRegion(region).build();
+        awsElbClient = AmazonElasticLoadBalancingClientBuilder.standard().withRegion(region).build();
+        awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(region).build();
 
         activeConfiguration.withAutoScalingGroup(matchAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
 
