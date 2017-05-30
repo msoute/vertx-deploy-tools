@@ -1,13 +1,14 @@
 package nl.jpoint.maven.vertx.utils;
 
+import nl.jpoint.maven.vertx.model.ApplicationDependency;
+import nl.jpoint.maven.vertx.model.ArtifactDependency;
+import nl.jpoint.maven.vertx.model.ConfigDependency;
 import nl.jpoint.maven.vertx.model.DeployDependency;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
 import nl.jpoint.maven.vertx.request.Request;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -17,29 +18,22 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactDescriptorException;
-import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
-import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.resolution.*;
 
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DeployUtils {
-    public static final String APPLICATION_TYPE = "jar";
-    public static final String ARTIFACT_TYPE = "zip";
-    public static final String CONFIG_TYPE = "config";
 
     private final Log log;
-    private final List<DeployDependency> deployDependencies;
     private final List<RemoteRepository> remoteRepos;
     private final RepositorySystem repoSystem;
     private final RepositorySystemSession repoSession;
 
-    public DeployUtils(Log log, List<DeployDependency> deployDependencies, List<RemoteRepository> remoteRepos, RepositorySystem repoSystem, RepositorySystemSession repoSession) {
+    public DeployUtils(Log log, List<RemoteRepository> remoteRepos, RepositorySystem repoSystem, RepositorySystemSession repoSession) {
 
         this.log = log;
-        this.deployDependencies = deployDependencies;
         this.remoteRepos = remoteRepos;
         this.repoSystem = repoSystem;
         this.repoSession = repoSession;
@@ -47,20 +41,22 @@ public class DeployUtils {
 
     public List<Request> createServiceDeployRequest(DeployConfiguration activeConfiguration, MavenProject project) {
         Request request = new DeployApplicationRequest(project.getArtifact().getGroupId(), project.getArtifact().getArtifactId(), project.getArtifact().getVersion(), project.getArtifact().getClassifier(), project.getArtifact().getType(), activeConfiguration.doRestart());
-
         return Collections.singletonList(request);
     }
 
-    public List<Request> createDeployApplicationList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, APPLICATION_TYPE).stream().map(dependency -> new DeployApplicationRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(), activeConfiguration.doRestart())).collect(Collectors.toList());
+    public List<Request> createDeployApplicationList(List<ApplicationDependency> applicationDependencies, DeployConfiguration activeConfiguration) throws MojoFailureException {
+        return createDeployList(applicationDependencies, activeConfiguration).stream()
+                .map(dependency -> new DeployApplicationRequest(dependency.getArtifact(), false)).collect(Collectors.toList());
     }
 
-    public List<Request> createDeployArtifactList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, ARTIFACT_TYPE).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+    public List<Request> createDeployArtifactList(List<ArtifactDependency> artifactDependencies, DeployConfiguration activeConfiguration) throws MojoFailureException {
+        return createDeployList(artifactDependencies, activeConfiguration).stream()
+                .map(dependency -> new DeployArtifactRequest(dependency.getArtifact())).collect(Collectors.toList());
     }
 
-    public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, CONFIG_TYPE).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+    public List<Request> createDeployConfigList(List<ConfigDependency> configDependencies, DeployConfiguration activeConfiguration) throws MojoFailureException {
+        return createDeployList(configDependencies, activeConfiguration).stream()
+                .map(dependency -> new DeployConfigRequest(dependency.getArtifact())).collect(Collectors.toList());
     }
 
     public List<String> parseProperties(String properties) {
@@ -91,20 +87,20 @@ public class DeployUtils {
         return result;
     }
 
-    private List<Dependency> createDeployListByType(DeployConfiguration activeConfiguration, String type) throws MojoFailureException {
-        List<Dependency> deployModuleDependencies = new ArrayList<>();
+    private List<DeployDependency> createDeployList(List<? extends DeployDependency> deployDependencies, DeployConfiguration activeConfiguration) throws MojoFailureException {
+        List<DeployDependency> deployModuleDependencies = new ArrayList<>();
 
-
-        Iterator<DeployDependency> it = this.deployDependencies.iterator();
+        Iterator<? extends DeployDependency> it = deployDependencies.iterator();
 
         filterTestArtifacts(activeConfiguration, it);
 
-        for (Dependency dependency : deployDependencies) {
-            if ((dependency.getVersion().endsWith("-SNAPSHOT") || hasTransitiveSnapshots(dependency)) && !activeConfiguration.isDeploySnapshots()) {
+        for (DeployDependency dependency : deployDependencies) {
+            resolveDependency(dependency);
+            if ((dependency.isSnapshot() || hasTransitiveSnapshots(dependency)) && !activeConfiguration.isDeploySnapshots()) {
                 throw new MojoFailureException("Target does not allow for snapshots to be deployed");
             }
 
-            if (type.equals(dependency.getType()) && !excluded(activeConfiguration, dependency)) {
+            if (!excluded(activeConfiguration, dependency)) {
                 deployModuleDependencies.add(dependency);
             }
 
@@ -112,10 +108,21 @@ public class DeployUtils {
         return deployModuleDependencies;
     }
 
-    private boolean hasTransitiveSnapshots(Dependency dependency) throws MojoFailureException {
+    private void resolveDependency(DeployDependency deployDependency) {
+        ArtifactRequest request = new ArtifactRequest(new DefaultArtifact(deployDependency.getCoordinates()), remoteRepos, null);
+        ArtifactResult result;
+        try {
+            result = repoSystem.resolveArtifact(repoSession, request);
+            deployDependency.withArtifact(result.getArtifact());
+        } catch (ArtifactResolutionException e) {
+            log.error(e);
+        }
+    }
+
+    private boolean hasTransitiveSnapshots(DeployDependency dependency) throws MojoFailureException {
         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
         descriptorRequest.setArtifact(
-                new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getClassifier(), dependency.getType(), dependency.getVersion()));
+                dependency.getArtifact());
         descriptorRequest.setRepositories(remoteRepos);
 
         try {
@@ -129,26 +136,26 @@ public class DeployUtils {
         }
     }
 
-    private boolean excluded(DeployConfiguration activeConfiguration, Dependency dependency) {
+    private boolean excluded(DeployConfiguration activeConfiguration, DeployDependency dependency) {
         if (activeConfiguration.getExclusions() == null) {
             return false;
         }
         for (Exclusion exclusion : activeConfiguration.getExclusions()) {
-            if (exclusion.getArtifactId().equals(dependency.getArtifactId()) &&
-                    exclusion.getGroupId().equals(dependency.getGroupId())) {
-                log.info("Excluding dependency " + dependency.getArtifactId());
+            if (exclusion.getArtifactId().equals(dependency.getArtifact().getArtifactId()) &&
+                    exclusion.getGroupId().equals(dependency.getArtifact().getGroupId())) {
+                log.info("Excluding dependency " + dependency.getArtifact().getArtifactId());
                 return true;
             }
         }
         return false;
     }
 
-    private void filterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<DeployDependency> it) {
+    private void filterTestArtifacts(DeployConfiguration activeConfiguration, Iterator<? extends DeployDependency> it) {
         if (!activeConfiguration.isTestScope()) {
             while (it.hasNext()) {
-                Dependency dependency = it.next();
-                if (Artifact.SCOPE_TEST.equals(dependency.getScope())) {
-                    log.info("Excluding artifact " + dependency.getArtifactId() + " from scope " + dependency.getScope());
+                DeployDependency dependency = it.next();
+                if (dependency.isTest()) {
+                    log.info("Excluding artifact " + dependency.getArtifact().getArtifactId() + " from scope tests");
                     it.remove();
                 }
             }

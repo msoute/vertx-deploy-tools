@@ -48,20 +48,20 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DeployUtils utils = new DeployUtils(getLog(), artifacts, remoteRepos, repoSystem, repoSession);
+        final DeployUtils utils = new DeployUtils(getLog(), remoteRepos, repoSystem, repoSession);
 
         activeConfiguration = this.createConfiguration();
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
         activeConfiguration.getAutoScalingProperties().addAll(utils.parseProperties(properties));
-        final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
-        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
-        final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration);
+        final List<Request> deployApplicationRequests = utils.createDeployApplicationList(applicationDependencies, activeConfiguration);
+        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(artifactDependencies, activeConfiguration);
+        final List<Request> deployConfigRequests = utils.createDeployConfigList(configDependencies, activeConfiguration);
 
-        getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
+        getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployApplicationRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
         AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
-        service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
+        service.deployWithAutoScaling(deployApplicationRequests, deployArtifactRequests, deployConfigRequests);
 
     }
 

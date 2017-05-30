@@ -29,7 +29,7 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        final DeployUtils utils = new DeployUtils(getLog(), artifacts, remoteRepos, repoSystem, repoSession);
+        final DeployUtils utils = new DeployUtils(getLog(), remoteRepos, repoSystem, repoSession);
 
         DeployConfiguration configuration = new DeployConfiguration();
         configuration.getHosts().add(remoteIp);
@@ -40,13 +40,13 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.getExclusions().addAll(utils.parseExclusions(exclusions));
         configuration.withAuthToken(authToken);
         super.activeConfiguration = configuration;
-        
-        final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
-        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
-        final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration);
+
+        final List<Request> deployApplicationRequests = utils.createDeployApplicationList(applicationDependencies, activeConfiguration);
+        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(artifactDependencies, activeConfiguration);
+        final List<Request> deployConfigRequests = utils.createDeployConfigList(configDependencies, activeConfiguration);
 
         DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
-        service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
+        service.normalDeploy(deployApplicationRequests, deployArtifactRequests, deployConfigRequests);
 
     }
 }

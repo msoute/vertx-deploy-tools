@@ -1,6 +1,8 @@
 package nl.jpoint.maven.vertx.mojo;
 
-import nl.jpoint.maven.vertx.model.DeployDependency;
+import nl.jpoint.maven.vertx.model.ApplicationDependency;
+import nl.jpoint.maven.vertx.model.ArtifactDependency;
+import nl.jpoint.maven.vertx.model.ConfigDependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -11,6 +13,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 abstract class AbstractDeployMojo extends AbstractMojo {
@@ -39,8 +42,13 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected String region;
     @Parameter(required = false, defaultValue = "", property = "deploy.exclusions")
     protected String exclusions;
-    @Parameter()
-    protected List<DeployDependency> artifacts;
+
+    @Parameter(required = false)
+    List<ConfigDependency> configDependencies = Collections.emptyList();
+    @Parameter(required = false)
+    List<ArtifactDependency> artifactDependencies = Collections.emptyList();
+    @Parameter(required = false)
+    List<ApplicationDependency> applicationDependencies = Collections.emptyList();
 
     DeployConfiguration activeConfiguration;
 
