@@ -41,6 +41,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
     public Observable<DeployApplicationRequest> executeAsync(final DeployApplicationRequest request) {
         LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
         return this.readServiceDefaults(request)
+                .switchIfEmpty(just(request))
                 .flatMap(this::startApplication)
                 .doOnError(t -> LOG.error("[{} - {}]: Error running module '{}', {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId(), t.getMessage()));
 
