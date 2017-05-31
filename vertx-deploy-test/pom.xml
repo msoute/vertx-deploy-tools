@@ -20,7 +20,7 @@
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
             <artifactId>vertx-deploy-test-config</artifactId>
             <version>${project.version}</version>
-            <type>config</type>
+            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
