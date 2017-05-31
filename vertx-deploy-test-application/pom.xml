@@ -45,7 +45,6 @@
             <plugin>
                 <groupId>nl.jpoint.vertx-deploy-tools</groupId>
                 <artifactId>vertx-deploy-maven-plugin</artifactId>
-                <version>3.3.0-alpha-3-SNAPSHOT</version>
                 <configuration>
                     <remoteIp>localhost</remoteIp>
                     <scopeTest>false</scopeTest>
