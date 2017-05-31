@@ -11,9 +11,9 @@ public class TestRunner {
         System.setProperty("vertx.logger-delegate-factory-class-name","io.vertx.core.logging.SLF4JLogDelegateFactory");
         Vertx vertx = Vertx.vertx();
         JsonObject config = new JsonObject();
-        config.put("vertx.home", "/home/marcel/Java/Tools/vertx-3.2.0");
+        config.put("vertx.home", "/home/marcel/Java/Tools/vert.x-3.1.0");
         config.put("artifact.storage", "/tmp/");
-        config.put("auth.token","token");
+        config.put("auth.token", "vertx");
         config.put("maven.repo.uri", "https://oss.sonatype.org/content/repositories/snapshots/");
         DeploymentOptions deployConf = new DeploymentOptions().setConfig(config);
         vertx.deployVerticle("nl.jpoint.vertx.mod.deploy.AwsDeployApplication", deployConf);

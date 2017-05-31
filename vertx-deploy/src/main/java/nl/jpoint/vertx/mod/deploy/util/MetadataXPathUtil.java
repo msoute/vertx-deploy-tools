@@ -43,9 +43,8 @@ public class MetadataXPathUtil {
             }
         } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
             LOG.error("Error while parsing metadata", e);
-            return null;
+            throw new IllegalStateException();
         }
-
         return null;
     }
 }

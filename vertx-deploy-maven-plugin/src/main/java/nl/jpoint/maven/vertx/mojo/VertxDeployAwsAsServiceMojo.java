@@ -9,7 +9,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import java.util.Collections;
 import java.util.List;
 
 @Mojo(name = "deploy-service-as", requiresDependencyResolution = ResolutionScope.RUNTIME)
@@ -52,8 +51,10 @@ public class VertxDeployAwsAsServiceMojo extends AbstractDeployMojo {
         activeConfiguration = this.createConfiguration();
         activeConfiguration.getAutoScalingProperties().addAll(utils.parseProperties(properties));
         final List<Request> deployApplicationRequests = utils.createServiceDeployRequest(activeConfiguration, project);
-        final List<Request> deployArtifactRequests = Collections.emptyList();
+        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(artifactDependencies, activeConfiguration);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(configDependencies, activeConfiguration);
+
+        deployApplicationRequests.addAll(utils.createDeployApplicationList(applicationDependencies, activeConfiguration));
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployApplicationRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");

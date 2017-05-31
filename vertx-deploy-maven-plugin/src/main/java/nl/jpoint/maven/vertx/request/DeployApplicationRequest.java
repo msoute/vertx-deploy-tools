@@ -14,7 +14,7 @@ public class DeployApplicationRequest extends Request {
     private final boolean restart;
 
     public DeployApplicationRequest(Artifact artifact, boolean restart) {
-        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getClassifier(), artifact.getExtension());
+        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), artifact.getClassifier(), artifact.getExtension());
         this.restart = restart;
     }
 

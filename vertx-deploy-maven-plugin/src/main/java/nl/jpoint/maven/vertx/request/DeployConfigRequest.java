@@ -11,7 +11,7 @@ public class DeployConfigRequest extends Request {
     private static final String ENDPOINT = "/deploy/config";
 
     public DeployConfigRequest(Artifact artifact) {
-        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getClassifier(), artifact.getExtension());
+        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), artifact.getClassifier(), artifact.getExtension());
     }
 
     @Override

@@ -41,7 +41,8 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.withAuthToken(authToken);
         super.activeConfiguration = configuration;
 
-        final List<Request> deployApplicationRequests = utils.createDeployApplicationList(applicationDependencies, activeConfiguration);
+        final List<Request> deployApplicationRequests = utils.createServiceDeployRequest(activeConfiguration, project);
+        deployApplicationRequests.addAll(utils.createDeployApplicationList(applicationDependencies, activeConfiguration));
         final List<Request> deployArtifactRequests = utils.createDeployArtifactList(artifactDependencies, activeConfiguration);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(configDependencies, activeConfiguration);
 

@@ -53,7 +53,7 @@
                                     <file>
                                         ${project.build.directory}/${project.groupId}~${project.artifactId}~${project.version}.zip
                                     </file>
-                                    <type>config</type>
+                                    <type>zip</type>
                                 </artifact>
                             </artifacts>
                         </configuration>

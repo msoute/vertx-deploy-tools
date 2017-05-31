@@ -11,7 +11,7 @@ public class DeployArtifactRequest extends Request {
     private static final String ENDPOINT = "/deploy/artifact";
 
     public DeployArtifactRequest(Artifact artifact) {
-        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getClassifier(), artifact.getExtension());
+        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), artifact.getClassifier(), artifact.getExtension());
     }
 
     @Override

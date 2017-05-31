@@ -43,6 +43,26 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+                <artifactId>vertx-deploy-maven-plugin</artifactId>
+                <version>3.3.0-alpha-3-SNAPSHOT</version>
+                <configuration>
+                    <remoteIp>localhost</remoteIp>
+                    <scopeTest>false</scopeTest>
+                    <withConfig>true</withConfig>
+                    <allowSnapshots>true</allowSnapshots>
+                    <authToken>vertx</authToken>
+                    <restart>true</restart>
+                    <configDependencies>
+                        <configDependency>
+                            <coordinates>nl.jpoint.vertx-deploy-tools:vertx-deploy-test-config:zip:${project.version}
+                            </coordinates>
+                            <path>/tmp</path>
+                        </configDependency>
+                    </configDependencies>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>

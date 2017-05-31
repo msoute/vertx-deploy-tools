@@ -191,7 +191,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <build>
         <plugins>
             <plugin>
@@ -293,7 +292,6 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-
     <repositories>
         <repository>
             <id>ossrh</id>
