@@ -24,7 +24,6 @@ public class DefaultDeployService extends DeployService {
     }
 
     public void normalDeploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
-
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)
                 .withArtifacts(deployArtifactRequests)

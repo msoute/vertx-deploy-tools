@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.aether.artifact.Artifact;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties({"endpoint"})
+@JsonIgnoreProperties({"endpoint", "deployType"})
 public class DeployApplicationRequest extends Request {
 
     private static final String ENDPOINT = "/deploy/module";
@@ -14,18 +14,23 @@ public class DeployApplicationRequest extends Request {
     private final boolean restart;
 
     public DeployApplicationRequest(Artifact artifact, boolean restart) {
-        super(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), artifact.getClassifier(), artifact.getExtension());
+        super(artifact);
         this.restart = restart;
     }
 
-    public DeployApplicationRequest(String group_id, String artifact_id, String version, String classifier, String type, boolean restart) {
-        super(group_id, artifact_id, version, classifier, type);
+    public DeployApplicationRequest(org.apache.maven.artifact.Artifact artifact, boolean restart) {
+        super(artifact);
         this.restart = restart;
     }
 
     @Override
     public String getEndpoint() {
         return ENDPOINT;
+    }
+
+    @Override
+    public Type getDeployType() {
+        return Type.APPLICATION;
     }
 
 }

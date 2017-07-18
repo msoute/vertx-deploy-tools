@@ -6,7 +6,6 @@ import com.amazonaws.services.autoscaling.AmazonAutoScaling;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClientBuilder;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.autoscaling.model.Instance;
-import com.amazonaws.services.autoscaling.model.Tag;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
@@ -16,8 +15,12 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingCli
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
+import com.amazonaws.services.s3.AmazonS3Encryption;
+import com.amazonaws.services.s3.AmazonS3EncryptionClientBuilder;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
-import org.apache.maven.plugin.MojoExecutionException;
+import nl.jpoint.maven.vertx.request.DeployRequest;
+import nl.jpoint.maven.vertx.state.AsGroupTagsState;
+import nl.jpoint.maven.vertx.state.S3DeployState;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -27,27 +30,25 @@ import java.util.stream.Collectors;
 
 public class AwsAutoScalingDeployUtils {
 
-    private static final String LATEST_REQUEST_TAG = "deploy:latest:version";
-    private static final String SCOPE_TAG = "deploy:scope:tst";
-    private static final String EXCLUSION_TAG = "deploy:exclusions";
-    private static final String PROPERTIES_TAGS = "deploy:classifier:properties";
+
     private static final String DEPLOY_STICKINESS_POLICY = "deploy-stickiness-policy";
-    private static final String AUTO_SCALING_GROUP = "auto-scaling-group";
 
     private final AmazonAutoScaling awsAsClient;
     private final AmazonElasticLoadBalancing awsElbClient;
     private final AmazonEC2 awsEc2Client;
+    private final AmazonS3Encryption s3Client;
     private final DeployConfiguration activeConfiguration;
     private final Log log;
 
 
-    public AwsAutoScalingDeployUtils(String region, DeployConfiguration activeConfiguration, Log log) throws MojoFailureException {
+    public AwsAutoScalingDeployUtils(String region, DeployConfiguration activeConfiguration, Log log) {
         this.activeConfiguration = activeConfiguration;
         this.log = log;
 
         awsAsClient = AmazonAutoScalingClientBuilder.standard().withRegion(region).build();
         awsElbClient = AmazonElasticLoadBalancingClientBuilder.standard().withRegion(region).build();
         awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(region).build();
+        s3Client = AmazonS3EncryptionClientBuilder.standard().withRegion(region).build();
 
         activeConfiguration.withAutoScalingGroup(matchAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
 
@@ -80,7 +81,7 @@ public class AwsAutoScalingDeployUtils {
         log.info("Resumed auto scaling processes.");
     }
 
-    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup) throws MojoFailureException, MojoExecutionException {
+    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup) throws MojoFailureException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
 
         activeConfiguration.getHosts().clear();
@@ -244,37 +245,6 @@ public class AwsAutoScalingDeployUtils {
         return instanceTerminated;
     }
 
-    public void setDeployMetadataTags(final String version, Properties properties) {
-        List<Tag> tags = new ArrayList<>();
-        tags.add(new Tag().withPropagateAtLaunch(true)
-                .withResourceType(AUTO_SCALING_GROUP)
-                .withKey(LATEST_REQUEST_TAG).withValue(version)
-                .withResourceId(activeConfiguration.getAutoScalingGroupId()));
-        tags.add(new Tag().withPropagateAtLaunch(true)
-                .withResourceType(AUTO_SCALING_GROUP)
-                .withKey(SCOPE_TAG).withValue(Boolean.toString(activeConfiguration.isTestScope()))
-                .withResourceId(activeConfiguration.getAutoScalingGroupId()));
-
-        if (!activeConfiguration.getAutoScalingProperties().isEmpty()) {
-            tags.add(new Tag().withPropagateAtLaunch(true)
-                    .withResourceType(AUTO_SCALING_GROUP)
-                    .withKey(PROPERTIES_TAGS).withValue(activeConfiguration.getAutoScalingProperties().stream().map(key -> key + ":" + getProperty(key, properties)).collect(Collectors.joining(";")))
-                    .withResourceId(activeConfiguration.getAutoScalingGroupId())
-            );
-        }
-        if (!activeConfiguration.getExclusions().isEmpty()) {
-            tags.add(new Tag().withPropagateAtLaunch(true)
-                    .withResourceType(AUTO_SCALING_GROUP)
-                    .withKey(EXCLUSION_TAG).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getGroupId()).collect(Collectors.joining(";")))
-                    .withResourceId(activeConfiguration.getAutoScalingGroupId()));
-        }
-        awsAsClient.createOrUpdateTags(new CreateOrUpdateTagsRequest().withTags(tags));
-    }
-
-    private String getProperty(String key, Properties properties) {
-        return System.getProperty(key, properties.getProperty(key));
-    }
-
     private String matchAutoScalingGroupName(String regex) {
         DescribeAutoScalingGroupsResult result = awsAsClient.describeAutoScalingGroups(new DescribeAutoScalingGroupsRequest());
         List<String> groups = toGroupNameList(result.getAutoScalingGroups());
@@ -300,5 +270,13 @@ public class AwsAutoScalingDeployUtils {
             return new ArrayList<>();
         }
         return groups.stream().map(AutoScalingGroup::getAutoScalingGroupName).collect(Collectors.toList());
+    }
+
+    public void storeDeployState(DeployRequest request, Properties properties) {
+        if (activeConfiguration.isS3Enabled()) {
+            new S3DeployState(s3Client).store(request);
+        } else {
+            new AsGroupTagsState(activeConfiguration, awsAsClient).store(activeConfiguration.getProjectVersion(), properties);
+        }
     }
 }

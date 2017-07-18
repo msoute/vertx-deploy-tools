@@ -20,12 +20,16 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DeployUtils {
 
+    private static final String VERTX_DEPLOY = "vertx.deploy";
     private final Log log;
     private final List<RemoteRepository> remoteRepos;
     private final RepositorySystem repoSystem;
@@ -39,9 +43,29 @@ public class DeployUtils {
         this.repoSession = repoSession;
     }
 
-    public List<Request> createServiceDeployRequest(DeployConfiguration activeConfiguration, MavenProject project) {
-        Request request = new DeployApplicationRequest(project.getArtifact().getGroupId(), project.getArtifact().getArtifactId(), project.getArtifact().getVersion(), project.getArtifact().getClassifier(), project.getArtifact().getType(), activeConfiguration.doRestart());
-        return Collections.singletonList(request);
+    public List<Request> createSubModulesDeployRequest(DeployConfiguration activeConfiguration, MavenProject project) {
+        return project.getCollectedProjects().stream()
+                .filter(this::isDeployProject)
+                .map(mavenProject -> createProjectDeployRequest(activeConfiguration, mavenProject))
+                .collect(Collectors.toList());
+    }
+
+    public Request createProjectDeployRequest(DeployConfiguration activeConfiguration, MavenProject project) {
+
+        if (project.getProperties() == null || !project.getProperties().containsKey(VERTX_DEPLOY)) {
+            throw new IllegalStateException("Invalid vertx.deploy property config.");
+        }
+
+        switch (project.getProperties().getProperty(VERTX_DEPLOY)) {
+            case "application":
+                return new DeployApplicationRequest(project.getArtifact(), activeConfiguration.doRestart());
+            case "artifact":
+                return new DeployArtifactRequest(project.getArtifact());
+            case "config":
+                return new DeployConfigRequest(project.getArtifact());
+            default:
+                throw new IllegalStateException("Invalid vertx.deploy property config.");
+        }
     }
 
     public List<Request> createDeployApplicationList(List<ApplicationDependency> applicationDependencies, DeployConfiguration activeConfiguration) throws MojoFailureException {
@@ -162,5 +186,7 @@ public class DeployUtils {
         }
     }
 
-
+    public boolean isDeployProject(MavenProject project) {
+        return project.getOriginalModel().getProperties().containsKey(VERTX_DEPLOY);
+    }
 }

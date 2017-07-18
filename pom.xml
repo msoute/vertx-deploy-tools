@@ -65,6 +65,11 @@
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-s3</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-iam</artifactId>
                 <version>${aws.sdk.version}</version>
             </dependency>
@@ -191,8 +196,22 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+                <artifactId>vertx-deploy-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <remoteIp>localhost</remoteIp>
+                    <scopeTest>false</scopeTest>
+                    <withConfig>true</withConfig>
+                    <allowSnapshots>true</allowSnapshots>
+                    <authToken>vertx</authToken>
+                    <restart>true</restart>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

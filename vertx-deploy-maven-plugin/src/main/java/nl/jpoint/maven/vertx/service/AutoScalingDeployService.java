@@ -114,7 +114,7 @@ public class AutoScalingDeployService extends DeployService {
 
             DeployRequest deployRequest = new DeployRequest.Builder()
                     .withModules(deployModuleRequests)
-                    .withArtifacts(deployArtifactRequests)
+                    .withArtifacts(null)
                     .withConfigs(activeConfiguration.isDeployConfig() ? deployConfigRequests : null)
                     .withElb(activeConfiguration.useElbStatusCheck())
                     .withAutoScalingGroup(activeConfiguration.getAutoScalingGroupId())
@@ -129,7 +129,7 @@ public class AutoScalingDeployService extends DeployService {
                 AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy().ordinal() > 1);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
-                awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion(), properties);
+                awsDeployUtils.storeDeployState(properties);
             } catch (MojoExecutionException | MojoFailureException e) {
                 getLog().error("Error during deploy. Resuming auto scaling processes.", e);
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());

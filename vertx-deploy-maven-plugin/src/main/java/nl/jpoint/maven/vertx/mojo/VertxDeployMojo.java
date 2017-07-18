@@ -1,7 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -26,13 +25,9 @@ class VertxDeployMojo extends AbstractDeployMojo {
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployApplicationRequests.size() + "' modules");
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
-        if (activeConfiguration.useAutoScaling()) {
-            AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
-            service.deployWithAutoScaling(deployApplicationRequests, deployArtifactRequests, deployConfigRequests);
-        } else {
-            DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
-            service.normalDeploy(deployApplicationRequests, deployArtifactRequests, deployConfigRequests);
-        }
+        DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
+        service.normalDeploy(deployApplicationRequests, deployArtifactRequests, deployConfigRequests);
+
     }
 
 }

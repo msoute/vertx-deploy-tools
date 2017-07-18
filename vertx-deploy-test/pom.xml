@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>nl.jpoint</groupId>
         <artifactId>vertx-deploy-tools</artifactId>
@@ -10,31 +9,10 @@
 
     <groupId>nl.jpoint.vertx-deploy-tools</groupId>
     <artifactId>vertx-deploy-test</artifactId>
-
     <name>Vert.x Deploy Tools : Test</name>
+
     <description>Test project</description>
     <packaging>pom</packaging>
-
-    <dependencies>
-        <dependency>
-            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
-            <artifactId>vertx-deploy-test-config</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
-            <artifactId>vertx-deploy-test-artifact</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
-            <artifactId>vertx-deploy-test-application</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -48,11 +26,29 @@
                     <allowSnapshots>true</allowSnapshots>
                     <authToken>vertx</authToken>
                     <restart>true</restart>
+                    <configDependencies>
+                        <configDependency>
+                            <coordinates>nl.jpoint.vertx-deploy-tools:vertx-deploy-test-config:zip:${project.version}
+                            </coordinates>
+                        </configDependency>
+                    </configDependencies>
+                    <artifactDependencies>
+                        <artifactDependency>
+                            <coordinates>
+                                nl.jpoint.vertx-deploy-tools:vertx-deploy-test-artifact:zip:${project.version}
+                            </coordinates>
+                        </artifactDependency>
+                    </artifactDependencies>
+                    <applicationDependencies>
+                        <applicationDependency>
+                            <coordinates>nl.jpoint.vertx-deploy-tools:vertx-deploy-test-application:${project.version}
+                            </coordinates>
+                        </applicationDependency>
+                    </applicationDependencies>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 
     <pluginRepositories>
         <pluginRepository>

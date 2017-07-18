@@ -35,7 +35,9 @@ public class DeployRequest {
     @JsonProperty(value = "test_scope")
     private final boolean testScope;
 
-    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String asGroupId, boolean decrementDesiredCapacity, boolean testScope) {
+    private final String deployGroup;
+
+    private DeployRequest(List<Request> modules, List<Request> artifacts, List<Request> configs, boolean elb, boolean restart, String asGroupId, boolean decrementDesiredCapacity, boolean testScope, String deployGroup) {
         this.modules = modules;
         this.artifacts = artifacts;
         this.configs = configs;
@@ -45,6 +47,15 @@ public class DeployRequest {
         this.decrementDesiredCapacity = decrementDesiredCapacity;
         this.autoScaling = (asGroupId != null);
         this.testScope = testScope;
+        this.deployGroup = deployGroup;
+    }
+
+    public String getAsGroupId() {
+        return asGroupId;
+    }
+
+    public String getDeployGroup() {
+        return deployGroup;
     }
 
     public String toJson(boolean pretty) {
@@ -73,9 +84,15 @@ public class DeployRequest {
         private boolean decrementDesiredCapacity = true;
         private String autoScalingGroup = "";
         private boolean testScope = false;
+        private String deployGroup = "";
 
         public Builder withElb(final boolean elb) {
             this.elb = elb;
+            return this;
+        }
+
+        public Builder withDeployGroup(String deployGroup) {
+            this.deployGroup = deployGroup;
             return this;
         }
 
@@ -114,9 +131,8 @@ public class DeployRequest {
             return this;
         }
 
-
         public DeployRequest build() {
-            return new DeployRequest(modules, artifacts, configs, elb, restart, autoScalingGroup, decrementDesiredCapacity, testScope);
+            return new DeployRequest(modules, artifacts, configs, elb, restart, autoScalingGroup, decrementDesiredCapacity, testScope, deployGroup);
         }
     }
 }

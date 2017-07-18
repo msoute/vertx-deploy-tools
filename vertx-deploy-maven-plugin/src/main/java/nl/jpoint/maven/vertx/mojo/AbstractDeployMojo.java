@@ -8,7 +8,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -18,40 +17,32 @@ import java.util.List;
 
 abstract class AbstractDeployMojo extends AbstractMojo {
 
+    @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
+    protected Integer requestTimeout;
+    @Parameter(defaultValue = "6789")
+    protected Integer port;
     @Component
-    protected RepositorySystem repoSystem;
+    RepositorySystem repoSystem;
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-    protected RepositorySystemSession repoSession;
-
+    RepositorySystemSession repoSession;
     @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
-    protected List<RemoteRepository> remoteRepos;
+    List<RemoteRepository> remoteRepos;
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
-    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
-    Settings settings;
+    @Parameter(defaultValue = "eu-west-1")
+    String region;
+    @Parameter(property = "deploy.exclusions")
+    String exclusions;
+    @Parameter()
+    List<ConfigDependency> configDependencies = Collections.emptyList();
+    @Parameter()
+    List<ArtifactDependency> artifactDependencies = Collections.emptyList();
+    @Parameter()
+    List<ApplicationDependency> applicationDependencies = Collections.emptyList();
+    DeployConfiguration activeConfiguration;
     private List<DeployConfiguration> deployConfigurations = Collections.emptyList();
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
     private String activeTarget;
-    @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
-    protected Integer requestTimeout;
-    @Parameter(property = "deploy.credentialsId")
-    private String credentialsId;
-    @Parameter(defaultValue = "6789")
-    protected Integer port;
-    @Parameter(defaultValue = "eu-west-1")
-    protected String region;
-    @Parameter(required = false, defaultValue = "", property = "deploy.exclusions")
-    protected String exclusions;
-
-    @Parameter(required = false)
-    List<ConfigDependency> configDependencies = Collections.emptyList();
-    @Parameter(required = false)
-    List<ArtifactDependency> artifactDependencies = Collections.emptyList();
-    @Parameter(required = false)
-    List<ApplicationDependency> applicationDependencies = Collections.emptyList();
-
-    DeployConfiguration activeConfiguration;
-
 
     DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {

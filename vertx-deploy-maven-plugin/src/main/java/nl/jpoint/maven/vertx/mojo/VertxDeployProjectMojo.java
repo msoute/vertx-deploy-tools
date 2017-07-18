@@ -9,10 +9,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mojo(name = "deploy-direct", requiresDependencyResolution = ResolutionScope.RUNTIME)
-public class VertxDeployDirectMojo extends AbstractDeployMojo {
+@Mojo(name = "deploy-project", requiresDependencyResolution = ResolutionScope.RUNTIME)
+public class VertxDeployProjectMojo extends AbstractDeployMojo {
 
     @Parameter(property = "deploy.remoteIp", required = true)
     private String remoteIp;
@@ -30,7 +32,6 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         final DeployUtils utils = new DeployUtils(getLog(), remoteRepos, repoSystem, repoSession);
-
         DeployConfiguration configuration = new DeployConfiguration();
         configuration.getHosts().add(remoteIp);
         configuration.setTestScope(scopeTest);
@@ -41,11 +42,17 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.withAuthToken(authToken);
         super.activeConfiguration = configuration;
 
-        final List<Request> deployApplicationRequests = utils.createDeployApplicationList(applicationDependencies, activeConfiguration);
-        final List<Request> deployArtifactRequests = utils.createDeployArtifactList(artifactDependencies, activeConfiguration);
-        final List<Request> deployConfigRequests = utils.createDeployConfigList(configDependencies, activeConfiguration);
+        final List<Request> deployRequests = new ArrayList<>();
+        if (utils.isDeployProject(project)) {
+            deployRequests.add(utils.createProjectDeployRequest(activeConfiguration, project));
+        }
+        deployRequests.addAll(utils.createSubModulesDeployRequest(activeConfiguration, project));
 
         DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
-        service.normalDeploy(deployApplicationRequests, deployArtifactRequests, deployConfigRequests);
+
+        service.normalDeploy(deployRequests.stream().filter(request -> request.getDeployType() == Request.Type.APPLICATION).collect(Collectors.toList()),
+                deployRequests.stream().filter(request -> request.getDeployType() == Request.Type.ARTIFACT).collect(Collectors.toList()),
+                deployRequests.stream().filter(request -> request.getDeployType() == Request.Type.CONFIG).collect(Collectors.toList()));
+
     }
 }

@@ -49,10 +49,9 @@ public class DeployConfiguration {
      * Use public / private AWS ip's
      **/
     private boolean awsPrivateIp = false;
-    private boolean useAutoScaling = false;
     private boolean elb = false;
-
     private boolean stickiness = false;
+    private boolean s3 = false;
 
     private List<String> stickyPorts = new ArrayList<>(Collections.singletonList("443"));
     /**
@@ -64,12 +63,8 @@ public class DeployConfiguration {
     private DeployStrategyType deployStrategy = DeployStrategyType.KEEP_CAPACITY;
     private Integer maxCapacity = -1;
     private Integer minCapacity = 1;
-    private List<String> autoScalingProperies = new ArrayList<>();
+    private List<String> autoScalingProperties = new ArrayList<>();
 
-    /**
-     * AWS OpsWorks Properties
-     **/
-    private String opsWorksLayerId = null;
     private String authToken;
 
     public String getAuthToken() {
@@ -78,10 +73,6 @@ public class DeployConfiguration {
 
     public String getAutoScalingGroupId() {
         return autoScalingGroupId;
-    }
-
-    public boolean useAutoScaling() {
-        return useAutoScaling;
     }
 
     public boolean isDeploySnapshots() {
@@ -104,7 +95,7 @@ public class DeployConfiguration {
         return testScope;
     }
 
-    public void setTestScope(boolean testScope) {
+    void setTestScope(boolean testScope) {
         this.testScope = testScope;
     }
 
@@ -116,16 +107,16 @@ public class DeployConfiguration {
         return this.elb;
     }
 
+    public boolean isS3Enabled() {
+        return this.s3;
+    }
+
     public boolean doRestart() {
         return restart;
     }
 
     public boolean getAwsPrivateIp() {
         return this.awsPrivateIp;
-    }
-
-    public String getOpsWorksLayerId() {
-        return this.opsWorksLayerId;
     }
 
     public boolean isDeployConfig() {
@@ -178,57 +169,62 @@ public class DeployConfiguration {
         return this;
     }
 
-    public DeployConfiguration withStrategy(String strategy) {
+    DeployConfiguration withStrategy(String strategy) {
         this.deployStrategy = DeployStrategyType.valueOf(strategy);
         return this;
     }
 
-    public DeployConfiguration withMaxGroupSize(Integer maxGroupSize) {
+    DeployConfiguration withMaxGroupSize(Integer maxGroupSize) {
         this.maxCapacity = maxGroupSize;
         return this;
     }
 
-    public DeployConfiguration withMinGroupSize(Integer minGroupSize) {
+    DeployConfiguration withMinGroupSize(Integer minGroupSize) {
         this.minCapacity = minGroupSize;
         return this;
     }
 
-    public DeployConfiguration withElb(boolean useElb) {
+    DeployConfiguration withElb(boolean useElb) {
         this.elb = useElb;
         return this;
     }
 
-    public DeployConfiguration withPrivateIp(boolean usePrivateIp) {
+    DeployConfiguration withS3(boolean useS3) {
+        this.s3 = useS3;
+        return this;
+    }
+
+    DeployConfiguration withPrivateIp(boolean usePrivateIp) {
         this.awsPrivateIp = usePrivateIp;
         return this;
     }
 
-    public DeployConfiguration withTestScope(boolean isTestScope) {
+    DeployConfiguration withTestScope(boolean isTestScope) {
         this.testScope = isTestScope;
         return this;
     }
 
-    public DeployConfiguration withConfig(boolean deployConfig) {
+    DeployConfiguration withConfig(boolean deployConfig) {
         this.deployConfig = deployConfig;
         return this;
     }
 
-    public DeployConfiguration withRestart(boolean doRestart) {
+    DeployConfiguration withRestart(boolean doRestart) {
         this.restart = doRestart;
         return this;
     }
 
-    public DeployConfiguration withDecrementCapacity(boolean decrementCapacity) {
+    DeployConfiguration withDecrementCapacity(boolean decrementCapacity) {
         this.decrementDesiredCapacity = decrementCapacity;
         return this;
     }
 
-    public DeployConfiguration withIgnoreInStandby(boolean ignoreInStandby) {
+    DeployConfiguration withIgnoreInStandby(boolean ignoreInStandby) {
         this.ignoreInStandby = ignoreInStandby;
         return this;
     }
 
-    public DeployConfiguration withDeploySnapshots(boolean deploySnapshots) {
+    DeployConfiguration withDeploySnapshots(boolean deploySnapshots) {
         this.deploySnapshots = deploySnapshots;
         return this;
     }
@@ -238,12 +234,12 @@ public class DeployConfiguration {
         return this;
     }
 
-    public DeployConfiguration withAuthToken(String authToken) {
+    DeployConfiguration withAuthToken(String authToken) {
         this.authToken = authToken;
         return this;
     }
 
-    public DeployConfiguration withStickiness(boolean stickiness) {
+    DeployConfiguration withStickiness(boolean stickiness) {
         this.stickiness = stickiness;
         return this;
     }
@@ -252,12 +248,12 @@ public class DeployConfiguration {
         return projectVersion;
     }
 
-    public DeployConfiguration withProjectVersion(String projectVersion) {
+    DeployConfiguration withProjectVersion(String projectVersion) {
         this.projectVersion = projectVersion;
         return this;
     }
 
     public List<String> getAutoScalingProperties() {
-        return autoScalingProperies;
+        return autoScalingProperties;
     }
 }

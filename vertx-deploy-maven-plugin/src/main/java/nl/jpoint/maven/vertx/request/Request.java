@@ -1,16 +1,19 @@
 package nl.jpoint.maven.vertx.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import org.eclipse.aether.artifact.Artifact;
 
 public abstract class Request {
-    private static final ObjectWriter writer = new ObjectMapper().writer();
+    public enum Type {
+        APPLICATION,
+        ARTIFACT,
+        CONFIG,
+    }
 
-    @JsonProperty
-    private final String group_id;
-    @JsonProperty
-    private final String artifact_id;
+    @JsonProperty("group_id")
+    private final String groupId;
+    @JsonProperty("artifact_id")
+    private final String artifactId;
     @JsonProperty
     private final String version;
 
@@ -19,13 +22,26 @@ public abstract class Request {
     @JsonProperty
     private final String type;
 
-    Request(String group_id, String artifact_id, String version, String classifier, String type) {
-        this.group_id = group_id;
-        this.artifact_id = artifact_id;
+    public Request(String groupId, String artifactId, String version, String classifier, String type) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
         this.version = version;
         this.classifier = classifier;
         this.type = type;
     }
 
+    public Request(Artifact artifact) {
+        this(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), artifact.getClassifier(), artifact.getExtension());
+    }
+
+    public Request(org.apache.maven.artifact.Artifact artifact) {
+        this(artifact.getGroupId(), artifact.getArtifactId(), artifact.getBaseVersion(), artifact.getClassifier(), artifact.getType());
+    }
+
     public abstract String getEndpoint();
+
+    public abstract Type getDeployType();
+
 }
+
+
