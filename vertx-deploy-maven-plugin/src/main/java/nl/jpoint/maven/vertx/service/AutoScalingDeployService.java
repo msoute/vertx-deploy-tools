@@ -17,6 +17,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -77,7 +78,7 @@ public class AutoScalingDeployService extends DeployService {
             asGroup = awsDeployUtils.getAutoScalingGroup();
             instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
         }
-        instances.sort((o1, o2) -> o1.getElbState().ordinal() - o2.getElbState().ordinal());
+        instances.sort(Comparator.comparingInt(o -> o.getElbState().ordinal()));
         if (instances.isEmpty()) {
             throw new MojoFailureException("No inService instances found in group " + activeConfiguration.getAutoScalingGroupId() + ". Nothing to do here, move along");
         }
