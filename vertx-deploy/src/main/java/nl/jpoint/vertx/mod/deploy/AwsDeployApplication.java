@@ -39,7 +39,6 @@ public class AwsDeployApplication extends AbstractVerticle {
         if (deployconfig.isAwsEnabled()) {
             awsService = new AwsService(getVertx(), deployconfig);
             autoDiscoverDeployService = new AutoDiscoverDeployService(deployconfig, defaultDeployService, getVertx());
-
         }
 
         Router router = Router.router(getVertx());

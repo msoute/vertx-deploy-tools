@@ -314,7 +314,11 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
-## 3.2.0-SNAPSHOT
+## 3.2.1
+* [Bug] Bugfixes for downloading of large archives.
+* [Feature] Kill process after timeout.
+
+## 3.2.0
 
 * [Enhancement] Also check for service config files in the form of [groupId]~[artifactId] [#34](vertx-deploy-tools/issues/34)
 * [Enhancement] Add option to temporarily set stickyness to ELB's during deploy  [#42](vertx-deploy-tools/issues/42)

@@ -20,9 +20,11 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(StopApplication.class);
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
     private final LocalDateTime timeout;
+    private final LocalDateTime waitTimeout = LocalDateTime.now().plusSeconds(10);
     private final DeployConfig config;
     private final ProcessUtils processUtils;
     private final Vertx rxVertx;
+    private boolean killed = false;
 
     private String moduleIdToStop;
 
@@ -43,11 +45,11 @@ public class StopApplication implements Command<DeployApplicationRequest> {
 
     private Observable<DeployApplicationRequest> removeRunFile(DeployApplicationRequest deployApplicationRequest) {
         deployApplicationRequest.setRunning(false);
-        return rxVertx.fileSystem().existsObservable(config.getRunDir()+moduleIdToStop)
+        return rxVertx.fileSystem().existsObservable(config.getRunDir() + moduleIdToStop)
                 .flatMap(exists -> {
                     if (exists) {
                         LOG.info("[{} - {}]: Removing runfile for application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), moduleIdToStop);
-                        return rxVertx.fileSystem().deleteObservable(config.getRunDir()+moduleIdToStop)
+                        return rxVertx.fileSystem().deleteObservable(config.getRunDir() + moduleIdToStop)
                                 .flatMap(x -> just(deployApplicationRequest));
                     } else {
                         return just(deployApplicationRequest);
@@ -56,9 +58,9 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     }
 
     private Observable<DeployApplicationRequest> stopApplication(DeployApplicationRequest request) {
-        moduleIdToStop = request.getMavenArtifactId() + ":"+new ProcessUtils(config).getRunningVersion(request);
+        moduleIdToStop = request.getMavenArtifactId() + ":" + new ProcessUtils(config).getRunningVersion(request);
         LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), moduleIdToStop);
-        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(new String[]{config.getVertxHome().resolve("bin/vertx").toString(), "stop", moduleIdToStop}));
+        ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "stop", moduleIdToStop));
         ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx, true);
         return observableCommand.execute(processBuilder)
                 .flatMap(exitCode -> handleExitCode(request, exitCode))
@@ -74,13 +76,18 @@ public class StopApplication implements Command<DeployApplicationRequest> {
                                 LOG.error("[{} - {}]: Timeout while waiting for application to stop. ", LogConstants.DEPLOY_REQUEST, request.getId());
                                 throw new IllegalStateException();
                             }
-                            if (!request.isRunning()) {
-                                LOG.info("[{} - {}]: Application {} stopped.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
-                                return just(request);
-                            } else {
-                                LOG.trace("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
-                                return doPoll(request);
-                            }
+                    if (!request.isRunning()) {
+                        LOG.info("[{} - {}]: Application {} stopped.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
+                        return just(request);
+                    }
+                    if (LocalDateTime.now().isAfter(waitTimeout) && !killed) {
+                        LOG.info("[{} - {}]: Application {} killed.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
+                        killed = ProcessUtils.killService(request.getMavenArtifactId());
+                        return doPoll(request);
+                    } else {
+                        LOG.trace("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
+                        return doPoll(request);
+                    }
                         }
                 )
                 .doOnError(t -> LOG.info("[{} - {}]: Error while Waiting for  module '{}' with applicationId '{}' to stop -> '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), t));
