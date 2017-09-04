@@ -2,7 +2,7 @@ package nl.jpoint.vertx.mod.deploy.service;
 
 import io.vertx.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.command.DownloadArtifact;
+import nl.jpoint.vertx.mod.deploy.command.DownloadHttpArtifact;
 import nl.jpoint.vertx.mod.deploy.command.ExtractArtifact;
 import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
@@ -28,7 +28,7 @@ interface DeployService<T extends ModuleRequest, R> {
     }
 
     default Observable<T> downloadArtifact(T moduleRequest) {
-        DownloadArtifact<T> downloadArtifact = new DownloadArtifact<>(getConfig(), getVertx());
+        DownloadHttpArtifact<T> downloadArtifact = new DownloadHttpArtifact<>(getConfig());
         return downloadArtifact.executeAsync(moduleRequest);
     }
 
