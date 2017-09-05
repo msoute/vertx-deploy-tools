@@ -38,10 +38,10 @@ public class DownloadHttpArtifact<T extends ModuleRequest> implements Command<T>
         provider.setCredentials(AuthScope.ANY, credentials);
         final URI location = config.getNexusUrl().resolve(config.getNexusUrl().getPath() + "/" + request.getRemoteLocation());
         try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build()) {
-            LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId(), config.getArtifactRepo() + request.getModuleId() + "." + request.getType());
+            LOG.info("[{} - {}]: Downloaded artifact {} to {}.", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId(), request.getLocalPath(config.getArtifactRepo()));
             HttpUriRequest get = new HttpGet(location);
             CloseableHttpResponse response = client.execute(get);
-            response.getEntity().writeTo(new FileOutputStream(config.getArtifactRepo() + "/" + request.getFileName()));
+            response.getEntity().writeTo(new FileOutputStream(request.getLocalPath(config.getArtifactRepo()).toFile()));
         } catch (IOException e) {
             LOG.error("[{} - {}]: Error downloading artifact -> {}, {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), e.getMessage(), e);
             throw new IllegalStateException(e);

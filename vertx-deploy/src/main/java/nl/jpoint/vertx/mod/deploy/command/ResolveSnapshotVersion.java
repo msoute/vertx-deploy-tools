@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static rx.Observable.just;
 
@@ -29,7 +31,7 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
     @Override
     public Observable<T> executeAsync(T request) {
         final URI location = config.getNexusUrl().resolve(config.getNexusUrl().getPath() + "/" + request.getMetadataLocation());
-        String filename = createTempFile(request.getArtifactId());
+        Path filename = createTempFile(request.getArtifactId());
         return new RxHttpUtil(rxVertx, config).get(request.getId(), location, filename)
                 .flatMap(x -> {
                     request.setVersion(retrieveAndParseMetadata(filename, request));
@@ -40,12 +42,12 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
                 });
     }
 
-    private String createTempFile(String filename) {
-        return System.getProperty("java.io.tmpdir") + "/" + filename;
+    private Path createTempFile(String filename) {
+        return Paths.get(System.getProperty("java.io.tmpdir") + "/" + filename);
     }
 
-    private String retrieveAndParseMetadata(String fileLocation, ModuleRequest request) {
-        Buffer b = rxVertx.fileSystem().readFileBlocking(fileLocation);
+    private String retrieveAndParseMetadata(Path fileLocation, ModuleRequest request) {
+        Buffer b = rxVertx.fileSystem().readFileBlocking(fileLocation.toString());
         return MetadataXPathUtil.getRealSnapshotVersionFromMetadata(b.toString().getBytes(), request);
     }
 }

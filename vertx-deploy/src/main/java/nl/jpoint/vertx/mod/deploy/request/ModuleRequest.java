@@ -2,6 +2,7 @@ package nl.jpoint.vertx.mod.deploy.request;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,6 +64,13 @@ public abstract class ModuleRequest {
 
     public String getRemoteLocation() {
         return remoteBase + getFileName();
+    }
+
+    public Path getLocalPath(Path localRepo) {
+        if (!Objects.equals(type, "jar")) {
+            return localRepo.resolve(getFileName());
+        }
+        return null;
     }
 
     public String getFileName() {
