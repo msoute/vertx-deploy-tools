@@ -69,7 +69,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
                 if (request.checkConfig()) {
                     newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 }
-                if (request.checkConfig() && !Arrays.equals(oldDigest, newDigest)) {
+                if (!request.restart() && request.checkConfig() && !Arrays.equals(oldDigest, newDigest)) {
                     LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", request.getLogName(), request.getId(), request.getModuleId());
                     request.setRestart(true);
                 }
