@@ -316,6 +316,7 @@ The following AWS actions are needed for the deploy applications
 
 ## 3.2.2
 * [Bug] Service should also start of no service specific config is provided
+* [Bug] Build should fail of artifact_context.xml is missing [#51](vertx-deploy-tools/issues/51)
 
 ## 3.2.1
 * [Bug] Bugfixes for downloading of large archives.

@@ -36,7 +36,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
 
     @Override
     public Observable<T> executeAsync(T request) {
-        try (FileSystem zipFs = this.getFileSystem(config.getArtifactRepo() + "/" + request.getFileName())) {
+        try (FileSystem zipFs = this.getFileSystem(request.getLocalPath(config.getArtifactRepo()))) {
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath);
             if (request.deleteBase()) {
                 removeBasePath(request, basePath);
@@ -69,7 +69,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
                 if (request.checkConfig()) {
                     newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 }
-                if (request.checkConfig() && !Arrays.equals(oldDigest, newDigest)) {
+                if (!request.restart() && request.checkConfig() && !Arrays.equals(oldDigest, newDigest)) {
                     LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", request.getLogName(), request.getId(), request.getModuleId());
                     request.setRestart(true);
                 }
@@ -100,9 +100,8 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
         }
     }
 
-    private FileSystem getFileSystem(String location) throws IOException {
-        Path path = Paths.get(location);
-        URI uri = URI.create("jar:file:" + path.toUri().getPath());
+    private FileSystem getFileSystem(Path location) throws IOException {
+        URI uri = URI.create("jar:file:" + location.toUri().getPath());
         return FileSystems.newFileSystem(uri, new HashMap<String, String>());
     }
 

@@ -33,7 +33,7 @@ interface DeployService<T extends ModuleRequest, R> {
     }
 
     default Observable<T> parseArtifactContext(T moduleRequest) {
-        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(getConfig().getArtifactRepo().resolve(moduleRequest.getFileName()));
+        ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(moduleRequest.getId(), getConfig().getArtifactRepo().resolve(moduleRequest.getFileName()));
         moduleRequest.setRestartCommand(artifactContextUtil.getRestartCommand());
         moduleRequest.setTestCommand(artifactContextUtil.getTestCommand());
         moduleRequest.setBaseLocation(artifactContextUtil.getBaseLocation());

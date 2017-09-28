@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class ArtifactContextUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ArtifactContextUtil.class);
@@ -32,9 +33,10 @@ public class ArtifactContextUtil {
 
     private Document document;
 
-    public ArtifactContextUtil(Path location) {
+    public ArtifactContextUtil(UUID id, Path location) {
         try (FileSystem zipFs = this.getFileSystem(location.toString())) {
             Path path = zipFs.getPath(ARTIFACT_CONTEXT);
+
             byte[] data = Files.readAllBytes(path);
 
             DocumentBuilderFactory builderFactory =
@@ -44,8 +46,8 @@ public class ArtifactContextUtil {
             document = builder.parse(
                     new ByteArrayInputStream(data));
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            LOG.error(e.getMessage(), e);
-            document = null;
+            LOG.error("[{} - {}] : No 'artifact_context.xml' in archive. Failing build", LogConstants.DEPLOY_ARTIFACT_REQUEST, id);
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
