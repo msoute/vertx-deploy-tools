@@ -314,6 +314,9 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.2.2
+* [Bug] Service should also start of no service specific config is provided
+
 ## 3.2.1
 * [Bug] Bugfixes for downloading of large archives.
 * [Feature] Kill process after timeout.
