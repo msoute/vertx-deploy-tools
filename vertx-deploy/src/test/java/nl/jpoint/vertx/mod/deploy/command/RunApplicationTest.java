@@ -37,7 +37,7 @@ public class RunApplicationTest {
     public void testNoConfig() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/");
         List<DeployApplicationRequest> result = execute();
-        assertThat(result, hasSize(0));
+        assertThat(result, hasSize(1));
 
     }
 
