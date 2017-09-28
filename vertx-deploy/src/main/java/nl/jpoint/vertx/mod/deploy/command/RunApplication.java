@@ -55,22 +55,27 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                 .switchIfEmpty(rxVertx.fileSystem().existsObservable(path.replace(":", "~"))
                         .filter(Boolean.TRUE::equals)
                         .map(x -> path.replace(":", "~")))
-                .flatMap(location ->
-                        rxVertx.fileSystem()
-                                .readFileObservable(location)
-                                .flatMap(buffer -> {
-                                    try {
-                                        serviceProperties.load(new ByteArrayInputStream(buffer.toString().getBytes()));
-                                    } catch (IOException e) {
-                                        LOG.error("[{} - {}]: Failed to initialize properties for module  {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e.getMessage(), e);
-                                        return just(request);
-                                    }
-                                    request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS, ""));
-                                    request.withConfigLocation(serviceProperties.getProperty(CONFIG_FILE, ""));
-                                    request.withInstances(serviceProperties.getProperty(INSTANCES, "1"));
-                                    request.withMainService(serviceProperties.getProperty(MAIN_SERVICE, ""));
+                .switchIfEmpty(just(""))
+                .flatMap(location -> {
+                    if (StringUtils.isBlank(location)) {
+                        return just(request);
+                    }
+                    return rxVertx.fileSystem()
+                            .readFileObservable(location)
+                            .flatMap(buffer -> {
+                                try {
+                                    serviceProperties.load(new ByteArrayInputStream(buffer.toString().getBytes()));
+                                } catch (IOException e) {
+                                    LOG.error("[{} - {}]: Failed to initialize properties for module  {} with error '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), e.getMessage(), e);
                                     return just(request);
-                                }));
+                                }
+                                request.withJavaOpts(serviceProperties.getProperty(JAVA_OPTS, ""));
+                                request.withConfigLocation(serviceProperties.getProperty(CONFIG_FILE, ""));
+                                request.withInstances(serviceProperties.getProperty(INSTANCES, "1"));
+                                request.withMainService(serviceProperties.getProperty(MAIN_SERVICE, ""));
+                                return just(request);
+                            });
+                });
     }
 
     private Observable<DeployApplicationRequest> startApplication(DeployApplicationRequest deployApplicationRequest) {
@@ -110,8 +115,8 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                 .doOnError(t -> LOG.error("[{} - {}]: Failed to initialize application {} with error '{}'", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), deployApplicationRequest.getModuleId(), t));
     }
 
-    String getMavenCommand(DeployApplicationRequest request){
-        if(!StringUtils.isBlank(request.getMainService())){
+    String getMavenCommand(DeployApplicationRequest request) {
+        if (!StringUtils.isBlank(request.getMainService())) {
             return String.format("maven:%s::%s", request.getModuleId(), request.getMainService());
         }
         return String.format("maven:%s", request.getModuleId());
