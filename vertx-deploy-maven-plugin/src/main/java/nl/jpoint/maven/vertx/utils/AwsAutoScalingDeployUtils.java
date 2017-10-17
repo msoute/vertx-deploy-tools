@@ -16,7 +16,6 @@ import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
 import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -40,7 +39,7 @@ public class AwsAutoScalingDeployUtils {
     private final Log log;
 
 
-    public AwsAutoScalingDeployUtils(String region, DeployConfiguration activeConfiguration, Log log) throws MojoFailureException {
+    public AwsAutoScalingDeployUtils(String region, DeployConfiguration activeConfiguration, Log log) {
         this.activeConfiguration = activeConfiguration;
         this.log = log;
 
@@ -61,7 +60,12 @@ public class AwsAutoScalingDeployUtils {
     public AutoScalingGroup getAutoScalingGroup() {
 
         DescribeAutoScalingGroupsResult result = awsAsClient.describeAutoScalingGroups(new DescribeAutoScalingGroupsRequest().withAutoScalingGroupNames(activeConfiguration.getAutoScalingGroupId()));
-        return !result.getAutoScalingGroups().isEmpty() ? result.getAutoScalingGroups().get(0) : null;
+
+        if (result.getAutoScalingGroups().isEmpty()) {
+            log.error("No Autoscaling group found with id : " + activeConfiguration.getAutoScalingGroupId());
+            throw new IllegalStateException();
+        }
+        return result.getAutoScalingGroups().get(0);
     }
 
     public void suspendScheduledActions() {
@@ -85,7 +89,15 @@ public class AwsAutoScalingDeployUtils {
         log.info("Resumed auto scaling processes.");
     }
 
-    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup) throws MojoFailureException, MojoExecutionException {
+    public boolean checkInstanceInService(String instanceId) {
+        DescribeInstancesResult instancesResult = awsEc2Client.describeInstances(new DescribeInstancesRequest().withInstanceIds(instanceId));
+        return instancesResult.getReservations().stream()
+                .flatMap(r -> r.getInstances().stream())
+                .filter(instance -> instance.getInstanceId().equals(instanceId))
+                .map(this::toEc2Instance).findFirst().map(ec2Instance -> ec2Instance.isReachable(activeConfiguration.getAwsPrivateIp(), activeConfiguration.getPort(), log)).orElse(false);
+    }
+
+    public List<Ec2Instance> getInstancesForAutoScalingGroup(Log log, AutoScalingGroup autoScalingGroup) throws MojoFailureException {
         log.info("retrieving list of instanceId's for auto scaling group with id : " + activeConfiguration.getAutoScalingGroupId());
 
         activeConfiguration.getHosts().clear();
@@ -93,7 +105,7 @@ public class AwsAutoScalingDeployUtils {
         log.debug("describing instances in auto scaling group");
 
         if (autoScalingGroup.getInstances().isEmpty()) {
-            throw new MojoFailureException("No instances in AS group.");
+            return new ArrayList<>();
         }
 
         Map<String, Instance> instanceMap = autoScalingGroup.getInstances().stream().collect(Collectors.toMap(Instance::getInstanceId, Function.identity()));
@@ -291,7 +303,7 @@ public class AwsAutoScalingDeployUtils {
         List<String> matchedGroups = groups.stream().filter(name -> name.matches(regex)).collect(Collectors.toList());
         if (matchedGroups == null || matchedGroups.isEmpty() || matchedGroups.size() != 1) {
             int matchSize = matchedGroups == null ? -1 : matchedGroups.size();
-            if (matchSize > 0) {
+            if (matchedGroups != null && matchSize > 0) {
                 matchedGroups.forEach(group -> log.error("Matched group : " + group));
             }
             throw new IllegalStateException("Unable to match group regex, matched group size " + matchSize);

@@ -39,6 +39,7 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.withRestart(restart);
         configuration.getExclusions().addAll(utils.parseExclusions(exclusions));
         configuration.withAuthToken(authToken);
+        configuration.withPort(port);
         super.activeConfiguration = configuration;
         
         final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);

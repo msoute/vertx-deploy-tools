@@ -4,5 +4,6 @@ public enum DeployStrategyType {
     WHATEVER,
     DEFAULT,
     GUARANTEE_MINIMUM,
+    SPIN_AND_REMOVE,
     KEEP_CAPACITY
 }

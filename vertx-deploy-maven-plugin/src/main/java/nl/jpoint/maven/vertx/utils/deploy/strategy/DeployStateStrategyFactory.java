@@ -14,7 +14,7 @@ public final class DeployStateStrategyFactory {
 
     public static boolean isDeployable(DeployConfiguration activeConfiguration, AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
         boolean canDeploy = false;
-        // default calculator
+        // default calculatorF
         switch (activeConfiguration.getDeployStrategy()) {
             case KEEP_CAPACITY:
                 canDeploy = new KeepCapacityStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
@@ -27,6 +27,9 @@ public final class DeployStateStrategyFactory {
                 break;
             case WHATEVER:
                 canDeploy = new WhateverStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                break;
+            case SPIN_AND_REMOVE:
+                canDeploy = true;
                 break;
             default:
 

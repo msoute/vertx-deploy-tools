@@ -44,6 +44,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     protected String properties;
     @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
     private String authToken;
+    @Parameter(required = false, defaultValue = "true", property = "deploy.as.spindown")
+    private boolean spindown;
 
 
     @Override
@@ -81,6 +83,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withDeploySnapshots(deploySnapshots)
                 .withAuthToken(authToken)
                 .withStickiness(useElb && enableStickiness)
+                .withPort(port)
+                .withSpinDown(spindown)
                 .withProjectVersion(projectVersionAsString());
     }
 }
