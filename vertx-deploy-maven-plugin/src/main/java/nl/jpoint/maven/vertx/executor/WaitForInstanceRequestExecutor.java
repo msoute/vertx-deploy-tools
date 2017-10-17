@@ -1,10 +1,8 @@
 package nl.jpoint.maven.vertx.executor;
 
-
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
 import java.util.Arrays;
@@ -30,7 +28,7 @@ public class WaitForInstanceRequestExecutor {
         return updatedGroup.getInstances().isEmpty() ? null : updatedGroup.getInstances().get(0);
     }
 
-    public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils) throws MojoExecutionException {
+    public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils, InstanceStatus instanceStatus) {
         final AtomicInteger waitFor = new AtomicInteger(1);
         final AtomicBoolean inService = new AtomicBoolean(false);
         final AtomicBoolean found = new AtomicBoolean(false);
@@ -55,7 +53,7 @@ public class WaitForInstanceRequestExecutor {
                     log.info("Found new instance with id " + newInstance.getInstanceId());
                 }
             }
-            if (newInstance != null && !autoScalingGroup.getLoadBalancerNames().isEmpty() && awsDeployUtils.checkInstanceInServiceOnAllElb(newInstance, autoScalingGroup.getLoadBalancerNames())) {
+            if (newInstance != null && instanceStatus.inService(newInstance)) {
                 waitFor.decrementAndGet();
             }
         }, 30, 30, TimeUnit.SECONDS);
@@ -75,8 +73,12 @@ public class WaitForInstanceRequestExecutor {
         } catch (Exception t) {
             log.error("Throwable: ", t);
         }
-
         return inService.get();
+    }
+
+    @FunctionalInterface
+    public interface InstanceStatus {
+        Boolean inService(Instance newInstance);
     }
 
 }

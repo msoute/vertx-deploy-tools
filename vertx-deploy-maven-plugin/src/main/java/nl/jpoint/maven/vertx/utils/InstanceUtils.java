@@ -16,9 +16,8 @@ public final class InstanceUtils {
             socket.connect(new InetSocketAddress(ip, port), 5000);
             return socket.isConnected();
         } catch (IOException e) {
-            log.error("Error while checking if instance " + instanceId + " is reachable", e);
+            log.warn("Error while checking if instance " + instanceId + " is reachable : " + e.getMessage());
             return false;
         }
     }
-
 }

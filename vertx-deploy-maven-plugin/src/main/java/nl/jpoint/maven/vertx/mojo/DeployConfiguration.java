@@ -23,6 +23,11 @@ public class DeployConfiguration {
      **/
     private List<String> hosts = new ArrayList<>();
     /**
+     * The port where the agent is listening on
+     */
+    private int port = 6789;
+
+    /**
      * Enable / disable deploy of config objects
      **/
     private boolean deployConfig = true;
@@ -66,6 +71,7 @@ public class DeployConfiguration {
     private Integer maxCapacity = -1;
     private Integer minCapacity = 1;
     private List<String> autoScalingProperies = new ArrayList<>();
+    private boolean spindown = true;
 
     /**
      * AWS OpsWorks Properties
@@ -169,6 +175,11 @@ public class DeployConfiguration {
         return stickiness;
     }
 
+    public boolean spindown() {
+        return spindown;
+    }
+
+
     public List<Integer> getStickyPorts() {
         return stickyPorts.stream().map(Integer::valueOf).collect(Collectors.toList());
     }
@@ -253,6 +264,11 @@ public class DeployConfiguration {
         return this;
     }
 
+    public DeployConfiguration withPort(int port) {
+        this.port = port;
+        return this;
+    }
+
     public String getProjectVersion() {
         return projectVersion;
     }
@@ -264,5 +280,14 @@ public class DeployConfiguration {
 
     public List<String> getAutoScalingProperties() {
         return autoScalingProperies;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public DeployConfiguration withSpinDown(boolean spindown) {
+        this.spindown = spindown;
+        return this;
     }
 }
