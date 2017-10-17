@@ -138,17 +138,18 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **decrementDesiredCapacity** Decrement configured desired capacity with 1 to make sure that configured policies won't launch a new instance (default : *true*)
 * **maxCapacity** : If Strategy is KEEP_CAPACITY, the capacity of the group wil never grow greater than **maxCapacity**. Defaults to max capacity in configured in auto scaling group.
 * **minCapacity** : If Strategy is GUARANTEE_MINIMUM and a deploy failed the build wil also fail if the capacity drops under the configured minimum. (default : *1*)
-* **deployStrategy** : The deploy strategy to use. Valid values are *KEEP_CAPACITY*, *GUARANTEE_MINIMUM*, *WHATEVER*. (default: *KEEP_CAPACITY) 
-
+* **deployStrategy** : The deploy strategy to use. Valid values are *KEEP_CAPACITY*, *GUARANTEE_MINIMUM*, *WHATEVER* *SPIN_AND_REMOVE*. (default: *KEEP_CAPACITY)
+* **spindown** : If strategy is SPIN_AND_REMOVE, keep the instance alive after deployment if false (default: true)
 #### Auto Scaling deploy strategies.
 
 * **KEEP_CAPACITY** : The deploy applications wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
 configured maximum. If *maxCapacity** is configured the desired count wil never be greater than **maxCapacity**. If *elb** is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. 
 * **DEFAULT** : The deploy applications wil only deploy if the  InService count is greater than the groups minimum count. The deploy wil never continue after a failed deploy. The deploy mod
 wil not guarantee at least one InService instance (i.e. if the groups minimum count is 0 with one InService instance)
-* **GUARANTEE_MINIMUM** : Yhe deploy applications does not care if a single instance deploy fails. As long as the InService count never drops below **minCapacity**. With **elb** the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.
-* **WHATEVER** : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)
+* **GUARANTEE_MINIMUM** : The deploy applications does not care if a single instance deploy fails. As long as the InService count never drops below **minCapacity**. With **elb** the InService count on the elb wil be used. Otherwise the auto scaling group healthy count.
+* **SPIN_AND_REMOVE** : Spins a new instance if there are 0 instances in the autoscaling group. Removes the instance after deploy
 
+* **WHATEVER** : Kittens may die (a.k.a. you don't care, so we don't either, the application may go offline.)
 Note : When there are no InService instances (elb or auto scaling group) on start of the deploy the strategy wil set to **WHATEVER**
 
 #### Aws OpsWorks Configuration Options
@@ -313,6 +314,9 @@ The following AWS actions are needed for the deploy applications
 
 
 # Changelog
+
+## 3.2.3
+* [Feature] Add option to spin and remove a new instance before / after deployment.
 
 ## 3.2.2
 * [Bug] Service should also start of no service specific config is provided
