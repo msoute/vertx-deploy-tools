@@ -3,6 +3,8 @@ package nl.jpoint.vertx.mod.deploy.service;
 import io.vertx.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
+import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
+import nl.jpoint.vertx.mod.deploy.util.GzipExtractor;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +34,20 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
                         return Observable.just(r);
                     } else {
                         return this.downloadArtifact(r)
+                                .flatMap(this::deflateGzip)
                                 .flatMap(this::parseArtifactContext)
                                 .flatMap(this::extractArtifact)
                                 .flatMap(this::addInstalledVersion);
                     }
                 })
                 .doOnCompleted(() -> LOG.info("[{} - {}]: Done extracting artifact {}.", deployRequest.getLogName(), deployRequest.getId(), deployRequest.getModuleId()));
+    }
+
+    private Observable<DeployArtifactRequest> deflateGzip(DeployArtifactRequest deployArtifactRequest) {
+        if (ModuleRequest.GZIP_TYPE.equals(deployArtifactRequest.getType())) {
+            new GzipExtractor<>(deployArtifactRequest).deflateGz(deployArtifactRequest.getLocalPath(config.getArtifactRepo()));
+        }
+        return Observable.just(deployArtifactRequest);
     }
 
     private boolean versionInstalled(DeployArtifactRequest deployRequest) {

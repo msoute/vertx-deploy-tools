@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.util;
 
+import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -17,13 +18,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.HashMap;
-import java.util.UUID;
 
 public class ArtifactContextUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ArtifactContextUtil.class);
-
     public static final String ARTIFACT_CONTEXT = "artifact_context.xml";
-
+    private static final Logger LOG = LoggerFactory.getLogger(ArtifactContextUtil.class);
     private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
     private static final String BASE_LOCATION = "/artifact/baselocation/text()";
@@ -33,12 +31,21 @@ public class ArtifactContextUtil {
 
     private Document document;
 
-    public ArtifactContextUtil(UUID id, Path location) {
-        try (FileSystem zipFs = this.getFileSystem(location.toString())) {
-            Path path = zipFs.getPath(ARTIFACT_CONTEXT);
+    public ArtifactContextUtil(ModuleRequest request, Path location) {
+        byte[] data;
+        if (request.getType().equals(ModuleRequest.GZIP_TYPE)) {
+            data = new GzipExtractor<>(request).readArtifactContext(location);
+        } else {
+            try (FileSystem zipFs = this.getFileSystem(location.toString())) {
+                Path path = zipFs.getPath(ARTIFACT_CONTEXT);
+                data = Files.readAllBytes(path);
+            } catch (IOException e) {
+                LOG.error("[{} - {}] : No 'artifact_context.xml' in archive. Failing build : {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), e.getMessage());
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
 
-            byte[] data = Files.readAllBytes(path);
-
+        try {
             DocumentBuilderFactory builderFactory =
                     DocumentBuilderFactory.newInstance();
             DocumentBuilder builder;
@@ -46,7 +53,7 @@ public class ArtifactContextUtil {
             document = builder.parse(
                     new ByteArrayInputStream(data));
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            LOG.error("[{} - {}] : No 'artifact_context.xml' in archive. Failing build", LogConstants.DEPLOY_ARTIFACT_REQUEST, id);
+            LOG.error("[{} - {}] : Corrupt 'artifact_context.xml' in archive. Failing build : {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), e.getMessage());
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

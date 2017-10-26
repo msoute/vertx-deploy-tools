@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 
 public class DeployUtils {
     public static final String APPLICATION_TYPE = "jar";
-    public static final String ARTIFACT_TYPE = "zip";
+    public static final String ARTIFACT_TYPE_ZIP = "zip";
+    public static final String ARTIFACT_TYPE_GZIP = "tar.gz";
     public static final String CONFIG_TYPE = "config";
 
     private final Log log;
@@ -52,7 +53,9 @@ public class DeployUtils {
     }
 
     public List<Request> createDeployArtifactList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, ARTIFACT_TYPE).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+        List<Request> result = createDeployListByType(activeConfiguration, ARTIFACT_TYPE_ZIP).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+        result.addAll(createDeployListByType(activeConfiguration, ARTIFACT_TYPE_GZIP).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList()));
+        return result;
     }
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration) throws MojoFailureException {

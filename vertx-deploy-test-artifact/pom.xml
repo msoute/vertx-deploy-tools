@@ -29,7 +29,8 @@
                             <attach>true</attach>
                             <finalName>${project.groupId}~${project.artifactId}~${project.version}</finalName>
                             <descriptors>
-                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                                <descriptor>src/main/assembly/assembly-zip.xml</descriptor>
+                                <descriptor>src/main/assembly/assembly-gzip.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
