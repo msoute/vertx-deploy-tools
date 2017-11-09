@@ -3,10 +3,7 @@ package nl.jpoint.vertx.mod.deploy.service;
 import io.vertx.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
-import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
-import nl.jpoint.vertx.mod.deploy.request.DeployConfigRequest;
-import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
+import nl.jpoint.vertx.mod.deploy.request.*;
 import nl.jpoint.vertx.mod.deploy.util.AetherUtil;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.RepositorySystem;
@@ -90,13 +87,13 @@ public class AutoDiscoverDeployService {
 
     private DeployRequest createAutoDiscoverDeployRequest(List<Artifact> dependencies, boolean testScope) {
         List<DeployConfigRequest> configs = dependencies.stream()
-                .filter(a -> "config".equals(a.getExtension()))
+                .filter(a -> ModuleRequest.CONFIG_TYPE.equals(a.getExtension()))
                 .map(a -> DeployConfigRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
                 .collect(Collectors.toList());
 
         List<DeployArtifactRequest> artifacts = dependencies.stream()
-                .filter(a -> "zip".equals(a.getExtension()))
-                .map(a -> DeployArtifactRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier()))
+                .filter(a -> ModuleRequest.ZIP_TYPE.equals(a.getExtension()) || ModuleRequest.GZIP_TYPE.equals(a.getExtension()))
+                .map(a -> DeployArtifactRequest.build(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier(), a.getExtension()))
                 .collect(Collectors.toList());
 
         List<DeployApplicationRequest> applications = dependencies.stream()

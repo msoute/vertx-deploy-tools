@@ -315,6 +315,9 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.2.4
+* [Feature] Add support for tar.gz extraction for artifacts
+
 ## 3.2.3
 * [Feature] Add option to spin and remove a new instance before / after deployment.
 

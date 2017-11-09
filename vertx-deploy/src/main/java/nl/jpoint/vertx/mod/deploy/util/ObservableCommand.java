@@ -5,6 +5,7 @@ import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.Subscriber;
 
 import java.io.*;
 
@@ -62,21 +63,31 @@ public class ObservableCommand<R extends ModuleRequest> {
                 subscriber.onError(e);
             }
             if (process != null) {
-                InputStream stream = process.getInputStream();
-
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        LOG.trace("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
-                    }
-                } catch (Exception e) {
-                    subscriber.onError(e);
-                }
+                printStream(process.getInputStream(), subscriber, false);
+                printStream(process.getErrorStream(), subscriber, true);
             } else {
                 subscriber.onError(new IllegalStateException("Unable to create process"));
             }
             subscriber.onNext("Done");
             subscriber.onCompleted();
         });
+    }
+
+    private void printStream(InputStream stream, Subscriber subscriber, boolean error) {
+        if (stream == null) {
+            return;
+        }
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (error) {
+                    LOG.error("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
+                } else {
+                    LOG.info("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
+                }
+            }
+        } catch (Exception e) {
+            subscriber.onError(e);
+        }
     }
 }
