@@ -8,6 +8,10 @@ import java.util.UUID;
 
 public abstract class ModuleRequest {
 
+    public static final String CONFIG_TYPE = "config";
+    public static final String ZIP_TYPE = "zip";
+    public static final String GZIP_TYPE = "tar.gz";
+
     private final UUID id = UUID.randomUUID();
     private final String groupId;
     private final String artifactId;

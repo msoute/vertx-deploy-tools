@@ -6,6 +6,7 @@ import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
 import nl.jpoint.vertx.mod.deploy.util.FileDigestUtil;
+import nl.jpoint.vertx.mod.deploy.util.GzipExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -17,6 +18,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static nl.jpoint.vertx.mod.deploy.request.ModuleRequest.*;
 import static rx.Observable.just;
 
 public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
@@ -36,6 +38,21 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
 
     @Override
     public Observable<T> executeAsync(T request) {
+
+        switch (request.getType()) {
+            case CONFIG_TYPE:
+            case ZIP_TYPE:
+                return extractZip(request);
+            case GZIP_TYPE:
+                return extractGZip(request);
+            default:
+                LOG.error("Unsupported artifact type : " + request.getType());
+                throw new IllegalStateException();
+        }
+    }
+
+
+    private Observable<T> extractZip(T request) {
         try (FileSystem zipFs = this.getFileSystem(request.getLocalPath(config.getArtifactRepo()))) {
             LOG.info("[{} - {}]: Extracting artifact {} to {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath);
             if (request.deleteBase()) {
@@ -50,6 +67,15 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
             LOG.error("[{} - {}]: Error while extracting artifact {} -> {}.", request.getLogName(), request.getId(), request.getModuleId(), e.getMessage(), e);
             throw new IllegalStateException();
         }
+    }
+
+    private Observable<T> extractGZip(T request) {
+        GzipExtractor<T> gzipExtractor = new GzipExtractor<>(request);
+        if (request.deleteBase()) {
+            removeBasePath(request, basePath);
+        }
+        gzipExtractor.extractTar(request.getLocalPath(config.getArtifactRepo()), basePath);
+        return just(request);
     }
 
     private SimpleFileVisitor<Path> copyingFileVisitor(final Path basePath, T request) {
@@ -80,7 +106,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attributes) throws IOException {
                 final Path subDir = Paths.get(basePath.toString(), dir.toString());
-                if (Files.notExists(subDir)) {
+                if (!subDir.toFile().exists()) {
                     Files.createDirectory(subDir);
                 }
                 return FileVisitResult.CONTINUE;
@@ -90,8 +116,8 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
 
     private void removeBasePath(ModuleRequest request, Path basePath) {
         if (!basePath.getParent().toFile().exists() || !basePath.getParent().toFile().canWrite()) {
-            LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", request.getLogName(), request.getId(), request.getModuleId(), basePath.getParent().toString());
-            LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath.getParent().toFile().toString());
+            LOG.warn("[{} - {}]: Unable to extract artifact {} -> {} not exist or not writable.", request.getLogName(), request.getId(), request.getModuleId(), basePath.getParent());
+            LOG.warn("[{} - {}]: Unable to extract artifact {} to basePath -> {}.", request.getLogName(), request.getId(), request.getModuleId(), basePath.getParent().toFile());
         }
 
         if (basePath.toFile().exists()) {

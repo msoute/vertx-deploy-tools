@@ -19,7 +19,7 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
     protected RepositorySystemSession repoSession;
 
-    @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true, required = true)
+    @Parameter(defaultValue = "${project.remoteRepositories}", readonly = true, required = true)
     protected List<RemoteRepository> remoteRepos;
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;

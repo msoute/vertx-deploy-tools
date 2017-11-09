@@ -30,6 +30,12 @@
         </dependency>
         <dependency>
             <groupId>nl.jpoint.vertx-deploy-tools</groupId>
+            <artifactId>vertx-deploy-test-artifact</artifactId>
+            <version>${project.version}</version>
+            <type>tar.gz</type>
+        </dependency>
+        <dependency>
+            <groupId>nl.jpoint.vertx-deploy-tools</groupId>
             <artifactId>vertx-deploy-test-application</artifactId>
             <version>${project.version}</version>
         </dependency>

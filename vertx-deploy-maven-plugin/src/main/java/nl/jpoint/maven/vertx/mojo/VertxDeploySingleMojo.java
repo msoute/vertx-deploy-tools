@@ -44,7 +44,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
 
         final List<Request> deployModuleRequests = DeployUtils.APPLICATION_TYPE.equals(type) ? createModuleRequest() : Collections.emptyList();
-        final List<Request> deployArtifactRequests = DeployUtils.ARTIFACT_TYPE.equals(type) ? createArtifactRequest() : Collections.emptyList();
+        final List<Request> deployArtifactRequests = DeployUtils.ARTIFACT_TYPE_ZIP.equals(type) ? createArtifactRequest() : Collections.emptyList();
         final List<Request> deployConfigRequests = DeployUtils.CONFIG_TYPE.equals(type) ? createConfigRequest() : Collections.emptyList();
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
