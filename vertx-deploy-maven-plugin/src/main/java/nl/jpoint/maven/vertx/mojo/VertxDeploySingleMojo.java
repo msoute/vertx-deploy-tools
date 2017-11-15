@@ -6,7 +6,6 @@ import nl.jpoint.maven.vertx.request.DeployConfigRequest;
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
 import nl.jpoint.maven.vertx.service.DefaultDeployService;
-import nl.jpoint.maven.vertx.service.OpsWorksDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -53,9 +52,6 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
         if (activeConfiguration.useAutoScaling()) {
             AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
             service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        } else if (activeConfiguration.useOpsWorks()) {
-            OpsWorksDeployService service = new OpsWorksDeployService(activeConfiguration, region, port, requestTimeout, getLog());
-            service.deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
         } else {
             DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
             service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);

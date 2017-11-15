@@ -315,6 +315,10 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.3.0-SNAPSHOT
+* [Upgrade] Upgrade Vert.x platform to 3.5.0
+* [Removed] Removed Aws Opsworks support
+
 ## 3.2.4
 * [Feature] Add support for tar.gz extraction for artifacts
 
