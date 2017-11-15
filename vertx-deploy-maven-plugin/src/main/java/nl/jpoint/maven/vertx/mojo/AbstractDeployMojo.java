@@ -1,6 +1,10 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.request.Request;
+import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
+import nl.jpoint.maven.vertx.service.DefaultDeployService;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -14,35 +18,32 @@ import java.util.List;
 
 abstract class AbstractDeployMojo extends AbstractMojo {
 
+    @Parameter(defaultValue = "6789")
+    Integer port;
     @Component
-    protected RepositorySystem repoSystem;
+    RepositorySystem repoSystem;
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-    protected RepositorySystemSession repoSession;
-
+    RepositorySystemSession repoSession;
     @Parameter(defaultValue = "${project.remoteRepositories}", readonly = true, required = true)
-    protected List<RemoteRepository> remoteRepos;
+    List<RemoteRepository> remoteRepos;
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
     @Parameter(defaultValue = "${settings}", readonly = true, required = true)
     Settings settings;
+    @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
+    Integer requestTimeout;
+    @Parameter(defaultValue = "eu-west-1")
+    String region;
+    @Parameter(property = "deploy.exclusions")
+    String exclusions;
+    DeployConfiguration activeConfiguration;
     private List<DeployConfiguration> deployConfigurations;
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
     private String activeTarget;
-    @Parameter(defaultValue = "10", property = "deploy.requestTimeout")
-    protected Integer requestTimeout;
     @Parameter(property = "deploy.credentialsId")
     private String credentialsId;
-    @Parameter(defaultValue = "6789")
-    protected Integer port;
-    @Parameter(defaultValue = "eu-west-1")
-    protected String region;
-    @Parameter(required = false, defaultValue = "", property = "deploy.exclusions")
-    protected String exclusions;
 
-    DeployConfiguration activeConfiguration;
-
-
-    DeployConfiguration setActiveDeployConfig() throws MojoFailureException {
+    void setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {
             getLog().info("Found exactly one deploy config to activate.");
             activeConfiguration = deployConfigurations.get(0);
@@ -60,15 +61,22 @@ abstract class AbstractDeployMojo extends AbstractMojo {
             throw new MojoFailureException("No active deployConfig !, config should contain at least one config with scope default");
         }
 
-
         getLog().info("Deploy config with target " + activeConfiguration.getTarget() + " activated");
 
         activeConfiguration.withProjectVersion(projectVersionAsString());
-
-        return activeConfiguration;
     }
 
     String projectVersionAsString() {
         return project.getGroupId() + ":" + project.getArtifactId() + ":" + "pom" + ":" + project.getVersion();
+    }
+
+    void deploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
+        if (activeConfiguration.useAutoScaling()) {
+            AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
+            service.deploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
+        } else {
+            DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
+            service.deploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
+        }
     }
 }

@@ -21,7 +21,7 @@ public class DeployConfiguration {
     /**
      * List of hosts to deploy to
      **/
-    private List<String> hosts = new ArrayList<>();
+    private final List<String> hosts = new ArrayList<>();
     /**
      * The port where the agent is listening on
      */
@@ -49,12 +49,11 @@ public class DeployConfiguration {
      **/
     private boolean deploySnapshots = false;
 
-    /** AWS Generic  Properties **/
     /**
+     * AWS Generic  Properties
      * Use public / private AWS ip's
      **/
     private boolean awsPrivateIp = false;
-    private boolean useOpsWorks = false;
     private boolean useAutoScaling = false;
     private boolean elb = false;
 
@@ -70,13 +69,9 @@ public class DeployConfiguration {
     private DeployStrategyType deployStrategy = DeployStrategyType.KEEP_CAPACITY;
     private Integer maxCapacity = -1;
     private Integer minCapacity = 1;
-    private List<String> autoScalingProperies = new ArrayList<>();
+    private final List<String> autoScalingProperties = new ArrayList<>();
     private boolean spindown = true;
 
-    /**
-     * AWS OpsWorks Properties
-     **/
-    private String opsWorksLayerId = null;
     private String authToken;
 
     public String getAuthToken() {
@@ -89,10 +84,6 @@ public class DeployConfiguration {
 
     public boolean useAutoScaling() {
         return useAutoScaling;
-    }
-
-    public boolean useOpsWorks() {
-        return useOpsWorks;
     }
 
     public boolean isDeploySnapshots() {
@@ -133,10 +124,6 @@ public class DeployConfiguration {
 
     public boolean getAwsPrivateIp() {
         return this.awsPrivateIp;
-    }
-
-    public String getOpsWorksLayerId() {
-        return this.opsWorksLayerId;
     }
 
     public boolean isDeployConfig() {
@@ -191,6 +178,7 @@ public class DeployConfiguration {
 
     public DeployConfiguration withAutoScalingGroup(String autoScalingGroup) {
         this.autoScalingGroupId = autoScalingGroup;
+        this.useAutoScaling = true;
         return this;
     }
 
@@ -279,7 +267,7 @@ public class DeployConfiguration {
     }
 
     public List<String> getAutoScalingProperties() {
-        return autoScalingProperies;
+        return autoScalingProperties;
     }
 
     public int getPort() {

@@ -39,7 +39,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
     @Override
     public Observable<DeployApplicationRequest> executeAsync(final DeployApplicationRequest request) {
-        LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId());
+        LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         return this.readServiceDefaults(request)
                 .flatMap(this::startApplication)
                 .doOnError(t -> LOG.error("[{} - {}]: Error running module '{}', {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId(), t.getMessage()));
@@ -49,10 +49,12 @@ public class RunApplication implements Command<DeployApplicationRequest> {
     Observable<DeployApplicationRequest> readServiceDefaults(DeployApplicationRequest request) {
         Properties serviceProperties = new Properties();
         String path = deployConfig.getServiceConfigLocation() + request.getGroupId() + ":" + request.getArtifactId();
-        return rxVertx.fileSystem().existsObservable(path)
+        return rxVertx.fileSystem().rxExists(path)
+                .toObservable()
                 .filter(Boolean.TRUE::equals)
                 .map(x -> path)
-                .switchIfEmpty(rxVertx.fileSystem().existsObservable(path.replace(":", "~"))
+                .switchIfEmpty(rxVertx.fileSystem().rxExists(path.replace(":", "~"))
+                        .toObservable()
                         .filter(Boolean.TRUE::equals)
                         .map(x -> path.replace(":", "~")))
                 .switchIfEmpty(just(""))
@@ -61,7 +63,8 @@ public class RunApplication implements Command<DeployApplicationRequest> {
                         return just(request);
                     }
                     return rxVertx.fileSystem()
-                            .readFileObservable(location)
+                            .rxReadFile(location)
+                            .toObservable()
                             .flatMap(buffer -> {
                                 try {
                                     serviceProperties.load(new ByteArrayInputStream(buffer.toString().getBytes()));

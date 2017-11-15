@@ -199,16 +199,14 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     private void respond(DeployRequest deployRequest, HttpServerRequest request) {
         request.response().setStatusCode(HttpResponseStatus.OK.code());
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.SUCCESS, deployRequest.getId().toString()));
-        if (!request.response().ended()) {
-            if (!deployRequest.withElb() && !deployRequest.withAutoScaling()) {
-                JsonObject result = new JsonObject();
-                result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
-                result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
-                if (result.isEmpty()) {
-                    request.response().end();
-                } else {
-                    request.response().end(result.encodePrettily());
-                }
+        if (!request.response().ended() && !deployRequest.withElb() && !deployRequest.withAutoScaling()) {
+            JsonObject result = new JsonObject();
+            result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
+            result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
+            if (result.isEmpty()) {
+                request.response().end();
+            } else {
+                request.response().end(result.encodePrettily());
             }
         }
     }

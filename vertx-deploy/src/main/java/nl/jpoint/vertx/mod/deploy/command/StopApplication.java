@@ -45,11 +45,13 @@ public class StopApplication implements Command<DeployApplicationRequest> {
 
     private Observable<DeployApplicationRequest> removeRunFile(DeployApplicationRequest deployApplicationRequest) {
         deployApplicationRequest.setRunning(false);
-        return rxVertx.fileSystem().existsObservable(config.getRunDir() + moduleIdToStop)
+        return rxVertx.fileSystem().rxExists(config.getRunDir() + moduleIdToStop)
+                .toObservable()
                 .flatMap(exists -> {
                     if (exists) {
                         LOG.info("[{} - {}]: Removing runfile for application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, deployApplicationRequest.getId(), moduleIdToStop);
-                        return rxVertx.fileSystem().deleteObservable(config.getRunDir() + moduleIdToStop)
+                        return rxVertx.fileSystem().rxDelete(config.getRunDir() + moduleIdToStop)
+                                .toObservable()
                                 .flatMap(x -> just(deployApplicationRequest));
                     } else {
                         return just(deployApplicationRequest);

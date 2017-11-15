@@ -30,7 +30,7 @@ class AwsPollingAsStateObservable {
     }
 
     public Observable<DeployRequest> poll(DeployRequest request) {
-        LOG.info("[{} - {}]: Setting timeout to {}.", LogConstants.AWS_AS_REQUEST, request.getId(), timeout.toString());
+        LOG.info("[{} - {}]: Setting timeout to {}.", LogConstants.AWS_AS_REQUEST, request.getId(), timeout);
         return doPoll(request);
     }
 

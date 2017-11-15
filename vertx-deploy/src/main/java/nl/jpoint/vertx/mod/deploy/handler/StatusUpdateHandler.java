@@ -17,7 +17,9 @@ public class StatusUpdateHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext event) {
         String moduleId = event.request().getParam("id");
-        LOG.debug("Received status request {}", event.request().uri());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received status request {}", event.request().uri());
+        }
         if (moduleId != null && !moduleId.isEmpty()) {
             ApplicationDeployState status = ApplicationDeployState.map(event.request().getParam("status"));
             String message = event.request().getParam("errormessage");

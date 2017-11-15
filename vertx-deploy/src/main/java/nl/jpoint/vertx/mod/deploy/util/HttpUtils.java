@@ -39,7 +39,7 @@ public final class HttpUtils {
             return null;
         }
 
-        LOG.debug("[{}]: received POST data -> {} .", logType, new String(buffer.getBytes()));
+        LOG.debug("[{}]: received POST data -> {} .", logType, buffer.getBytes());
 
         try {
             return new ObjectMapper().readerFor(clazz).readValue(buffer.getBytes());

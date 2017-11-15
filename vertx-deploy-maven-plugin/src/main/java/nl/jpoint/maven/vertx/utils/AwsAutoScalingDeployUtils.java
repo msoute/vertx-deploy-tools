@@ -173,7 +173,7 @@ public class AwsAutoScalingDeployUtils {
         return new Ec2Instance.Builder().withInstanceId(instance.getInstanceId()).withPrivateIp(instance.getPrivateIpAddress()).withPublicIp(instance.getPublicIpAddress()).build();
     }
 
-    public boolean setDesiredCapacity(AutoScalingGroup autoScalingGroup, Integer capacity) {
+    public void setDesiredCapacity(AutoScalingGroup autoScalingGroup, Integer capacity) {
         log.info("Setting desired capacity to : " + capacity);
 
         try {
@@ -181,10 +181,8 @@ public class AwsAutoScalingDeployUtils {
                     .withAutoScalingGroupName(autoScalingGroup.getAutoScalingGroupName())
                     .withDesiredCapacity(capacity)
                     .withHonorCooldown(false));
-            return true;
         } catch (AmazonClientException e) {
             log.error(e.getMessage(), e);
-            return false;
         }
     }
 
@@ -222,10 +220,6 @@ public class AwsAutoScalingDeployUtils {
             }
         }
         return true;
-    }
-
-    public void enableAsGroup(String autoScalingGroupName) {
-        awsAsClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest().withAutoScalingGroupName(autoScalingGroupName).withDesiredCapacity(1));
     }
 
     public boolean checkEc2Instance(String instanceId) {

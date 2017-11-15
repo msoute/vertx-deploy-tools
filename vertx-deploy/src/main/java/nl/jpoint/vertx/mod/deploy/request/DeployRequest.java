@@ -21,7 +21,7 @@ public class DeployRequest {
     private boolean restart;
     private DeployState state;
     private long timestamp;
-    private boolean testScope;
+    private final boolean testScope;
 
 
     @JsonCreator

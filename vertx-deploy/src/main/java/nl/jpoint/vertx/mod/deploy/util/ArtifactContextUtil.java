@@ -22,13 +22,11 @@ import java.util.HashMap;
 public class ArtifactContextUtil {
     public static final String ARTIFACT_CONTEXT = "artifact_context.xml";
     private static final Logger LOG = LoggerFactory.getLogger(ArtifactContextUtil.class);
-    private static final XPath xPath = XPathFactory.newInstance().newXPath();
-
     private static final String BASE_LOCATION = "/artifact/baselocation/text()";
     private static final String RESTART_ON_CHANGED_CONTENT = "/artifact/checkContent/text()";
     private static final String RESTART_COMMAND = "/artifact/restartCommand/text()";
     private static final String TEST_COMMAND = "/artifact/testCommand/text()";
-
+    private final XPath xPath = XPathFactory.newInstance().newXPath();
     private Document document;
 
     public ArtifactContextUtil(ModuleRequest request, Path location) {

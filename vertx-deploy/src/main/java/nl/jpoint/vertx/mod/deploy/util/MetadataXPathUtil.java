@@ -19,13 +19,14 @@ import java.io.IOException;
 
 public class MetadataXPathUtil {
 
-    private static final XPath xPath = XPathFactory.newInstance().newXPath();
     private static final String TIMESTAMP = "/metadata/versioning/snapshot/timestamp/text()";
     private static final String BUILD_NUMBER = "/metadata/versioning/snapshot/buildNumber/text()";
 
     private static final Logger LOG = LoggerFactory.getLogger(MetadataXPathUtil.class);
 
     public static String getRealSnapshotVersionFromMetadata(byte[] metadata, ModuleRequest request) {
+        XPath xPath = XPathFactory.newInstance().newXPath();
+
         DocumentBuilderFactory builderFactory =
                 DocumentBuilderFactory.newInstance();
 

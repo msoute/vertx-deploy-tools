@@ -55,8 +55,6 @@ public class RxHttpUtil {
                                  Observer<? super HttpClientResponse> subscriber, String filename) {
         response.exceptionHandler(subscriber::onError);
         response.bodyHandler(bodyBuffer -> {
-            //TODO Test observable write.
-            //rxVertx.fileSystem().writeFileObservable(filename, bodyBuffer).map(x -> response).subscribe();
             rxVertx.fileSystem().writeFileBlocking(filename, bodyBuffer);
             subscriber.onNext(response);
             subscriber.onCompleted();

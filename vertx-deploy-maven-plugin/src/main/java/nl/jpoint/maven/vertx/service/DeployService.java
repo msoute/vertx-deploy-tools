@@ -7,11 +7,12 @@ abstract class DeployService {
     private final Log log;
 
     DeployService(Log log) {
-
         this.log = log;
     }
 
-    public Log getLog() {
+    Log getLog() {
         return log;
     }
 }
+
+

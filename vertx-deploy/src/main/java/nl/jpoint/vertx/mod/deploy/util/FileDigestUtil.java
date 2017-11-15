@@ -27,9 +27,9 @@ public class FileDigestUtil {
     }
 
     public byte[] getFileMd5Sum(Path unpackFile) {
-        if (md == null || Files.notExists(unpackFile)) {
+        if (md == null || !unpackFile.toFile().exists()) {
             LOG.debug("MD is null {}, or file does not exist {}", md, unpackFile);
-            return null;
+            return new byte[0];
         }
         try (InputStream is = Files.newInputStream(unpackFile)) {
             DigestInputStream dis = new DigestInputStream(is, md);
@@ -39,7 +39,7 @@ public class FileDigestUtil {
             return digest;
         } catch (IOException e) {
             LOG.error("Error calculating MD5 sum", e);
-            return null;
+            return new byte[0];
         }
     }
 }

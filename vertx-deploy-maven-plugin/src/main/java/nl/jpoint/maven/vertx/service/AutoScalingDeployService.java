@@ -38,7 +38,7 @@ public class AutoScalingDeployService extends DeployService {
         this.properties = properties;
     }
 
-    public void deployWithAutoScaling(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
+    public void deploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
         if (activeConfiguration.getAutoScalingGroupId() == null) {
             throw new MojoExecutionException("ActiveConfiguration " + activeConfiguration.getTarget() + " has no autoScalingGroupId set");
         }

@@ -2,9 +2,8 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsyncClient;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsync;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsyncClientBuilder;
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
@@ -19,12 +18,11 @@ import static rx.Observable.just;
 
 public class AwsElbUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsElbUtil.class);
-    private final AmazonElasticLoadBalancingAsyncClient elbAsyncClient;
+    private final AmazonElasticLoadBalancingAsync elbAsyncClient;
     private final String instanceId;
 
     public AwsElbUtil(DeployConfig config) {
-        this.elbAsyncClient = new AmazonElasticLoadBalancingAsyncClient();
-        this.elbAsyncClient.setRegion(Region.getRegion(Regions.fromName(config.getAwsRegion())));
+        this.elbAsyncClient = AmazonElasticLoadBalancingAsyncClientBuilder.standard().withRegion(config.getAwsRegion()).build();
         this.instanceId = EC2MetadataUtils.getInstanceId();
     }
 
@@ -66,7 +64,7 @@ public class AwsElbUtil {
             return Observable.from(elbAsyncClient.describeInstanceHealthAsync(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(result -> {
                         Optional<InstanceState> state = result.getInstanceStates().stream().filter(i -> i.getInstanceId().equals(instanceId)).findFirst();
-                        return just(state.isPresent() ? AwsState.map(state.get().getState()) : AwsState.UNKNOWN);
+                        return just(state.map(instanceState -> AwsState.map(instanceState.getState())).orElse(AwsState.UNKNOWN));
                     });
         } catch (AmazonClientException e) {
             LOG.error(ERROR_EXECUTING_REQUEST, e);

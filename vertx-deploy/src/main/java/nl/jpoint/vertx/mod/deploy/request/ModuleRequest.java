@@ -17,9 +17,9 @@ public abstract class ModuleRequest {
     private final String artifactId;
     private final String classifier;
     private final String type;
+    private final String remoteBase;
     private final boolean snapshot;
     private String version;
-    private String remoteBase;
 
     private boolean restart = false;
 

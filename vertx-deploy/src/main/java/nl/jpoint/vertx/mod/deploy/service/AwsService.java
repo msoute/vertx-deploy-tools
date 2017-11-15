@@ -40,7 +40,7 @@ public class AwsService {
 
     public Observable<DeployRequest> autoScalingDeRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }
@@ -51,7 +51,7 @@ public class AwsService {
 
     public Observable<DeployRequest> autoScalingRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
             this.failBuild(deployRequest.getId().toString());
             throw new IllegalStateException();
         }

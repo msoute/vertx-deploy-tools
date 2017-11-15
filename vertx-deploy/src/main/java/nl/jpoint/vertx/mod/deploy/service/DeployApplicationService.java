@@ -71,10 +71,12 @@ public class DeployApplicationService implements DeployService<DeployApplication
                                                                              deployApplicationRequest) {
         io.vertx.rxjava.core.Vertx rxVertx = new io.vertx.rxjava.core.Vertx(vertx);
         return rxVertx.fileSystem()
-                .existsObservable(config.getRunDir() + deployApplicationRequest.getModuleId())
+                .rxExists(config.getRunDir() + deployApplicationRequest.getModuleId())
+                .toObservable()
                 .flatMap(exists -> {
                     if (!exists) {
-                        return rxVertx.fileSystem().createFileObservable(config.getRunDir() + deployApplicationRequest.getModuleId())
+                        return rxVertx.fileSystem().rxCreateFile(config.getRunDir() + deployApplicationRequest.getModuleId())
+                                .toObservable()
                                 .flatMap(x -> just(deployApplicationRequest));
                     } else {
                         return just(deployApplicationRequest);
@@ -119,11 +121,12 @@ public class DeployApplicationService implements DeployService<DeployApplication
         FileSystem fs = new io.vertx.rxjava.core.Vertx(vertx).fileSystem();
 
 
-        return fs.readDirObservable(config.getRunDir())
+        return fs.rxReadDir(config.getRunDir())
+                .toObservable()
                 .flatMapIterable(x -> x)
                 .flatMap(s -> just(Pattern.compile("/").splitAsStream(s).reduce((a, b) -> b).orElse("")))
                 .filter(s -> !s.isEmpty() && !runningApplications.contains(s))
-                .flatMap(file -> fs.deleteObservable(config.getRunDir() + file))
+                .flatMap(file -> fs.rxDelete(config.getRunDir() + file).toObservable())
                 .toList()
                 .flatMap(x -> just(Boolean.TRUE).doOnError(t -> LOG.error("error")))
                 .onErrorReturn(x -> {

@@ -14,12 +14,12 @@ import java.io.ByteArrayInputStream;
 import java.util.Date;
 
 public abstract class RequestExecutor {
-    protected final Log log;
+    final Log log;
     private final Integer port;
     private final String authToken;
     private final long timeout;
 
-    public RequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
+    RequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
         this.log = log;
         this.port = port;
         this.authToken = authToken != null ? authToken : "";
@@ -27,7 +27,7 @@ public abstract class RequestExecutor {
         log.info("Setting timeout to : " + new Date(timeout));
     }
 
-    protected HttpPost createPost(DeployRequest deployRequest, String host) {
+    HttpPost createPost(DeployRequest deployRequest, String host) {
         log.info("Deploying to host : " + host);
         HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
         if (!StringUtils.isNullOrEmpty(authToken)) {
@@ -44,16 +44,17 @@ public abstract class RequestExecutor {
 
 
     private String createDeployUri(String host) {
+        String mappedHost = null;
         if (!host.startsWith("http://")) {
-            host = "http://" + host;
+            mappedHost = "http://" + host;
         }
         if (!host.endsWith(Integer.toString(port))) {
-            host = host + ":" + port;
+            mappedHost = host + ":" + port;
         }
-        return host;
+        return mappedHost != null ? mappedHost : host;
     }
 
-    protected long getTimeout() {
+    long getTimeout() {
         return timeout;
     }
 
