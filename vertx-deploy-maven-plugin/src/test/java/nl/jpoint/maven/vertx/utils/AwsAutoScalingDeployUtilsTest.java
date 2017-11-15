@@ -8,7 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
@@ -19,13 +19,13 @@ import static org.mockito.Mockito.when;
 public class AwsAutoScalingDeployUtilsTest {
 
     @Mock
-    DeployConfiguration deployConfiguration;
+    private DeployConfiguration deployConfiguration;
 
     @Mock
-    AutoScalingGroup autoScalingGroup;
+    private AutoScalingGroup autoScalingGroup;
 
     @Mock
-    List<Instance> instances;
+    private List<Instance> instances;
 
     @Test
     public void testShouldAddExtraInstance() throws Exception {

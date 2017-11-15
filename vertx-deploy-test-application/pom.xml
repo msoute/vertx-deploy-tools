@@ -14,7 +14,7 @@
     <name>Vert.x Deploy Tools : Test Application</name>
     <description>Vert.x deploy test application.</description>
     <properties>
-        <default>3.3.3</default>
+        <default>${vertx.platform.version}</default>
     </properties>
 
     <dependencies>

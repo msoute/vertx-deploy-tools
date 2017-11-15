@@ -40,12 +40,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.3.3</vertx.platform.version>
+        <vertx.platform.version>3.5.0</vertx.platform.version>
         <aws.sdk.version>1.11.229</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>2.12.0</mockito.version>
         <aetherVersion>1.1.0</aetherVersion>
         <mavenVersion>3.3.9</mavenVersion>
+        <dependency.check.report.dir>target/dependency-check</dependency.check.report.dir>
     </properties>
 
     <dependencyManagement>
@@ -209,12 +210,13 @@
                 <configuration>
                     <cveValidForHours>12</cveValidForHours>
                     <failBuildOnCVSS>4</failBuildOnCVSS>
+                    <outputDirectory>${dependency.check.report.dir}</outputDirectory>
                     <suppressionFile>suppression.xml</suppressionFile>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>check</goal>
+                            <goal>aggregate</goal>
                         </goals>
                     </execution>
                 </executions>
