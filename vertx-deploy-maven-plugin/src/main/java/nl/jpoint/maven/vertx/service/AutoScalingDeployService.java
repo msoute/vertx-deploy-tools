@@ -53,13 +53,13 @@ public class AutoScalingDeployService extends DeployService {
 
         final int originalDesiredCapacity = asGroup.getDesiredCapacity();
 
-        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
+        awsDeployUtils.getInstancesForAutoScalingGroup(getLog(), asGroup);
 
-        prePostHandler.preDeploy(instances, asGroup);
+        List<Ec2Instance> instances  = prePostHandler.preDeploy(asGroup);
 
         awsDeployUtils.suspendScheduledActions();
 
-        instances = checkInstances(awsDeployUtils, asGroup, instances);
+        List<Ec2Instance> filteredInstances = checkInstances(awsDeployUtils, asGroup, instances);
 
         Integer originalMinSize = asGroup.getMinSize();
 
@@ -67,9 +67,9 @@ public class AutoScalingDeployService extends DeployService {
             awsDeployUtils.setMinimalCapacity(asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
         }
 
-        for (Ec2Instance instance : instances) {
+        for (Ec2Instance instance : filteredInstances) {
             awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
-            if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
+            if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, filteredInstances)) {
                 awsDeployUtils.resumeScheduledActions();
                 prePostHandler.handleError(asGroup);
                 throw new MojoExecutionException("auto scaling group is not in a deployable state.");
@@ -98,7 +98,7 @@ public class AutoScalingDeployService extends DeployService {
             } catch (MojoExecutionException | MojoFailureException e) {
                 getLog().error("Error during deploy. Resuming auto scaling processes.", e);
                 awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
-                if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, instances)) {
+                if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, filteredInstances)) {
                     awsDeployUtils.resumeScheduledActions();
                     prePostHandler.handleError(asGroup);
                     throw new MojoExecutionException("auto scaling group is not in a deployable state.");

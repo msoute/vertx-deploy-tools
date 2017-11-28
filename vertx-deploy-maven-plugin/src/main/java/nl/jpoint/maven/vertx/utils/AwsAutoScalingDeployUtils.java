@@ -180,7 +180,6 @@ public class AwsAutoScalingDeployUtils {
 
     public boolean setDesiredCapacity(AutoScalingGroup autoScalingGroup, Integer capacity) {
         log.info("Setting desired capacity to : " + capacity);
-
         try {
             awsAsClient.setDesiredCapacity(new SetDesiredCapacityRequest()
                     .withAutoScalingGroupName(autoScalingGroup.getAutoScalingGroupName())

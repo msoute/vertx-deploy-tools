@@ -28,11 +28,9 @@ public class WaitForInstanceRequestExecutor {
         return updatedGroup.getInstances().isEmpty() ? null : updatedGroup.getInstances().get(0);
     }
 
-    public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils, InstanceStatus instanceStatus) {
+    public void executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils, InstanceStatus instanceStatus) {
         final AtomicInteger waitFor = new AtomicInteger(1);
-        final AtomicBoolean inService = new AtomicBoolean(false);
         final AtomicBoolean found = new AtomicBoolean(false);
-
 
         log.info("Waiting for new instance in asGroup to come in service...");
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
@@ -69,16 +67,13 @@ public class WaitForInstanceRequestExecutor {
         } catch (InterruptedException e) {
             log.error(e.getMessage());
             Thread.currentThread().interrupt();
-            inService.get();
         } catch (Exception t) {
             log.error("Throwable: ", t);
         }
-        return inService.get();
     }
 
     @FunctionalInterface
     public interface InstanceStatus {
         Boolean inService(Instance newInstance);
     }
-
 }

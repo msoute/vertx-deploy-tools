@@ -29,7 +29,10 @@ public class DefaultAutoScalingPrePostHandler implements AutoScalingPrePostHandl
         this.log = log;
     }
 
-    public void preDeploy(List<Ec2Instance> instances, AutoScalingGroup asGroup) throws MojoFailureException, MojoExecutionException {
+    public List<Ec2Instance> preDeploy(AutoScalingGroup asGroup) throws MojoFailureException, MojoExecutionException {
+
+        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(log, asGroup);
+
         if (instances.isEmpty()) {
             throw new MojoFailureException("No instances in AS group." + activeConfiguration.getDeployStrategy());
         }
@@ -66,6 +69,7 @@ public class DefaultAutoScalingPrePostHandler implements AutoScalingPrePostHandl
         if (activeConfiguration.isSticky()) {
             asGroup.getLoadBalancerNames().forEach(elbName -> awsDeployUtils.enableStickiness(elbName, activeConfiguration.getStickyPorts()));
         }
+        return instances;
     }
 
     public void postDeploy(AutoScalingGroup asGroup, Integer originalDesiredCapacity) {

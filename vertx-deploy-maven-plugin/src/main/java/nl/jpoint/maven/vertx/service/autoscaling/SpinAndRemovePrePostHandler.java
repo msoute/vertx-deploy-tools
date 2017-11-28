@@ -23,7 +23,9 @@ public class SpinAndRemovePrePostHandler implements AutoScalingPrePostHandler {
         this.log = log;
     }
 
-    public void preDeploy(List<Ec2Instance> instances, AutoScalingGroup asGroup) throws MojoFailureException, MojoExecutionException {
+    public List<Ec2Instance> preDeploy(AutoScalingGroup asGroup) throws MojoFailureException, MojoExecutionException {
+        List<Ec2Instance> instances = awsDeployUtils.getInstancesForAutoScalingGroup(log, asGroup);
+
         if (asGroup.getInstances().isEmpty()) {
             log.info("No instances found in autoscaling group, spinning new instance");
             WaitForInstanceRequestExecutor.InstanceStatus instanceStatus = newInstance -> awsDeployUtils.checkInstanceInService(newInstance.getInstanceId());
@@ -33,6 +35,7 @@ public class SpinAndRemovePrePostHandler implements AutoScalingPrePostHandler {
             instances.addAll(awsDeployUtils.getInstancesForAutoScalingGroup(log, awsDeployUtils.getAutoScalingGroup()));
         }
 
+        return instances;
     }
 
     public void postDeploy(AutoScalingGroup asGroup, Integer originalDesiredCapacity) {

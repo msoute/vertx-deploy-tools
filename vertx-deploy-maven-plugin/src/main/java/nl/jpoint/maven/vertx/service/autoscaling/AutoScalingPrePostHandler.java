@@ -8,7 +8,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import java.util.List;
 
 public interface AutoScalingPrePostHandler {
-    void preDeploy(List<Ec2Instance> instances, AutoScalingGroup asGroup) throws MojoFailureException, MojoExecutionException;
+    List<Ec2Instance> preDeploy(AutoScalingGroup asGroup) throws MojoFailureException, MojoExecutionException;
 
     void postDeploy(AutoScalingGroup asGroup, Integer originalDesiredCapacity);
 
