@@ -37,8 +37,13 @@ public class AwsAutoScalingUtil {
 
 
     public Optional<AutoScalingInstanceDetails> describeInstance() {
-        DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
-        return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
+        try {
+            DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
+            return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
+        } catch (AmazonAutoScalingException e) {
+            LOG.error(e.getMessage(), e);
+            throw e;
+        }
     }
 
     public Observable<AwsState> pollForInstanceState() {
