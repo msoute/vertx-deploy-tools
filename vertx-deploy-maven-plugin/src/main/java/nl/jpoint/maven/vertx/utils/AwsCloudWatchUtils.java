@@ -53,23 +53,23 @@ public class AwsCloudWatchUtils {
         datums.add(new MetricDatum()
                 .withMetricName(AS_GROUP_SIZE)
                 .withUnit(StandardUnit.None)
-                .withValue((double) asGroupSize)
-                .withDimensions(dimension1, dimension2));
+                .withValue((double) asGroupSize));
         datums.add(new MetricDatum()
                 .withMetricName(metricName)
                 .withUnit(StandardUnit.None)
-                .withValue(1.0)
-                .withDimensions(dimension1, dimension2));
+                .withValue(1.0));
 
         if (start != null) {
             datums.add(new MetricDatum()
                     .withMetricName("deploy.duration")
                     .withUnit(StandardUnit.Seconds)
-                    .withValue((double) Duration.of(System.currentTimeMillis() - start, ChronoUnit.MILLIS).getSeconds())
-                    .withDimensions(dimension1, dimension2));
+                    .withValue((double) Duration.of(System.currentTimeMillis() - start, ChronoUnit.MILLIS).getSeconds()));
         }
-        try {
 
+        try {
+            datums.forEach(metricDatum -> metricDatum.withDimensions(dimension1));
+            cloudWatch.putMetricData(new PutMetricDataRequest().withNamespace(activeConfiguration.getMetricsConfiguration().getNamespace()).withMetricData(datums));
+            datums.forEach(metricDatum -> metricDatum.withDimensions(dimension2));
             cloudWatch.putMetricData(new PutMetricDataRequest().withNamespace(activeConfiguration.getMetricsConfiguration().getNamespace()).withMetricData(datums));
         } catch (AmazonCloudWatchException e) {
             log.error("Unable to push Cloudwatch metrics.", e);
