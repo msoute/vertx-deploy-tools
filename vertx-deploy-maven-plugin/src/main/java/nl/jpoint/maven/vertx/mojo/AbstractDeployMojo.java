@@ -38,6 +38,14 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     protected String region;
     @Parameter(required = false, defaultValue = "", property = "deploy.exclusions")
     protected String exclusions;
+    @Parameter(required = false, defaultValue = "", property = "deploy.metrics.namespace")
+    protected String metricNamespace;
+    @Parameter(required = false, defaultValue = "", property = "deploy.metrics.application")
+    protected String metricApplication;
+    @Parameter(required = false, defaultValue = "", property = "deploy.metrics.environment")
+    protected String metricEnvironment;
+
+
 
     DeployConfiguration activeConfiguration;
 

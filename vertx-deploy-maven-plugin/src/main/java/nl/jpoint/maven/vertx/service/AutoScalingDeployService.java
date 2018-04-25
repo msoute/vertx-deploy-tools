@@ -10,6 +10,7 @@ import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.autoscaling.AutoScalingPrePostFactory;
 import nl.jpoint.maven.vertx.service.autoscaling.AutoScalingPrePostHandler;
 import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsCloudWatchUtils;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.Ec2Instance;
 import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStateStrategyFactory;
@@ -47,6 +48,7 @@ public class AutoScalingDeployService extends DeployService {
 
         AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(region, activeConfiguration, getLog());
 
+
         AutoScalingPrePostHandler prePostHandler = AutoScalingPrePostFactory.getPrePostHandler(activeConfiguration, awsDeployUtils, getLog());
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();
@@ -67,6 +69,8 @@ public class AutoScalingDeployService extends DeployService {
             awsDeployUtils.setMinimalCapacity(asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
         }
 
+        AwsCloudWatchUtils metrics = new AwsCloudWatchUtils(region, instances.size(), activeConfiguration, getLog());
+        metrics.startTimer();
         for (Ec2Instance instance : instances) {
             awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
             if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
@@ -101,6 +105,7 @@ public class AutoScalingDeployService extends DeployService {
                 if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, instances)) {
                     awsDeployUtils.resumeScheduledActions();
                     prePostHandler.handleError(asGroup);
+                    metrics.logFailed();
                     throw new MojoExecutionException("auto scaling group is not in a deployable state.");
                 }
             }
@@ -109,6 +114,7 @@ public class AutoScalingDeployService extends DeployService {
         awsDeployUtils.setMinimalCapacity(originalMinSize);
         prePostHandler.postDeploy(asGroup, originalDesiredCapacity);
         awsDeployUtils.resumeScheduledActions();
+        metrics.logSuccess();
     }
 
     private List<Ec2Instance> checkInstances(AwsAutoScalingDeployUtils awsDeployUtils, AutoScalingGroup asGroup, List<Ec2Instance> instances) {

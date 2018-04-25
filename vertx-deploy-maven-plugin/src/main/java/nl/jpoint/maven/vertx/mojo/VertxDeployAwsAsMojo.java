@@ -85,6 +85,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withStickiness(useElb && enableStickiness)
                 .withPort(port)
                 .withSpinDown(spindown)
+                .withMetricsConfiguration(MetricsConfiguration.buildMetricsConfiguration(metricNamespace, metricApplication, metricEnvironment))
                 .withProjectVersion(projectVersionAsString());
     }
 }
