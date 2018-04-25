@@ -2,9 +2,8 @@ package nl.jpoint.vertx.mod.deploy.aws;
 
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClient;
+import com.amazonaws.services.autoscaling.AmazonAutoScalingAsync;
+import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClientBuilder;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
@@ -21,7 +20,7 @@ import static rx.Observable.just;
 public class AwsAutoScalingUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AwsAutoScalingUtil.class);
 
-    private final AmazonAutoScalingAsyncClient asyncClient;
+    private final AmazonAutoScalingAsync asyncClient;
     public static final String LATEST_VERSION_TAG = "deploy:latest:version";
     public static final String SCOPE_TAG = "deploy:scope:tst";
     public static final String EXCLUSION_TAG = "deploy:exclusions";
@@ -30,8 +29,7 @@ public class AwsAutoScalingUtil {
 
 
     public AwsAutoScalingUtil(DeployConfig config) {
-        asyncClient = new AmazonAutoScalingAsyncClient();
-        asyncClient.setRegion(Region.getRegion(Regions.fromName(config.getAwsRegion())));
+        asyncClient = AmazonAutoScalingAsyncClientBuilder.standard().withRegion(config.getAwsRegion()).build();
         instanceId = EC2MetadataUtils.getInstanceId();
     }
 
@@ -41,6 +39,9 @@ public class AwsAutoScalingUtil {
             DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
             return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
         } catch (AmazonAutoScalingException e) {
+            if (e.getStatusCode() == 403) {
+                LOG.error("Looks like the instance role is not correctly authorized, please see : https://github.com/msoute/vertx-deploy-tools#aws-iam-policy");
+            }
             LOG.error(e.getMessage(), e);
             throw e;
         }

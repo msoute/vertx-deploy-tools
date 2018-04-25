@@ -10,7 +10,7 @@ import nl.jpoint.maven.vertx.mojo.DeployConfiguration;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
-
+@Deprecated
 public class AwsOpsWorksDeployUtils {
 
     public static final String ONLINE = "online";

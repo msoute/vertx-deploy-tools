@@ -32,14 +32,14 @@
         <developerConnection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</developerConnection>
         <connection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</connection>
         <url>https://github.com/msoute/vertx-deploy-mod</url>
-        <tag>vertx-deploy-tools-3.2.2</tag>
+        <tag>master</tag>
     </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <vertx.platform.version>3.3.3</vertx.platform.version>
-        <aws.sdk.version>1.11.187</aws.sdk.version>
+        <aws.sdk.version>1.11.317</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>2.1.0-RC.1</mockito.version>
         <aetherVersion>1.1.0</aetherVersion>

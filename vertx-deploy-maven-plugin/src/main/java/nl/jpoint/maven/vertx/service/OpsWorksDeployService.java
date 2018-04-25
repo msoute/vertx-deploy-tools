@@ -13,6 +13,7 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.util.List;
 
+@Deprecated
 public class OpsWorksDeployService extends DeployService {
     private final DeployConfiguration activeConfiguration;
     private final String region;

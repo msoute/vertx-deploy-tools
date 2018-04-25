@@ -315,6 +315,9 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.3.0
+* Bump AWS SDK
+
 ## 3.2.4
 * [Feature] Add support for tar.gz extraction for artifacts
 
