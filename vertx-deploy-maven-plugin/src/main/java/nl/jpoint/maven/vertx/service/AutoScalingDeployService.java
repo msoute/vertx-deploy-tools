@@ -49,6 +49,7 @@ public class AutoScalingDeployService extends DeployService {
 
         AwsAutoScalingDeployUtils awsDeployUtils = new AwsAutoScalingDeployUtils(region, activeConfiguration, getLog());
 
+
         AutoScalingPrePostHandler prePostHandler = AutoScalingPrePostFactory.getPrePostHandler(activeConfiguration, awsDeployUtils, getLog());
 
         AutoScalingGroup asGroup = awsDeployUtils.getAutoScalingGroup();

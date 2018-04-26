@@ -1,0 +1,79 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          nginx
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:    $local_fs $remote_fs $network $syslog
+# Default-Start:    2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts vert.x deploy module
+# Description:      starts vert.x deploy module using start-stop-daemon
+### END INIT INFO
+
+[ -f /etc/default/vertx ] && . /etc/default/vertx
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+#sysconfig="/etc/sysconfig/$prog"
+
+APPLICATIONS=/opt/sw/vertx/current/run/*
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=$VERTX_HOME/bin/vertx
+
+set -e
+
+. /lib/lsb/init-functions
+
+if [ ! -d /var/log/vertx ]; then
+    mkdir /var/log/vertx
+    chown $VERTX_USER:$VERTX_USER /var/log/vertx
+fi
+
+chown vertx:vertx /etc/default
+
+stop_applications () {
+        for f in $APPLICATIONS;
+        do
+          	APPLICATION=`echo $f | sed "s/.*\///"`
+                su $VERTX_USER -c " cd $VERTX_HOME; $DAEMON stop $APPLICATION"
+                echo stopping $APPLICATION
+        done
+}
+
+start_applications () {
+        for f in $APPLICATIONS;
+                do
+                  	APPLICATION=`echo $f | sed "s/.*\///"`
+                        RUNNING=`ps ax | grep vertx.id=${APPLICATION%:*}`
+                        if [ -n "$RUNNING" ]; then
+                                echo "${APPLICATION%:*} already running";
+                                continue
+                        fi
+                        [ -f /etc/default/${APPLICATION%:*} ] && . /etc/default/${APPLICATION%:*}
+                        su $VERTX_USER -c " cd $VERTX_HOME; $DAEMON start maven:$APPLICATION  -conf /etc/edubase/service.json -cluster --java-opts $JAVA_OPTS --instances $INSTANCES -id $APPLICATION"
+                done
+}
+
+case "$1" in
+start)
+log_success_msg "Starting vertx applications"
+    start_applications
+    log_success_msg
+;;
+stop)
+    log_success_msg "Stopping vertx applications"
+    stop_applications
+    log_success_msg
+;;
+*)
+log_success_msg "Usage: $NAME {start|stop}"
+;;
+esac

@@ -1,0 +1,66 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          nginx
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:    $local_fs $remote_fs $network $syslog
+# Default-Start:    2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts vert.x deploy module
+# Description:      starts vert.x deploy module using start-stop-daemon
+### END INIT INFO
+
+[ -f /etc/default/vertx ] && . /etc/default/vertx
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+#sysconfig="/etc/sysconfig/$prog"
+
+DEPLOY_MOD=nl.jpoint.vertx-deploy-tools:vertx-deploy-mod:3.0.5
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=$VERTX_HOME/bin/vertx
+BOOTSTRAP_OPTS="start maven:$DEPLOY_MOD -instances 1 -conf /etc/vertx/config.json -id $DEPLOY_MOD"
+
+set -e
+
+. /lib/lsb/init-functions
+
+if [ ! -d /var/log/vertx ]; then
+    mkdir /var/log/vertx
+    chown $VERTX_USER:$VERTX_USER /var/log/vertx
+fi
+
+stop_deploy_mod () {
+    su $VERTX_USER -c "cd $VERTX_HOME; $DAEMON stop $DEPLOY_MOD"
+}
+
+start_deploy_mod () {
+    su $VERTX_USER -c "cd $VERTX_HOME; $DAEMON $BOOTSTRAP_OPTS"
+}
+
+case "$1" in
+start)
+log_success_msg "Starting vertx deploy module"
+    start_deploy_mod
+    log_success_msg
+;;
+stop)
+    log_success_msg "Stopping vertx deploy module"
+    stop_deploy_mod
+    log_success_msg
+;;
+restart)
+    log_success_msg "Restarting vertx deploy module"
+    stop_deploy_mod
+    start_deploy_mod
+    ;;
+*)
+log_success_msg "Usage: $NAME {start|stop|restart}"
+;;
