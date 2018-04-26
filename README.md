@@ -140,8 +140,13 @@ Multiple targets can be configured. The target configuration can be selected wit
 * **minCapacity** : If Strategy is GUARANTEE_MINIMUM and a deploy failed the build wil also fail if the capacity drops under the configured minimum. (default : *1*)
 * **deployStrategy** : The deploy strategy to use. Valid values are *KEEP_CAPACITY*, *GUARANTEE_MINIMUM*, *WHATEVER* *SPIN_AND_REMOVE*. (default: *KEEP_CAPACITY)
 * **spindown** : If strategy is SPIN_AND_REMOVE, keep the instance alive after deployment if false (default: true)
-#### Auto Scaling deploy strategies.
 
+#### CloudWatch metrics
+* **metricNamespace** : The CloudWatch namespace to use *required to enable metrics*
+* **metricApplication** : The Application name *required to enable metrics*
+* **metricEnvironment** : The Application environment *optional*
+
+#### Auto Scaling deploy strategies.
 * **KEEP_CAPACITY** : The deploy applications wil make sure the auto scale capacity wil not drop during the deploy. Before a deploy an extra instances will be added to the auto scaling group if the desired count is smaller than the auto scaling group
 configured maximum. If *maxCapacity** is configured the desired count wil never be greater than **maxCapacity**. If *elb** is true the current InService count wil be based on the number of instances InService on the elb(s), otherwise the healthy instance count in the elb is used. 
 * **DEFAULT** : The deploy applications wil only deploy if the  InService count is greater than the groups minimum count. The deploy wil never continue after a failed deploy. The deploy mod
@@ -216,6 +221,9 @@ mvn target options (-D):
 
 * **deploy.as.properties** : See Autodiscover deploys
 
+* **deploy.metrics.namespace** : The CloudWatch namespace to use *required to enable metrics*
+* **deploy.metrics.application** : The Application name *required to enable metrics*
+* **deploy.metrics.environment** : The Application environment *optional*
 
 ### mvn deploy:as-enable
 Mojo to add one instance to an as_group if current instances size equals 0.
@@ -316,7 +324,11 @@ The following AWS actions are needed for the deploy applications
 # Changelog
 
 ## 3.3.0
+
 * Bump AWS SDK
+* [Feature] Add CloudWatch Metrics.
+* [BUG] Handle downloading of metadata in the same way as artifacts.
+* [Deprecate] AWS Opsworks support.
 
 ## 3.2.4
 * [Feature] Add support for tar.gz extraction for artifacts
