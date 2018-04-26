@@ -14,6 +14,7 @@ import nl.jpoint.maven.vertx.utils.AwsCloudWatchUtils;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.Ec2Instance;
 import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStateStrategyFactory;
+import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -95,7 +96,7 @@ public class AutoScalingDeployService extends DeployService {
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-                AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy().ordinal() > 1);
+                AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy() == DeployStrategyType.WHATEVER);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
                 awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion(), properties);
