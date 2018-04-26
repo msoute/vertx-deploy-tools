@@ -1,11 +1,11 @@
-package nl.jpoint.vertx.mod.deploy.util;
+package nl.jpoint.vertx.deploy.agent.util;
 
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.http.HttpClient;
 import io.vertx.rxjava.core.http.HttpClientRequest;
 import io.vertx.rxjava.core.http.HttpClientResponse;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;

@@ -1,12 +1,12 @@
-package nl.jpoint.vertx.mod.deploy.service;
+package nl.jpoint.vertx.deploy.agent.service;
 
 import io.vertx.core.Vertx;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.command.DownloadHttpArtifact;
-import nl.jpoint.vertx.mod.deploy.command.ExtractArtifact;
-import nl.jpoint.vertx.mod.deploy.command.ResolveSnapshotVersion;
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
-import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.command.DownloadHttpArtifact;
+import nl.jpoint.vertx.deploy.agent.command.ExtractArtifact;
+import nl.jpoint.vertx.deploy.agent.command.ResolveSnapshotVersion;
+import nl.jpoint.vertx.deploy.agent.request.ModuleRequest;
+import nl.jpoint.vertx.deploy.agent.util.ArtifactContextUtil;
 import rx.Observable;
 
 import static rx.Observable.just;

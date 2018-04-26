@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.request;
+package nl.jpoint.vertx.deploy.agent.request;
 
 public enum DeployState {
     WAITING_FOR_AS_DEREGISTER,

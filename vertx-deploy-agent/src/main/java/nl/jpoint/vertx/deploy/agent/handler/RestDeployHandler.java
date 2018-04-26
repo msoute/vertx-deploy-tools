@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.handler;
+package nl.jpoint.vertx.deploy.agent.handler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
@@ -6,19 +6,19 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
-import nl.jpoint.vertx.mod.deploy.request.DeployState;
-import nl.jpoint.vertx.mod.deploy.service.AwsService;
-import nl.jpoint.vertx.mod.deploy.service.DefaultDeployService;
-import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
-import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
+import nl.jpoint.vertx.deploy.agent.request.DeployRequest;
+import nl.jpoint.vertx.deploy.agent.request.DeployState;
+import nl.jpoint.vertx.deploy.agent.service.AwsService;
+import nl.jpoint.vertx.deploy.agent.service.DefaultDeployService;
+import nl.jpoint.vertx.deploy.agent.util.ApplicationDeployState;
+import nl.jpoint.vertx.deploy.agent.util.HttpUtils;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.Optional;
 
-import static nl.jpoint.vertx.mod.deploy.util.LogConstants.DEPLOY_REQUEST;
 import static rx.Observable.just;
 
 public class RestDeployHandler implements Handler<RoutingContext> {
@@ -49,7 +49,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
             deployRequest.setTimestamp(System.currentTimeMillis());
 
-            LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", DEPLOY_REQUEST,
+            LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
                     deployRequest.getId().toString(),
                     deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,
                     deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
@@ -60,12 +60,12 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     }
 
     private DeployRequest verifyIncomingRequest(RoutingContext context, Buffer buffer) {
-        if (!HttpUtils.hasCorrectAuthHeader(context, authToken, DEPLOY_REQUEST)) {
+        if (!HttpUtils.hasCorrectAuthHeader(context, authToken, LogConstants.DEPLOY_REQUEST)) {
             respondFailed(null, context.request(), "Invalid authToken in request.");
             return null;
         }
 
-        DeployRequest deployRequest = HttpUtils.readPostData(buffer, DeployRequest.class, DEPLOY_REQUEST);
+        DeployRequest deployRequest = HttpUtils.readPostData(buffer, DeployRequest.class, LogConstants.DEPLOY_REQUEST);
 
         if (deployRequest == null) {
             respondFailed(null, context.request(), "Error wile reading post data ");

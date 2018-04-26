@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.request;
+package nl.jpoint.vertx.deploy.agent.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -62,7 +62,7 @@ public class DeployRequest {
     public String getAutoScalingGroup() {
         return autoScalingGroup;
     }
-    
+
     public boolean withElb() {
         return elb;
     }

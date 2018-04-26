@@ -1,12 +1,12 @@
-package nl.jpoint.vertx.mod.deploy;
+package nl.jpoint.vertx.deploy.agent;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import nl.jpoint.vertx.mod.deploy.handler.*;
-import nl.jpoint.vertx.mod.deploy.service.*;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.handler.*;
+import nl.jpoint.vertx.deploy.agent.service.*;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;

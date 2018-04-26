@@ -1,14 +1,14 @@
-package nl.jpoint.vertx.mod.deploy.service;
+package nl.jpoint.vertx.deploy.agent.service;
 
 import io.vertx.core.Vertx;
 import io.vertx.rxjava.core.file.FileSystem;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.command.RunApplication;
-import nl.jpoint.vertx.mod.deploy.command.StopApplication;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
-import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
-import nl.jpoint.vertx.mod.deploy.util.ProcessUtils;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.command.RunApplication;
+import nl.jpoint.vertx.deploy.agent.command.StopApplication;
+import nl.jpoint.vertx.deploy.agent.request.DeployApplicationRequest;
+import nl.jpoint.vertx.deploy.agent.request.DeployRequest;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;

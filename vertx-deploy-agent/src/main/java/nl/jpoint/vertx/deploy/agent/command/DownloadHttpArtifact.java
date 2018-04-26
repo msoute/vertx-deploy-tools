@@ -1,8 +1,8 @@
-package nl.jpoint.vertx.mod.deploy.command;
+package nl.jpoint.vertx.deploy.agent.command;
 
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.request.ModuleRequest;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;

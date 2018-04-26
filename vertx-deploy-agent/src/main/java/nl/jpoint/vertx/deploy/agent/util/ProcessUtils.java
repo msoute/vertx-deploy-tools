@@ -1,9 +1,9 @@
-package nl.jpoint.vertx.mod.deploy.util;
+package nl.jpoint.vertx.deploy.agent.util;
 
 import io.vertx.core.json.JsonObject;
-import nl.jpoint.vertx.mod.deploy.Constants;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
+import nl.jpoint.vertx.deploy.agent.Constants;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.request.DeployApplicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;

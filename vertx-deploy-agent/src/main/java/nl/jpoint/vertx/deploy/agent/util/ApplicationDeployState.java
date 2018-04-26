@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.util;
+package nl.jpoint.vertx.deploy.agent.util;
 
 public enum ApplicationDeployState {
     OK,

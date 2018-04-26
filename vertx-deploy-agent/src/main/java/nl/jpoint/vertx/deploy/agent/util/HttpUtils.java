@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.util;
+package nl.jpoint.vertx.deploy.agent.util;
 
 import com.amazonaws.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +9,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.request.DeployState;
+import nl.jpoint.vertx.deploy.agent.request.DeployState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

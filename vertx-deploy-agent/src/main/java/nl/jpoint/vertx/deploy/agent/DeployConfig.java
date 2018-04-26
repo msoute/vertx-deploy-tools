@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy;
+package nl.jpoint.vertx.deploy.agent;
 
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;

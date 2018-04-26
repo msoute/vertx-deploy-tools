@@ -1,15 +1,13 @@
-package nl.jpoint.vertx.mod.deploy.handler;
+package nl.jpoint.vertx.deploy.agent.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.request.DeployArtifactRequest;
-import nl.jpoint.vertx.mod.deploy.service.DeployArtifactService;
-import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
+import nl.jpoint.vertx.deploy.agent.request.DeployArtifactRequest;
+import nl.jpoint.vertx.deploy.agent.service.DeployArtifactService;
+import nl.jpoint.vertx.deploy.agent.util.HttpUtils;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static nl.jpoint.vertx.mod.deploy.util.HttpUtils.*;
-import static nl.jpoint.vertx.mod.deploy.util.LogConstants.DEPLOY_ARTIFACT_REQUEST;
 
 public class RestDeployArtifactHandler implements Handler<RoutingContext> {
 
@@ -26,18 +24,18 @@ public class RestDeployArtifactHandler implements Handler<RoutingContext> {
         context.request().bodyHandler(buffer -> {
             String postData = new String(buffer.getBytes());
 
-            DeployArtifactRequest artifactRequest = HttpUtils.readPostData(buffer, DeployArtifactRequest.class, DEPLOY_ARTIFACT_REQUEST);
+            DeployArtifactRequest artifactRequest = HttpUtils.readPostData(buffer, DeployArtifactRequest.class, LogConstants.DEPLOY_ARTIFACT_REQUEST);
 
             if (artifactRequest == null) {
-                respondBadRequest(context.request());
+                HttpUtils.respondBadRequest(context.request());
                 return;
             }
 
-            LOG.info("[{} - {}]: Received deploy artifact request {}", DEPLOY_ARTIFACT_REQUEST, artifactRequest.getId().toString(), postData);
+            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, artifactRequest.getId().toString(), postData);
 
             service.deployAsync(artifactRequest)
-                    .doOnCompleted(() -> respondOk(context.request()))
-                    .doOnError(t -> respondFailed(context.request()));
+                    .doOnCompleted(() -> HttpUtils.respondOk(context.request()))
+                    .doOnError(t -> HttpUtils.respondFailed(context.request()));
         });
     }
 }

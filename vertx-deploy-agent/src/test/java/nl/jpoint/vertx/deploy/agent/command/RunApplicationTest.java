@@ -1,8 +1,8 @@
-package nl.jpoint.vertx.mod.deploy.command;
+package nl.jpoint.vertx.deploy.agent.command;
 
 import io.vertx.core.Vertx;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.request.DeployApplicationRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,7 +69,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getOnNextEvents_oldFormat_requestToNotContainMainService(){
+    public void getOnNextEvents_oldFormat_requestToNotContainMainService() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/oldformat/");
         List<DeployApplicationRequest> result = execute();
         assertThat(result, hasSize(1));
@@ -78,7 +78,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getOnNextEvents_bothFormat_requestToNotContainMainService(){
+    public void getOnNextEvents_bothFormat_requestToNotContainMainService() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/both/");
         List<DeployApplicationRequest> result = execute();
         assertThat(result, hasSize(1));
@@ -87,7 +87,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getOnNextEvents_withMainService_requestToContainMainService(){
+    public void getOnNextEvents_withMainService_requestToContainMainService() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/mainservice/");
         List<DeployApplicationRequest> result = execute();
         assertThat(result, hasSize(1));
@@ -96,28 +96,29 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getMavenCommand_noMainService_normalMavenCommand(){
+    public void getMavenCommand_noMainService_normalMavenCommand() {
         String result = new RunApplication(Vertx.vertx(), config).getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type"));
 
         assertThat(result, is("maven:group:artifact:version"));
     }
 
     @Test
-    public void getMavenCommand_withMainService_mavenCommandWithMainService(){
+    public void getMavenCommand_withMainService_mavenCommandWithMainService() {
         String result = new RunApplication(Vertx.vertx(), config)
                 .getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type")
-                .withMainService("main_service"));
+                        .withMainService("main_service"));
 
         assertThat(result, is("maven:group:artifact:version::main_service"));
     }
+
     @Test
-    public void getMavenCommand_withEmptyMainService_normalMavenCommand(){
+    public void getMavenCommand_withEmptyMainService_normalMavenCommand() {
         String result = new RunApplication(Vertx.vertx(), config)
                 .getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type").withMainService(" "));
 
         assertThat(result, is("maven:group:artifact:version"));
     }
-    
+
     private List<DeployApplicationRequest> execute() {
         RunApplication command = new RunApplication(Vertx.vertx(), config);
         Observable<DeployApplicationRequest> observable = command.readServiceDefaults(request);

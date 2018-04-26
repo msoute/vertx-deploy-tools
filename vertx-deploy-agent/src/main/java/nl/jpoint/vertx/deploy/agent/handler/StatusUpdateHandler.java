@@ -1,9 +1,9 @@
-package nl.jpoint.vertx.mod.deploy.handler;
+package nl.jpoint.vertx.deploy.agent.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
-import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
+import nl.jpoint.vertx.deploy.agent.service.DeployApplicationService;
+import nl.jpoint.vertx.deploy.agent.util.ApplicationDeployState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +14,7 @@ public class StatusUpdateHandler implements Handler<RoutingContext> {
     public StatusUpdateHandler(DeployApplicationService deployApplicationService) {
         this.deployApplicationService = deployApplicationService;
     }
+
     @Override
     public void handle(RoutingContext event) {
         String moduleId = event.request().getParam("id");

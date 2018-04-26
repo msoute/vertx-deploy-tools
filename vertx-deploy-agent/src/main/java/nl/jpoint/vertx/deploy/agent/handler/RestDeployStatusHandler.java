@@ -1,17 +1,15 @@
-package nl.jpoint.vertx.mod.deploy.handler;
+package nl.jpoint.vertx.deploy.agent.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.request.DeployState;
-import nl.jpoint.vertx.mod.deploy.service.AwsService;
-import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
-import nl.jpoint.vertx.mod.deploy.util.ApplicationDeployState;
-import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
+import nl.jpoint.vertx.deploy.agent.request.DeployState;
+import nl.jpoint.vertx.deploy.agent.service.AwsService;
+import nl.jpoint.vertx.deploy.agent.service.DeployApplicationService;
+import nl.jpoint.vertx.deploy.agent.util.ApplicationDeployState;
+import nl.jpoint.vertx.deploy.agent.util.HttpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static nl.jpoint.vertx.mod.deploy.util.HttpUtils.*;
 
 public class RestDeployStatusHandler implements Handler<RoutingContext> {
     private static final Logger LOG = LoggerFactory.getLogger(RestDeployStatusHandler.class);
@@ -38,16 +36,16 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
         DeployState deployState = state != null ? state : DeployState.CONTINUE;
         switch (deployState) {
             case SUCCESS:
-                respondOk(context.request(), createStatusObject());
+                HttpUtils.respondOk(context.request(), createStatusObject());
                 deployApplicationService.cleanup();
                 break;
             case UNKNOWN:
             case FAILED:
-                respondFailed(context.request(), createStatusObject());
+                HttpUtils.respondFailed(context.request(), createStatusObject());
                 deployApplicationService.cleanup();
                 break;
             default:
-                respondContinue(context.request(), deployState);
+                HttpUtils.respondContinue(context.request(), deployState);
         }
     }
 

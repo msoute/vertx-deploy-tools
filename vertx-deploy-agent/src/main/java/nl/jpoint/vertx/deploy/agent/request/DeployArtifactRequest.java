@@ -1,9 +1,9 @@
-package nl.jpoint.vertx.mod.deploy.request;
+package nl.jpoint.vertx.deploy.agent.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployArtifactRequest extends ModuleRequest {

@@ -1,10 +1,10 @@
-package nl.jpoint.vertx.mod.deploy.service;
+package nl.jpoint.vertx.deploy.agent.service;
 
 import io.vertx.core.Vertx;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.request.*;
-import nl.jpoint.vertx.mod.deploy.util.AetherUtil;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.aws.AwsAutoScalingUtil;
+import nl.jpoint.vertx.deploy.agent.request.*;
+import nl.jpoint.vertx.deploy.agent.util.AetherUtil;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;

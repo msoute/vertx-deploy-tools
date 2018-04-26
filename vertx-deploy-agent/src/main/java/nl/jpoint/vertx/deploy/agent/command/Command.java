@@ -1,7 +1,7 @@
-package nl.jpoint.vertx.mod.deploy.command;
+package nl.jpoint.vertx.deploy.agent.command;
 
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
-import nl.jpoint.vertx.mod.deploy.util.ExitCodes;
+import nl.jpoint.vertx.deploy.agent.request.DeployApplicationRequest;
+import nl.jpoint.vertx.deploy.agent.util.ExitCodes;
 import rx.Observable;
 
 import static rx.Observable.just;

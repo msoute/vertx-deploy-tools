@@ -1,13 +1,13 @@
-package nl.jpoint.vertx.mod.deploy.aws.state;
+package nl.jpoint.vertx.deploy.agent.aws.state;
 
 
 import io.vertx.core.Vertx;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.mod.deploy.aws.AwsState;
-import nl.jpoint.vertx.mod.deploy.command.Command;
-import nl.jpoint.vertx.mod.deploy.request.DeployRequest;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.aws.AwsAutoScalingUtil;
+import nl.jpoint.vertx.deploy.agent.aws.AwsState;
+import nl.jpoint.vertx.deploy.agent.command.Command;
+import nl.jpoint.vertx.deploy.agent.request.DeployRequest;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;

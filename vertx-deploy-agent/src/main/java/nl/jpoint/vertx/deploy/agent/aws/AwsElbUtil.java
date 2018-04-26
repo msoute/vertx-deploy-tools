@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.aws;
+package nl.jpoint.vertx.deploy.agent.aws;
 
 
 import com.amazonaws.AmazonClientException;
@@ -6,14 +6,14 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsy
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsyncClientBuilder;
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.Optional;
 
-import static nl.jpoint.vertx.mod.deploy.util.LogConstants.ERROR_EXECUTING_REQUEST;
 import static rx.Observable.just;
 
 public class AwsElbUtil {
@@ -34,9 +34,9 @@ public class AwsElbUtil {
         try {
             return Observable.from(elbAsyncClient.registerInstancesWithLoadBalancerAsync(new RegisterInstancesWithLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(x -> Observable.just(loadBalancer))
-                    .doOnError(t -> LOG.error(ERROR_EXECUTING_REQUEST, t));
+                    .doOnError(t -> LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, t));
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
 
@@ -53,7 +53,7 @@ public class AwsElbUtil {
             return Observable.from(elbAsyncClient.deregisterInstancesFromLoadBalancerAsync(new DeregisterInstancesFromLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(x -> Observable.just(loadBalancer));
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
@@ -67,7 +67,7 @@ public class AwsElbUtil {
                         return just(state.map(instanceState -> AwsState.map(instanceState.getState())).orElse(AwsState.UNKNOWN));
                     });
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }

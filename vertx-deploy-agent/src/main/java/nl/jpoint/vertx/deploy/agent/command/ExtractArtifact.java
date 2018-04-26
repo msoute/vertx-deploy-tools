@@ -1,12 +1,12 @@
-package nl.jpoint.vertx.mod.deploy.command;
+package nl.jpoint.vertx.deploy.agent.command;
 
 
 import io.vertx.rxjava.core.Vertx;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
-import nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil;
-import nl.jpoint.vertx.mod.deploy.util.FileDigestUtil;
-import nl.jpoint.vertx.mod.deploy.util.GzipExtractor;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.request.ModuleRequest;
+import nl.jpoint.vertx.deploy.agent.util.ArtifactContextUtil;
+import nl.jpoint.vertx.deploy.agent.util.FileDigestUtil;
+import nl.jpoint.vertx.deploy.agent.util.GzipExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -18,7 +18,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static nl.jpoint.vertx.mod.deploy.request.ModuleRequest.*;
 import static rx.Observable.just;
 
 public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
@@ -40,10 +39,10 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
     public Observable<T> executeAsync(T request) {
 
         switch (request.getType()) {
-            case CONFIG_TYPE:
-            case ZIP_TYPE:
+            case ModuleRequest.CONFIG_TYPE:
+            case ModuleRequest.ZIP_TYPE:
                 return extractZip(request);
-            case GZIP_TYPE:
+            case ModuleRequest.GZIP_TYPE:
                 return extractGZip(request);
             default:
                 LOG.error("Unsupported artifact type : " + request.getType());

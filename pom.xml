@@ -22,7 +22,7 @@
     <name>Vert.x Deploy Tools</name>
 
     <modules>
-        <module>vertx-deploy</module>
+        <module>vertx-deploy-agent</module>
         <module>vertx-deploy-maven-plugin</module>
         <module>vertx-deploy-test</module>
         <module>vertx-deploy-test-application</module>
@@ -206,11 +206,24 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>3.1.2</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>3.1.2</version>
                 <configuration>
                     <cveValidForHours>12</cveValidForHours>
                     <failBuildOnCVSS>4</failBuildOnCVSS>

@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy;
+package nl.jpoint.vertx.deploy.agent;
 
 public final class Constants {
     public static final String SERVICE_ID = "deploy";

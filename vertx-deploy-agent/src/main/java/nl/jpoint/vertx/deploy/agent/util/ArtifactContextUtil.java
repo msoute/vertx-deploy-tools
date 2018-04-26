@@ -1,6 +1,6 @@
-package nl.jpoint.vertx.mod.deploy.util;
+package nl.jpoint.vertx.deploy.agent.util;
 
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
+import nl.jpoint.vertx.deploy.agent.request.ModuleRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;

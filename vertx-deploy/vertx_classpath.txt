@@ -1,5 +1,0 @@
-src/test/runner
-src/main/resources
-target/classes
-target/dependencies
-bin

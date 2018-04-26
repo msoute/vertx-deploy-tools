@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.request;
+package nl.jpoint.vertx.deploy.agent.request;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

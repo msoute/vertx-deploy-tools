@@ -1,6 +1,6 @@
-package nl.jpoint.vertx.mod.deploy.aws;
+package nl.jpoint.vertx.deploy.agent.aws;
 
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

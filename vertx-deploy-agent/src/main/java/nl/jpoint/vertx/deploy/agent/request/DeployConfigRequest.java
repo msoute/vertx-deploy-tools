@@ -1,8 +1,8 @@
-package nl.jpoint.vertx.mod.deploy.request;
+package nl.jpoint.vertx.deploy.agent.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 
 public class DeployConfigRequest extends ModuleRequest {
 

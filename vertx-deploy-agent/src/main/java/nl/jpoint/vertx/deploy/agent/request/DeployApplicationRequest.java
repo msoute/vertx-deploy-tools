@@ -1,9 +1,9 @@
-package nl.jpoint.vertx.mod.deploy.request;
+package nl.jpoint.vertx.deploy.agent.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeployApplicationRequest extends ModuleRequest {
@@ -18,7 +18,7 @@ public class DeployApplicationRequest extends ModuleRequest {
 
     @JsonCreator
     public DeployApplicationRequest(@JsonProperty("group_id") final String groupId, @JsonProperty("artifact_id") final String artifactId,
-                                    @JsonProperty("version") final String version,@JsonProperty("classifier") final String classifier, @JsonProperty("type") final String type) {
+                                    @JsonProperty("version") final String version, @JsonProperty("classifier") final String classifier, @JsonProperty("type") final String type) {
         super(groupId, artifactId, version, classifier, type);
     }
 
@@ -67,7 +67,7 @@ public class DeployApplicationRequest extends ModuleRequest {
         this.testScope = testScope;
     }
 
-    public DeployApplicationRequest withMainService(String mainService){
+    public DeployApplicationRequest withMainService(String mainService) {
         this.mainService = mainService;
         return this;
     }

@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.aws;
+package nl.jpoint.vertx.deploy.agent.aws;
 
 public enum AwsState {
     UNKNOWN,

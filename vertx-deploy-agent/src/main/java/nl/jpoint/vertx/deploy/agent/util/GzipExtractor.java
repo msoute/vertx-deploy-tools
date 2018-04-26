@@ -1,7 +1,7 @@
-package nl.jpoint.vertx.mod.deploy.util;
+package nl.jpoint.vertx.deploy.agent.util;
 
-import nl.jpoint.vertx.mod.deploy.command.ExtractArtifact;
-import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
+import nl.jpoint.vertx.deploy.agent.command.ExtractArtifact;
+import nl.jpoint.vertx.deploy.agent.request.ModuleRequest;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static nl.jpoint.vertx.mod.deploy.util.ArtifactContextUtil.ARTIFACT_CONTEXT;
+import static nl.jpoint.vertx.deploy.agent.util.ArtifactContextUtil.ARTIFACT_CONTEXT;
 
 public class GzipExtractor<T extends ModuleRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractArtifact.class);

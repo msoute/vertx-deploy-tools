@@ -4,6 +4,6 @@
   "config.location": "",
   "http.authUser": "",
   "http.authPass": "",
-  "http.authSecure" : true,
+  "http.authSecure": true,
   "http.authUri": ""
 }

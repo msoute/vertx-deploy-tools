@@ -1,15 +1,13 @@
-package nl.jpoint.vertx.mod.deploy.handler;
+package nl.jpoint.vertx.deploy.agent.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
-import nl.jpoint.vertx.mod.deploy.service.DeployApplicationService;
-import nl.jpoint.vertx.mod.deploy.util.HttpUtils;
-import nl.jpoint.vertx.mod.deploy.util.LogConstants;
+import nl.jpoint.vertx.deploy.agent.request.DeployApplicationRequest;
+import nl.jpoint.vertx.deploy.agent.service.DeployApplicationService;
+import nl.jpoint.vertx.deploy.agent.util.HttpUtils;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static nl.jpoint.vertx.mod.deploy.util.HttpUtils.*;
 
 public class RestDeployModuleHandler implements Handler<RoutingContext> {
 
@@ -26,15 +24,15 @@ public class RestDeployModuleHandler implements Handler<RoutingContext> {
             DeployApplicationRequest deployRequest = HttpUtils.readPostData(buffer, DeployApplicationRequest.class, LogConstants.DEPLOY_REQUEST);
 
             if (deployRequest == null) {
-                respondBadRequest(context.request());
+                HttpUtils.respondBadRequest(context.request());
                 return;
             }
 
             LOG.info("[{} - {}]: Received deploy module {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.toString());
 
             service.deployAsync(deployRequest)
-                    .doOnCompleted(() -> respondOk(context.request()))
-                    .doOnError(t -> respondFailed(context.request()));
+                    .doOnCompleted(() -> HttpUtils.respondOk(context.request()))
+                    .doOnError(t -> HttpUtils.respondFailed(context.request()));
         });
     }
 

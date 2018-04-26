@@ -1,8 +1,8 @@
 {
-    "vertx.home": "/usr/local/vertx",
-    "config.location": "/etc/vertx/service-config.json",
-    "artifact.storage": "/opt/data/repo/",
-    "auth.token": "vertx",
-    "maven.repo.uri": "http://central.maven.org/maven2/",
-    "aws.enable": false
+  "vertx.home": "/usr/local/vertx",
+  "config.location": "/etc/vertx/service-config.json",
+  "artifact.storage": "/opt/data/repo/",
+  "auth.token": "vertx",
+  "maven.repo.uri": "http://central.maven.org/maven2/",
+  "aws.enable": false
 }

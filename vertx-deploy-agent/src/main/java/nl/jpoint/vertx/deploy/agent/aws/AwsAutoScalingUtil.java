@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.mod.deploy.aws;
+package nl.jpoint.vertx.deploy.agent.aws;
 
 
 import com.amazonaws.AmazonClientException;
@@ -6,7 +6,8 @@ import com.amazonaws.services.autoscaling.AmazonAutoScalingAsync;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingAsyncClientBuilder;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
-import nl.jpoint.vertx.mod.deploy.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -14,7 +15,6 @@ import rx.Observable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static nl.jpoint.vertx.mod.deploy.util.LogConstants.ERROR_EXECUTING_REQUEST;
 import static rx.Observable.just;
 
 public class AwsAutoScalingUtil {
@@ -54,7 +54,7 @@ public class AwsAutoScalingUtil {
                         return just(optState.map(AwsState::map).orElse(AwsState.UNKNOWN));
                     });
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
@@ -65,7 +65,7 @@ public class AwsAutoScalingUtil {
                     .map(result -> result.getLoadBalancers().stream().map(LoadBalancerState::getLoadBalancerName).collect(Collectors.toList()))
                     .flatMap(Observable::from);
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
@@ -84,7 +84,7 @@ public class AwsAutoScalingUtil {
                 return true;
             }
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             return false;
         }
     }
@@ -94,7 +94,7 @@ public class AwsAutoScalingUtil {
             asyncClient.exitStandby(new ExitStandbyRequest().withAutoScalingGroupName(groupId).withInstanceIds(instanceId));
             return true;
         } catch (AmazonClientException e) {
-            LOG.error(ERROR_EXECUTING_REQUEST, e);
+            LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             return false;
         }
     }
