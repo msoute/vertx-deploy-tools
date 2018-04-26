@@ -6,11 +6,21 @@ import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import nl.jpoint.vertx.mod.deploy.util.LogConstants;
 import nl.jpoint.vertx.mod.deploy.util.MetadataXPathUtil;
-import nl.jpoint.vertx.mod.deploy.util.RxHttpUtil;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,18 +38,27 @@ public class ResolveSnapshotVersion<T extends ModuleRequest> implements Command<
         this.config = config;
     }
 
-    @Override
     public Observable<T> executeAsync(T request) {
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials
+                = new UsernamePasswordCredentials(config.getHttpAuthUser(), config.getHttpAuthPassword());
+        provider.setCredentials(AuthScope.ANY, credentials);
+
         final URI location = config.getNexusUrl().resolve(config.getNexusUrl().getPath() + "/" + request.getMetadataLocation());
+        HttpUriRequest get = new HttpGet(location);
+
         Path filename = createTempFile(request.getArtifactId());
-        return new RxHttpUtil(rxVertx, config).get(request.getId(), location, filename)
-                .flatMap(x -> {
-                    request.setVersion(retrieveAndParseMetadata(filename, request));
-                    return just(request);
-                }).onErrorReturn(x -> {
-                    LOG.error("[{} - {}]: Error downloading artifact {} for url {} -> .", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId(), location, x);
-                    return request;
-                });
+
+        try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
+             CloseableHttpResponse response = client.execute(get)) {
+            LOG.info("[{} - {}]: Downloaded Metadata for {}.", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), request.getModuleId());
+            response.getEntity().writeTo(new FileOutputStream(filename.toFile()));
+            request.setVersion(retrieveAndParseMetadata(filename, request));
+        } catch (IOException e) {
+            LOG.error("[{} - {}]: Error downloading Metadata  -> {}, {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, request.getId(), e.getMessage(), e);
+            throw new IllegalStateException(e);
+        }
+        return just(request);
     }
 
     private Path createTempFile(String filename) {
