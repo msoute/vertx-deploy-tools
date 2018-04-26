@@ -29,7 +29,7 @@ public final class DeployStateStrategyFactory {
                 canDeploy = new WhateverStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
                 break;
             case SPIN_AND_REMOVE:
-                canDeploy = true;
+                // default to false
                 break;
             default:
 
