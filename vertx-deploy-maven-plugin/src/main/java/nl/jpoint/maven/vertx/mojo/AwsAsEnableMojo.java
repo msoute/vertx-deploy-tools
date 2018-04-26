@@ -7,6 +7,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+@Deprecated
 @Mojo(name = "as-enable")
 public class AwsAsEnableMojo extends AbstractDeployMojo {
 
