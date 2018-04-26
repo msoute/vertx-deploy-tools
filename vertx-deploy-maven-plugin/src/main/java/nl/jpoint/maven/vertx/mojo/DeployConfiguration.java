@@ -72,6 +72,13 @@ public class DeployConfiguration {
     private final List<String> autoScalingProperties = new ArrayList<>();
     private boolean spindown = true;
 
+    private boolean withMetrics = false;
+    private MetricsConfiguration metricsConfiguration = null;
+
+    /**
+     * AWS OpsWorks Properties
+     **/
+    private String opsWorksLayerId = null;
     private String authToken;
 
     public String getAuthToken() {
@@ -164,6 +171,14 @@ public class DeployConfiguration {
 
     public boolean spindown() {
         return spindown;
+    }
+
+    public boolean metricsEnabled() {
+        return withMetrics;
+    }
+
+    public MetricsConfiguration getMetricsConfiguration() {
+        return metricsConfiguration;
     }
 
 
@@ -276,6 +291,12 @@ public class DeployConfiguration {
 
     public DeployConfiguration withSpinDown(boolean spindown) {
         this.spindown = spindown;
+        return this;
+    }
+
+    public DeployConfiguration withMetricsConfiguration(MetricsConfiguration metricsConfiguration) {
+        this.withMetrics = metricsConfiguration != null;
+        this.metricsConfiguration = metricsConfiguration;
         return this;
     }
 }

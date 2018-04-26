@@ -10,9 +10,11 @@ import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.autoscaling.AutoScalingPrePostFactory;
 import nl.jpoint.maven.vertx.service.autoscaling.AutoScalingPrePostHandler;
 import nl.jpoint.maven.vertx.utils.AwsAutoScalingDeployUtils;
+import nl.jpoint.maven.vertx.utils.AwsCloudWatchUtils;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import nl.jpoint.maven.vertx.utils.Ec2Instance;
 import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStateStrategyFactory;
+import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -67,6 +69,8 @@ public class AutoScalingDeployService extends DeployService {
             awsDeployUtils.setMinimalCapacity(asGroup.getDesiredCapacity() <= 0 ? 0 : asGroup.getDesiredCapacity() - 1);
         }
 
+        AwsCloudWatchUtils metrics = new AwsCloudWatchUtils(region, instances.size(), activeConfiguration, getLog());
+        metrics.startTimer();
         for (Ec2Instance instance : instances) {
             awsDeployUtils.updateInstanceState(instance, asGroup.getLoadBalancerNames());
             if (!DeployStateStrategyFactory.isDeployable(activeConfiguration, asGroup, instances)) {
@@ -91,7 +95,7 @@ public class AutoScalingDeployService extends DeployService {
             getLog().info("Sending deploy request to instance with id " + instance.getInstanceId() + " state " + instance.getElbState().name() + " and public IP " + instance.getPublicIp());
 
             try {
-                AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy().ordinal() > 1);
+                AwsState newState = executor.executeRequest(deployRequest, activeConfiguration.getAwsPrivateIp() ? instance.getPrivateIp() : instance.getPublicIp(), activeConfiguration.getDeployStrategy() == DeployStrategyType.WHATEVER);
                 getLog().info("Updates state for instance " + instance.getInstanceId() + " to " + newState.name());
                 instance.updateState(newState);
                 awsDeployUtils.setDeployMetadataTags(activeConfiguration.getProjectVersion(), properties);
@@ -101,6 +105,7 @@ public class AutoScalingDeployService extends DeployService {
                 if (!DeployStateStrategyFactory.isDeployableOnError(activeConfiguration, asGroup, instances)) {
                     awsDeployUtils.resumeScheduledActions();
                     prePostHandler.handleError(asGroup);
+                    metrics.logFailed();
                     throw new MojoExecutionException("auto scaling group is not in a deployable state.");
                 }
             }
@@ -109,6 +114,7 @@ public class AutoScalingDeployService extends DeployService {
         awsDeployUtils.setMinimalCapacity(originalMinSize);
         prePostHandler.postDeploy(asGroup, originalDesiredCapacity);
         awsDeployUtils.resumeScheduledActions();
+        metrics.logSuccess();
     }
 
     private List<Ec2Instance> checkInstances(AwsAutoScalingDeployUtils awsDeployUtils, AutoScalingGroup asGroup, List<Ec2Instance> instances) {

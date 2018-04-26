@@ -14,7 +14,6 @@ public final class DeployStateStrategyFactory {
 
     public static boolean isDeployable(DeployConfiguration activeConfiguration, AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
         boolean canDeploy = false;
-        // default calculatorF
         switch (activeConfiguration.getDeployStrategy()) {
             case KEEP_CAPACITY:
                 canDeploy = new KeepCapacityStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
@@ -37,8 +36,18 @@ public final class DeployStateStrategyFactory {
         return canDeploy;
     }
 
-    public static boolean isDeployableOnError(DeployConfiguration activeConfiguration, AutoScalingGroup asGroup, List<Ec2Instance> instances) {
-        return activeConfiguration.getDeployStrategy().ordinal() > 1 && isDeployable(activeConfiguration, asGroup, instances);
+    public static boolean isDeployableOnError(DeployConfiguration activeConfiguration, AutoScalingGroup autoScalingGroup, List<Ec2Instance> instances) {
+        boolean canDeploy = false;
+        switch (activeConfiguration.getDeployStrategy()) {
+            case GUARANTEE_MINIMUM:
+                canDeploy = new GuaranteeMinimumStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                break;
+            case WHATEVER:
+                canDeploy = new WhateverStrategy().isDeployable(activeConfiguration, autoScalingGroup, instances);
+                break;
+            default:
+        }
+        return canDeploy;
 
     }
 }

@@ -33,9 +33,17 @@ public class AwsAutoScalingUtil {
     }
 
 
-    private Optional<AutoScalingInstanceDetails> describeInstance() {
-        DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
-        return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
+    public Optional<AutoScalingInstanceDetails> describeInstance() {
+        try {
+            DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
+            return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();
+        } catch (AmazonAutoScalingException e) {
+            if (e.getStatusCode() == 403) {
+                LOG.error("Looks like the instance role is not correctly authorized, please see : https://github.com/msoute/vertx-deploy-tools#aws-iam-policy");
+            }
+            LOG.error(e.getMessage(), e);
+            throw e;
+        }
     }
 
     public Observable<AwsState> pollForInstanceState() {

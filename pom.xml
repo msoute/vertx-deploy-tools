@@ -5,7 +5,7 @@
 
     <groupId>nl.jpoint</groupId>
     <artifactId>vertx-deploy-tools</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>3.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vert.x application for deploying of other Vert.x applications with support for AWS based
@@ -34,14 +34,14 @@
         <developerConnection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</developerConnection>
         <connection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</connection>
         <url>https://github.com/msoute/vertx-deploy-mod</url>
-        <tag>vertx-deploy-tools-3.2.2</tag>
+        <tag>master</tag>
     </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.5.0</vertx.platform.version>
-        <aws.sdk.version>1.11.229</aws.sdk.version>
+        <vertx.platform.version>3.5.1</vertx.platform.version>
+        <aws.sdk.version>1.11.317</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>2.12.0</mockito.version>
         <aetherVersion>1.1.0</aetherVersion>
@@ -64,6 +64,11 @@
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-autoscaling</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-cloudwatch</artifactId>
                 <version>${aws.sdk.version}</version>
             </dependency>
             <dependency>
@@ -167,6 +172,11 @@
                 <artifactId>aether-transport-http</artifactId>
                 <version>${aetherVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.5</version>
+            </dependency>
 
             <dependency>
                 <groupId>junit</groupId>
@@ -200,7 +210,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>3.0.2</version>
+                <version>3.1.2</version>
                 <configuration>
                     <cveValidForHours>12</cveValidForHours>
                     <failBuildOnCVSS>4</failBuildOnCVSS>

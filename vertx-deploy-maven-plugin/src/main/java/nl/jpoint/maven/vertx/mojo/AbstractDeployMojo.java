@@ -36,12 +36,20 @@ abstract class AbstractDeployMojo extends AbstractMojo {
     String region;
     @Parameter(property = "deploy.exclusions")
     String exclusions;
-    DeployConfiguration activeConfiguration;
     private List<DeployConfiguration> deployConfigurations;
     @Parameter(defaultValue = "default", property = "deploy.activeTarget")
     private String activeTarget;
     @Parameter(property = "deploy.credentialsId")
     private String credentialsId;
+    @Parameter(required = false, defaultValue = "", property = "deploy.metrics.namespace")
+    protected String metricNamespace;
+    @Parameter(required = false, defaultValue = "", property = "deploy.metrics.application")
+    protected String metricApplication;
+    @Parameter(required = false, defaultValue = "", property = "deploy.metrics.environment")
+    protected String metricEnvironment;
+
+    DeployConfiguration activeConfiguration;
+
 
     void setActiveDeployConfig() throws MojoFailureException {
         if (deployConfigurations.size() == 1) {
