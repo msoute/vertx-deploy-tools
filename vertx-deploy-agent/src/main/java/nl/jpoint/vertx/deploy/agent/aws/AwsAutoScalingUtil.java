@@ -33,7 +33,7 @@ public class AwsAutoScalingUtil {
     }
 
 
-    public Optional<AutoScalingInstanceDetails> describeInstance() {
+    private Optional<AutoScalingInstanceDetails> describeInstance() {
         try {
             DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withInstanceIds(Collections.singletonList(instanceId)));
             return result.getAutoScalingInstances().stream().filter(a -> a.getInstanceId().equals(instanceId)).findFirst();

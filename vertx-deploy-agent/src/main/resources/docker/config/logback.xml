@@ -1,12 +1,4 @@
 <configuration scan="true">
-    <appender name="DEPLOY-FILE" class="ch.qos.logback.core.FileAppender">
-        <file>/var/log/vertx/deploy.json</file>
-        <append>true</append>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
-        </encoder>
-    </appender>
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
@@ -17,8 +9,7 @@
 
     <logger name="io.netty" level="off"/>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="DEPLOY-FILE"/>
     </root>
 </configuration>

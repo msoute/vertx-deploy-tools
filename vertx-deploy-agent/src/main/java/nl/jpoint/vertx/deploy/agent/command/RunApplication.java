@@ -83,8 +83,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
     private Observable<DeployApplicationRequest> startApplication(DeployApplicationRequest deployApplicationRequest) {
 
-        List<String> command = new ArrayList<>();
-        command.addAll(Arrays.asList(deployConfig.getVertxHome().resolve("bin/vertx").toString(), "start", getMavenCommand(deployApplicationRequest), "-id", deployApplicationRequest.getModuleId()));
+        List<String> command = new ArrayList<>(Arrays.asList(deployConfig.getVertxHome().resolve("bin/vertx").toString(), "start", getMavenCommand(deployApplicationRequest), "-id", deployApplicationRequest.getModuleId()));
         if (deployConfig.isMavenRemote()) {
             command.add("-Dvertx.maven.remoteRepos=" + buildRemoteRepo());
             command.add("-Dvertx.maven.remoteSnapshotPolicy=" + deployConfig.getRemoteRepoPolicy());

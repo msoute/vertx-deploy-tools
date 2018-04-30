@@ -80,7 +80,7 @@ public class AwsDeployApplication extends AbstractVerticle {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         LOG.warn("Stopping deploy application");
     }
 }

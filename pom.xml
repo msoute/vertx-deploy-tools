@@ -107,13 +107,16 @@
                 <version>1.2.3</version>
                 <scope>provided</scope>
             </dependency>
-
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-core</artifactId>
                 <version>${vertx.platform.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-maven-service-factory</artifactId>
+                <version>${vertx.platform.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-web</artifactId>
