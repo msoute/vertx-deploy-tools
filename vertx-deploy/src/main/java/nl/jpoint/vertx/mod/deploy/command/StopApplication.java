@@ -61,7 +61,7 @@ public class StopApplication implements Command<DeployApplicationRequest> {
         moduleIdToStop = request.getMavenArtifactId() + ":" + new ProcessUtils(config).getRunningVersion(request);
         LOG.info("[{} - {}]: Stopping application with applicationId '{}'.", LogConstants.DEPLOY_REQUEST, request.getId(), moduleIdToStop);
         ProcessBuilder processBuilder = new ProcessBuilder().command(Arrays.asList(config.getVertxHome().resolve("bin/vertx").toString(), "stop", moduleIdToStop));
-        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx, true);
+        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(request, 0, rxVertx);
         return observableCommand.execute(processBuilder)
                 .flatMap(exitCode -> handleExitCode(request, exitCode))
                 .flatMap(x -> just(request))
