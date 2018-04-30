@@ -29,10 +29,9 @@ public class RunConsoleCommand implements Command<DeployConfigRequest> {
             throw new IllegalStateException();
         }
 
-        ObservableCommand<DeployConfigRequest> observableCommand = new ObservableCommand<>(deployConfigRequest, 0, rxVertx, false);
+        ObservableCommand<DeployConfigRequest> observableCommand = new ObservableCommand<>(deployConfigRequest, 0, rxVertx);
         return observableCommand.execute(new ProcessBuilder().command(command.split("\\s+")))
                 .flatMap(x -> just(deployConfigRequest))
-                .doOnCompleted(() -> LOG.info("[{} - {}]: Finished running console command '{}'.", LogConstants.CONSOLE_COMMAND, deployConfigRequest.getId(), command))
-                .doOnError(t -> LOG.error("[{} - {}]: Failed to run command {} with error {}", LogConstants.CONSOLE_COMMAND, deployConfigRequest.getId(), command, t));
+                .doOnCompleted(() -> LOG.info("[{} - {}]: Finished running console command '{}'.", LogConstants.CONSOLE_COMMAND, deployConfigRequest.getId(), command));
     }
 }
