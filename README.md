@@ -323,6 +323,9 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.3.1
+* [BUG] Deploy should fail if nginx test goes wrong
+
 ## 3.3.0
 
 * Bump AWS SDK
