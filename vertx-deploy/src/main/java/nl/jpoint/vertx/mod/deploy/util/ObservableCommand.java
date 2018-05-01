@@ -5,7 +5,6 @@ import nl.jpoint.vertx.mod.deploy.request.ModuleRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
-import rx.Subscriber;
 
 import java.io.*;
 
@@ -44,7 +43,11 @@ public class ObservableCommand<R extends ModuleRequest> {
                         return waitForExit();
                     } else {
                         if (process.exitValue() != expectedResultCode) {
+                            printStream(process.getInputStream(), false);
                             throw new IllegalStateException("Error while executing process");
+                        } else {
+                            printStream(process.getInputStream(), false);
+                            printStream(process.getErrorStream(), true);
                         }
                         return just(process.exitValue());
                     }
@@ -60,22 +63,12 @@ public class ObservableCommand<R extends ModuleRequest> {
             } catch (IOException e) {
                 subscriber.onError(e);
             }
-
-            if (process != null) {
-                if (process.exitValue() == 0) {
-                    printStream(process.getInputStream(), subscriber, false);
-                } else {
-                    throw new IllegalStateException(printStream(process.getErrorStream(), subscriber, true));
-                }
-            } else {
-                subscriber.onError(new IllegalStateException("Error executing command"));
-            }
             subscriber.onNext("Done");
             subscriber.onCompleted();
         });
     }
 
-    private String printStream(InputStream stream, Subscriber subscriber, boolean error) {
+    private String printStream(InputStream stream, boolean error) {
         if (stream == null) {
             return null;
         }
@@ -90,8 +83,7 @@ public class ObservableCommand<R extends ModuleRequest> {
             }
             return line;
         } catch (Exception e) {
-            subscriber.onError(e);
-            return e.getMessage();
+            throw new IllegalStateException(e);
         }
     }
 }
