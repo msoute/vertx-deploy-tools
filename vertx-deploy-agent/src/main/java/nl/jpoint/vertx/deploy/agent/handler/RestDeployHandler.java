@@ -139,6 +139,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployRequest.getId().toString()));
         if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
             return deployService.deployConfigs(deployRequest.getId(), deployRequest.getConfigs())
+                    .doOnError(t -> awsService.ifPresent(aws -> aws.failBuild(deployRequest.getId().toString())))
                     .flatMap(list -> {
                         if (list.contains(Boolean.TRUE)) {
                             deployRequest.setRestart(true);

@@ -17,22 +17,20 @@ public class ObservableCommand<R extends ModuleRequest> {
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
     private final Integer expectedResultCode;
     private final Vertx rxVertx;
-    private final boolean throwException;
     private final R request;
     private Process process;
 
-    public ObservableCommand(R request, Integer expectedResultCode, Vertx vertx, boolean throwException) {
+    public ObservableCommand(R request, Integer expectedResultCode, Vertx vertx) {
         this.request = request;
         this.expectedResultCode = expectedResultCode;
         this.rxVertx = vertx;
-        this.throwException = throwException;
     }
 
     public Observable<Integer> execute(ProcessBuilder builder) {
         return observableCommand(builder)
                 .flatMap(x -> waitForExit())
                 .flatMap(x -> {
-                    if (process.exitValue() != expectedResultCode && throwException) {
+                    if (process.exitValue() != expectedResultCode) {
                         throw new IllegalStateException("Error executing process");
                     }
                     return just(x);
@@ -45,7 +43,7 @@ public class ObservableCommand<R extends ModuleRequest> {
                     if (process.isAlive()) {
                         return waitForExit();
                     } else {
-                        if (process.exitValue() != expectedResultCode && throwException) {
+                        if (process.exitValue() != expectedResultCode) {
                             throw new IllegalStateException("Error while executing process");
                         }
                         return just(process.exitValue());
@@ -62,23 +60,27 @@ public class ObservableCommand<R extends ModuleRequest> {
             } catch (IOException e) {
                 subscriber.onError(e);
             }
+
             if (process != null) {
-                printStream(process.getInputStream(), subscriber, false);
-                printStream(process.getErrorStream(), subscriber, true);
+                if (process.exitValue() == 0) {
+                    printStream(process.getInputStream(), subscriber, false);
+                } else {
+                    throw new IllegalStateException(printStream(process.getErrorStream(), subscriber, true));
+                }
             } else {
-                subscriber.onError(new IllegalStateException("Unable to create process"));
+                subscriber.onError(new IllegalStateException("Error executing command"));
             }
             subscriber.onNext("Done");
             subscriber.onCompleted();
         });
     }
 
-    private void printStream(InputStream stream, Subscriber subscriber, boolean error) {
+    private String printStream(InputStream stream, Subscriber subscriber, boolean error) {
         if (stream == null) {
-            return;
+            return null;
         }
+        String line;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
-            String line;
             while ((line = reader.readLine()) != null) {
                 if (error) {
                     LOG.error("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
@@ -86,8 +88,10 @@ public class ObservableCommand<R extends ModuleRequest> {
                     LOG.info("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
                 }
             }
+            return line;
         } catch (Exception e) {
             subscriber.onError(e);
+            return e.getMessage();
         }
     }
 }

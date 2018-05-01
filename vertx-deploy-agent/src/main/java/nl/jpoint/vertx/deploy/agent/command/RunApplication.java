@@ -108,7 +108,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         command.add("-Dvertxdeploy.scope.test=" + deployApplicationRequest.isTestScope());
 
         ProcessBuilder processBuilder = new ProcessBuilder().command(command);
-        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(deployApplicationRequest, 0, rxVertx, false);
+        ObservableCommand<DeployApplicationRequest> observableCommand = new ObservableCommand<>(deployApplicationRequest, 0, rxVertx);
 
         return observableCommand.execute(processBuilder)
                 .flatMap(exitCode -> handleExitCode(deployApplicationRequest, exitCode))
