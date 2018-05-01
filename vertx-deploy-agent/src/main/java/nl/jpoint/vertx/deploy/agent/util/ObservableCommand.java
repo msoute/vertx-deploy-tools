@@ -4,8 +4,8 @@ import io.vertx.rxjava.core.Vertx;
 import nl.jpoint.vertx.deploy.agent.request.ModuleRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Emitter;
 import rx.Observable;
-import rx.Subscriber;
 
 import java.io.*;
 
@@ -44,7 +44,10 @@ public class ObservableCommand<R extends ModuleRequest> {
                         return waitForExit();
                     } else {
                         if (process.exitValue() != expectedResultCode) {
-                            throw new IllegalStateException("Error while executing process");
+                            printStream(process.getInputStream(), false);
+                            throw new IllegalStateException(printStream(process.getErrorStream(), true));
+                        } else {
+                            printStream(process.getInputStream(), false);
                         }
                         return just(process.exitValue());
                     }
@@ -60,22 +63,12 @@ public class ObservableCommand<R extends ModuleRequest> {
             } catch (IOException e) {
                 subscriber.onError(e);
             }
-
-            if (process != null) {
-                if (process.exitValue() == 0) {
-                    printStream(process.getInputStream(), subscriber, false);
-                } else {
-                    throw new IllegalStateException(printStream(process.getErrorStream(), subscriber, true));
-                }
-            } else {
-                subscriber.onError(new IllegalStateException("Error executing command"));
-            }
             subscriber.onNext("Done");
             subscriber.onCompleted();
-        });
+        }, Emitter.BackpressureMode.NONE);
     }
 
-    private String printStream(InputStream stream, Subscriber subscriber, boolean error) {
+    private String printStream(InputStream stream, boolean error) {
         if (stream == null) {
             return null;
         }
@@ -90,8 +83,8 @@ public class ObservableCommand<R extends ModuleRequest> {
             }
             return line;
         } catch (Exception e) {
-            subscriber.onError(e);
-            return e.getMessage();
+            LOG.error(e.getMessage(), e);
+            throw new IllegalStateException(e);
         }
     }
 }

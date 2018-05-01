@@ -73,4 +73,9 @@ public class DeployArtifactService implements DeployService<DeployArtifactReques
     public Vertx getVertx() {
         return vertx;
     }
+
+    @Override
+    public String getLogType() {
+        return LogConstants.DEPLOY_ARTIFACT_REQUEST;
+    }
 }

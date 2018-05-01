@@ -27,7 +27,7 @@ public class ProcessUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
 
 
-    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy:";
+    private static final String SELF = "nl.jpoint.vertx-deploy-tools:vertx-deploy-agent:";
     private static final String MAVEN_PATTERN = "maven:([^\\s]+)";
     private static final String MODULE_PATTERN = "([^\\s]+):([^\\s]+):([^\\s]+)";
     private final Path vertxHome;

@@ -61,20 +61,20 @@ public class RestDeployHandler implements Handler<RoutingContext> {
 
     private DeployRequest verifyIncomingRequest(RoutingContext context, Buffer buffer) {
         if (!HttpUtils.hasCorrectAuthHeader(context, authToken, LogConstants.DEPLOY_REQUEST)) {
-            respondFailed(null, context.request(), "Invalid authToken in request.");
+            respondFailed(null, context.request(), "Invalid authToken in request.", null);
             return null;
         }
 
         DeployRequest deployRequest = HttpUtils.readPostData(buffer, DeployRequest.class, LogConstants.DEPLOY_REQUEST);
 
         if (deployRequest == null) {
-            respondFailed(null, context.request(), "Error wile reading post data ");
+            respondFailed(null, context.request(), "Error wile reading post data ", null);
             return null;
         }
 
         if (deployRequest.withAutoScaling() && !awsService.isPresent()) {
             LOG.error("Asking for an Aws Enabled deploy. AWS is disabled");
-            respondFailed(deployRequest.getId().toString(), context.request(), "Aws support disabled");
+            respondFailed(deployRequest.getId().toString(), context.request(), "Aws support disabled", null);
             return null;
         }
 
@@ -95,7 +95,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 .flatMap(this::registerInstanceInAutoScalingGroup)
                 .flatMap(this::checkElbStatus)
                 .doOnCompleted(() -> this.respond(deployRequest, context.request()))
-                .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage()))
+                .doOnError(t -> this.respondFailed(deployRequest.getId().toString(), context.request(), t.getMessage(), t))
                 .subscribe();
     }
 
@@ -139,7 +139,10 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.DEPLOYING_CONFIGS, deployRequest.getId().toString()));
         if (deployRequest.getConfigs() != null && !deployRequest.getConfigs().isEmpty()) {
             return deployService.deployConfigs(deployRequest.getId(), deployRequest.getConfigs())
-                    .doOnError(t -> awsService.ifPresent(aws -> aws.failBuild(deployRequest.getId().toString())))
+                    .doOnError(t -> {
+                        LOG.error("[{} - {}]: Error while deploying config -> {}", LogConstants.DEPLOY_CONFIG_REQUEST, deployRequest.getId(), t.getMessage(), t);
+                        awsService.ifPresent(aws -> aws.failBuild(deployRequest.getId().toString(), t.getMessage(), t));
+                    })
                     .flatMap(list -> {
                         if (list.contains(Boolean.TRUE)) {
                             deployRequest.setRestart(true);
@@ -212,7 +215,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
         }
     }
 
-    private void respondFailed(String id, HttpServerRequest request, String message) {
+    private void respondFailed(String id, HttpServerRequest request, String message, Throwable t) {
 
         if (!request.response().ended()) {
 
@@ -227,7 +230,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
                 request.response().end(result.encodePrettily());
             }
             if (id != null) {
-                awsService.ifPresent(aws -> aws.failBuild(id));
+                awsService.ifPresent(aws -> aws.failBuild(id, message, t));
             }
         }
 

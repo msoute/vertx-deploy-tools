@@ -12,11 +12,14 @@ import rx.Observable;
 import static rx.Observable.just;
 
 interface DeployService<T extends ModuleRequest, R> {
+
     Observable<R> deployAsync(T deployRequest);
 
     DeployConfig getConfig();
 
     Vertx getVertx();
+
+    String getLogType();
 
     default Observable<T> resolveSnapShotVersion(T moduleRequest) {
         if (moduleRequest.isSnapshot() && getConfig().isMavenRemote()) {
@@ -28,9 +31,10 @@ interface DeployService<T extends ModuleRequest, R> {
     }
 
     default Observable<T> downloadArtifact(T moduleRequest) {
-        DownloadHttpArtifact<T> downloadArtifact = new DownloadHttpArtifact<>(getConfig());
+        DownloadHttpArtifact<T> downloadArtifact = new DownloadHttpArtifact<>(getConfig(), getLogType());
         return downloadArtifact.executeAsync(moduleRequest);
     }
+
 
     default Observable<T> parseArtifactContext(T moduleRequest) {
         ArtifactContextUtil artifactContextUtil = new ArtifactContextUtil(moduleRequest, getConfig().getArtifactRepo().resolve(moduleRequest.getFileName()));

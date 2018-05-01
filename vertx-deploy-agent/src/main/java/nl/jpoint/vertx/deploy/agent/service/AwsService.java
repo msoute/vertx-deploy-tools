@@ -38,7 +38,7 @@ public class AwsService {
     public Observable<DeployRequest> autoScalingDeRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
             LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
-            this.failBuild(deployRequest.getId().toString());
+            this.failBuild(deployRequest.getId().toString(), LogConstants.REQUEST_NOT_REGISTERED, null);
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_AS_DEREGISTER, deployRequest.getId().toString());
@@ -49,7 +49,7 @@ public class AwsService {
     public Observable<DeployRequest> autoScalingRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
             LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
-            this.failBuild(deployRequest.getId().toString());
+            this.failBuild(deployRequest.getId().toString(), LogConstants.REQUEST_NOT_REGISTERED, null);
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_AS_REGISTER, deployRequest.getId().toString());
@@ -60,7 +60,7 @@ public class AwsService {
     public Observable<DeployRequest> loadBalancerRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
             LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
-            this.failBuild(deployRequest.getId().toString());
+            this.failBuild(deployRequest.getId().toString(), LogConstants.REQUEST_NOT_REGISTERED, null);
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_ELB_REGISTER, deployRequest.getId().toString());
@@ -72,7 +72,7 @@ public class AwsService {
     public Observable<DeployRequest> loadBalancerDeRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
             LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
-            this.failBuild(deployRequest.getId().toString());
+            this.failBuild(deployRequest.getId().toString(), LogConstants.REQUEST_NOT_REGISTERED, null);
             throw new IllegalStateException();
         }
         updateAndGetRequest(DeployState.WAITING_FOR_ELB_DEREGISTER, deployRequest.getId().toString());
@@ -90,23 +90,24 @@ public class AwsService {
         return null;
     }
 
-    public void failBuild(String buildId) {
+    public void failBuild(String buildId, String reason, Throwable t) {
         LOG.error("[{} - {}]: Failing build.", LogConstants.AWS_ELB_REQUEST, buildId);
         if (runningRequests.containsKey(buildId)) {
             runningRequests.get(buildId).setState(DeployState.FAILED);
+            runningRequests.get(buildId).setFailedReason(reason);
         }
     }
 
-    public DeployState getDeployStatus(String deployId) {
+    public DeployRequest getDeployRequest(String deployId) {
         if (!runningRequests.containsKey(deployId)) {
-            return DeployState.UNKNOWN;
+            return null;
         }
+        DeployRequest deployRequest = runningRequests.get(deployId);
 
-        DeployState state = runningRequests.get(deployId).getState();
-        if (DeployState.SUCCESS.equals(state) || DeployState.FAILED.equals(state)) {
+        if (DeployState.SUCCESS.equals(deployRequest.getState()) || DeployState.FAILED.equals(deployRequest.getState())) {
             runningRequests.remove(deployId);
         }
-        return state;
+        return runningRequests.get(deployId);
     }
 
     public void failAllRunningRequests() {

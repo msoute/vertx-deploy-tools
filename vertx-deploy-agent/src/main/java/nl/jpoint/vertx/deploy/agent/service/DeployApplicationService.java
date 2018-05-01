@@ -94,6 +94,11 @@ public class DeployApplicationService implements DeployService<DeployApplication
         return vertx;
     }
 
+    @Override
+    public String getLogType() {
+        return LogConstants.DEPLOY_REQUEST;
+    }
+
     Observable<Boolean> stopContainer() {
         LOG.info("[{}]: Stopping all running modules", LogConstants.INVOKE_CONTAINER);
         return Observable.from(new ProcessUtils(config).listInstalledAndRunningModules().entrySet())

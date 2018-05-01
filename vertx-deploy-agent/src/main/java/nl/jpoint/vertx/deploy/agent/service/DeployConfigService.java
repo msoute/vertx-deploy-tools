@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import nl.jpoint.vertx.deploy.agent.DeployConfig;
 import nl.jpoint.vertx.deploy.agent.command.RunConsoleCommand;
 import nl.jpoint.vertx.deploy.agent.request.DeployConfigRequest;
+import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -42,6 +43,11 @@ public class DeployConfigService implements DeployService<DeployConfigRequest, B
     @Override
     public Vertx getVertx() {
         return vertx;
+    }
+
+    @Override
+    public String getLogType() {
+        return LogConstants.DEPLOY_CONFIG_REQUEST;
     }
 
     private Observable<DeployConfigRequest> runTestCommand(DeployConfigRequest deployConfigRequest) {

@@ -3,6 +3,7 @@ package nl.jpoint.vertx.deploy.agent.handler;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import nl.jpoint.vertx.deploy.agent.request.DeployRequest;
 import nl.jpoint.vertx.deploy.agent.request.DeployState;
 import nl.jpoint.vertx.deploy.agent.service.AwsService;
 import nl.jpoint.vertx.deploy.agent.service.DeployApplicationService;
@@ -24,24 +25,24 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext context) {
-        DeployState state = deployAwsService != null ? deployAwsService.getDeployStatus(context.request().params().get("id")) : DeployState.SUCCESS;
+        DeployRequest deployRequest = deployAwsService.getDeployRequest(context.request().params().get("id"));
+        DeployState state = deployRequest != null ? deployRequest.getState() : DeployState.UNKNOWN;
 
         if (!deployApplicationService.getDeployedApplicationsFailed().isEmpty()) {
             LOG.error("Some services failed to start, failing build");
             state = DeployState.FAILED;
-            if (deployAwsService != null) {
-                deployAwsService.failAllRunningRequests();
-            }
+            deployAwsService.failAllRunningRequests();
         }
+
         DeployState deployState = state != null ? state : DeployState.CONTINUE;
         switch (deployState) {
             case SUCCESS:
-                HttpUtils.respondOk(context.request(), createStatusObject());
+                HttpUtils.respondOk(context.request(), createStatusObject(null));
                 deployApplicationService.cleanup();
                 break;
             case UNKNOWN:
             case FAILED:
-                HttpUtils.respondFailed(context.request(), createStatusObject());
+                HttpUtils.respondFailed(context.request(), createStatusObject(deployRequest != null ? deployRequest.getFailedReason() : null));
                 deployApplicationService.cleanup();
                 break;
             default:
@@ -49,10 +50,13 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
         }
     }
 
-    private JsonObject createStatusObject() {
+    private JsonObject createStatusObject(String reason) {
         JsonObject result = new JsonObject();
         result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployApplicationService.getDeployedApplicationsSuccess()));
         result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployApplicationService.getDeployedApplicationsFailed()));
+        if (reason != null) {
+            result.put("Reason", reason);
+        }
         return result;
     }
 }

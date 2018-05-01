@@ -23,6 +23,8 @@ public class DeployRequest {
     private long timestamp;
     private final boolean testScope;
 
+    private String failedReason;
+
 
     @JsonCreator
     public DeployRequest(@JsonProperty("modules") List<DeployApplicationRequest> modules,
@@ -106,5 +108,13 @@ public class DeployRequest {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public void setFailedReason(String reason) {
+        this.failedReason = reason;
+    }
+
+    public String getFailedReason() {
+        return this.failedReason;
     }
 }
