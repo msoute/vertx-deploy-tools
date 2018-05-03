@@ -35,6 +35,7 @@ public class RestDeployStatusHandler implements Handler<RoutingContext> {
         }
 
         DeployState deployState = state != null ? state : DeployState.CONTINUE;
+        LOG.trace("[{}]: Current state : {}", deployRequest != null ? deployRequest.getId() : DeployState.UNKNOWN, deployState.name());
         switch (deployState) {
             case SUCCESS:
                 HttpUtils.respondOk(context.request(), createStatusObject(null));

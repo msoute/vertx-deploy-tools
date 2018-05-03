@@ -107,7 +107,7 @@ public class AwsService {
         if (DeployState.SUCCESS.equals(deployRequest.getState()) || DeployState.FAILED.equals(deployRequest.getState())) {
             runningRequests.remove(deployId);
         }
-        return runningRequests.get(deployId);
+        return deployRequest;
     }
 
     public void failAllRunningRequests() {
