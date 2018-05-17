@@ -129,5 +129,4 @@ public class RunApplicationTest {
         return testSubscriber.getOnNextEvents();
     }
 
-
 }
