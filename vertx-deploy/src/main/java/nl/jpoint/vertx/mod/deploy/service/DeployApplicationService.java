@@ -105,7 +105,7 @@ public class DeployApplicationService implements DeployService<DeployApplication
                 })
                 .toList()
                 .flatMap(x -> {
-                    LOG.info("Done stopping all applications");
+                    LOG.info("[{}]: Done stopping all applications", LogConstants.INVOKE_CONTAINER);
                     return Observable.just(true);
                 })
                 .flatMap(x -> Observable.just(true));
