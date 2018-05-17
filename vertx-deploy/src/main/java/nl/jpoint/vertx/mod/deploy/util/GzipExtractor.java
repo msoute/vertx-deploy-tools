@@ -43,7 +43,8 @@ public class GzipExtractor<T extends ModuleRequest> {
             LOG.warn("[{} - {}]: Error extracting tar  {}.", request.getLogName(), request.getId(), e.getMessage());
             throw new IllegalStateException(e);
         }
-        throw new IllegalStateException();
+        LOG.error("Missing artifact_context.xml in {}", input);
+        throw new IllegalStateException("Missing artifact_context.xml in " + input.toString());
     }
 
     public void extractTar(Path input, Path output) {
