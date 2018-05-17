@@ -104,6 +104,10 @@ public class DeployApplicationService implements DeployService<DeployApplication
                     return stopApplication.executeAsync(request);
                 })
                 .toList()
+                .flatMap(x -> {
+                    LOG.info("Done stopping all applications");
+                    return Observable.just(true);
+                })
                 .flatMap(x -> Observable.just(true));
     }
 
