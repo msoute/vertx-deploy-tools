@@ -20,11 +20,9 @@ public class StopApplication implements Command<DeployApplicationRequest> {
     private static final Logger LOG = LoggerFactory.getLogger(StopApplication.class);
     private static final Long POLLING_INTERVAL_IN_MS = 500L;
     private final LocalDateTime timeout;
-    private final LocalDateTime waitTimeout = LocalDateTime.now().plusSeconds(10);
     private final DeployConfig config;
     private final ProcessUtils processUtils;
     private final Vertx rxVertx;
-    private boolean killed = false;
 
     private String moduleIdToStop;
 
@@ -79,11 +77,6 @@ public class StopApplication implements Command<DeployApplicationRequest> {
                     if (!request.isRunning()) {
                         LOG.info("[{} - {}]: Application {} stopped.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
                         return just(request);
-                    }
-                    if (LocalDateTime.now().isAfter(waitTimeout) && !killed) {
-                        LOG.info("[{} - {}]: Application {} killed.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
-                        killed = ProcessUtils.killService(request.getMavenArtifactId());
-                        return doPoll(request);
                     } else {
                         LOG.trace("[{} - {}]: Application {} still running.", LogConstants.DEPLOY_REQUEST, request.getId(), request.getMavenArtifactId());
                         return doPoll(request);

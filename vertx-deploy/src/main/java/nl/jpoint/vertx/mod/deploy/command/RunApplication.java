@@ -1,5 +1,6 @@
 package nl.jpoint.vertx.mod.deploy.command;
 
+import com.amazonaws.util.EC2MetadataUtils;
 import io.vertx.rxjava.core.Vertx;
 import nl.jpoint.vertx.mod.deploy.DeployConfig;
 import nl.jpoint.vertx.mod.deploy.request.DeployApplicationRequest;
@@ -101,7 +102,12 @@ public class RunApplication implements Command<DeployApplicationRequest> {
 
         if (deployConfig.asCluster()) {
             command.add("-cluster");
+            if (deployConfig.isAwsEnabled()) {
+                command.add("-cluster-host");
+                command.add(EC2MetadataUtils.getPrivateIpAddress());
+            }
         }
+
         command.add("-Dvertxdeploy.port=" + deployConfig.getHttpPort());
         command.add("-Dvertxdeploy.scope.test=" + deployApplicationRequest.isTestScope());
 
