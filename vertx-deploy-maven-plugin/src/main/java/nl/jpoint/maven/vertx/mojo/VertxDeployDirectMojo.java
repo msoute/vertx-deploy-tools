@@ -1,7 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.service.DefaultDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -11,6 +10,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Mojo(name = "deploy-direct", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class VertxDeployDirectMojo extends AbstractDeployMojo {
 
@@ -24,7 +24,7 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
     private Boolean allowSnapshots;
     @Parameter(property = "deploy.restart", defaultValue = "false")
     private Boolean restart;
-    @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
+    @Parameter(property = "deploy.auth.token")
     private String authToken;
 
     @Override
@@ -41,13 +41,11 @@ public class VertxDeployDirectMojo extends AbstractDeployMojo {
         configuration.withAuthToken(authToken);
         configuration.withPort(port);
         super.activeConfiguration = configuration;
-        
+
         final List<Request> deployModuleRequests = utils.createDeployApplicationList(activeConfiguration);
         final List<Request> deployArtifactRequests = utils.createDeployArtifactList(activeConfiguration);
         final List<Request> deployConfigRequests = utils.createDeployConfigList(activeConfiguration);
 
-        DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
-        service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-
+        deploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
     }
 }

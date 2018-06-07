@@ -4,10 +4,11 @@
 
     <groupId>nl.jpoint</groupId>
     <artifactId>vertx-deploy-tools</artifactId>
-    <version>3.3.0-rc5-SNAPSHOT</version>
+    <version>3.5.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <description>Vert.x application for deploying of other Vert.x applications with support for AWS based infrastructure.
+    <description>Vert.x application for deploying of other Vert.x applications with support for AWS based
+        infrastructure.
     </description>
     <url>https://github.com/msoute/vertx-deploy-tools</url>
     <licenses>
@@ -20,7 +21,7 @@
     <name>Vert.x Deploy Tools</name>
 
     <modules>
-        <module>vertx-deploy</module>
+        <module>vertx-deploy-agent</module>
         <module>vertx-deploy-maven-plugin</module>
         <module>vertx-deploy-test</module>
         <module>vertx-deploy-test-application</module>
@@ -38,12 +39,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.3.3</vertx.platform.version>
+        <vertx.platform.version>3.5.1</vertx.platform.version>
         <aws.sdk.version>1.11.317</aws.sdk.version>
         <nexus.host>default</nexus.host>
-        <mockito.version>2.1.0-RC.1</mockito.version>
+        <mockito.version>2.12.0</mockito.version>
         <aetherVersion>1.1.0</aetherVersion>
         <mavenVersion>3.3.9</mavenVersion>
+        <dependency.check.report.dir>target/dependency-check</dependency.check.report.dir>
     </properties>
 
     <dependencyManagement>
@@ -56,7 +58,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
-                <version>4.4.6</version>
+                <version>4.4.8</version>
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
@@ -86,37 +88,34 @@
             </dependency>
 
             <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-opsworks</artifactId>
-                <version>${aws.sdk.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.21</version>
+                <version>1.7.25</version>
                 <scope>provided</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>log4j-over-slf4j</artifactId>
-                <version>1.7.21</version>
+                <version>1.7.25</version>
             </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.1.7</version>
+                <version>1.2.3</version>
                 <scope>provided</scope>
             </dependency>
-
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-core</artifactId>
                 <version>${vertx.platform.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-maven-service-factory</artifactId>
+                <version>${vertx.platform.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-web</artifactId>
@@ -175,6 +174,11 @@
                 <artifactId>aether-transport-http</artifactId>
                 <version>${aetherVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.5</version>
+            </dependency>
 
             <dependency>
                 <groupId>junit</groupId>
@@ -204,6 +208,20 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>3.1.2</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -261,6 +279,33 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>owasp</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <configuration>
+                            <cveValidForHours>12</cveValidForHours>
+                            <failBuildOnCVSS>4</failBuildOnCVSS>
+                            <outputDirectory>${dependency.check.report.dir}</outputDirectory>
+                            <suppressionFile>suppression.xml</suppressionFile>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>deploy</id>
             <activation>

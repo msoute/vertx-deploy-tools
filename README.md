@@ -331,6 +331,10 @@ The following AWS actions are needed for the deploy applications
 ## 3.3.2
 * [LOG] Log if artifact is missing artifact_context.xml
 
+## 3.5.0
+* [Upgrade] Upgrade to vert.x 3.5.1
+
+
 ## 3.3.1
 * [BUG] Deploy should fail if nginx test goes wrong
 

@@ -23,7 +23,7 @@ public class DefaultDeployService extends DeployService {
         this.requestTimeout = requestTimeout;
     }
 
-    public void normalDeploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
+    public void deploy(List<Request> deployModuleRequests, List<Request> deployArtifactRequests, List<Request> deployConfigRequests) throws MojoFailureException, MojoExecutionException {
 
         DeployRequest deployRequest = new DeployRequest.Builder()
                 .withModules(deployModuleRequests)

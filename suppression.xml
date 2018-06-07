@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+    <suppress>
+        <notes><![CDATA[
+        This suppresses CVE-2016-0749 for plexus-archiver-2.1.1.jar in any directory.
+        ]]></notes>
+        <sha1>b93f4dcb1c5644f635a8b5d4106c8c86841e1118</sha1>
+        <cve>CVE-2016-0749</cve>
+    </suppress>
+</suppressions>

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @JsonIgnoreProperties({"endpoint"})
 public class DeployRequest {
 

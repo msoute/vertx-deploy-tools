@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AwsRequestExecutor extends RequestExecutor {
 
-    public static final String ERROR_DEPLOYING_MODULE = "Error deploying module.";
+    private static final String ERROR_DEPLOYING_MODULE = "Error deploying module.";
 
     public AwsRequestExecutor(Log log, Integer requestTimeout, Integer port, String authToken) {
         super(log, requestTimeout, port, authToken);

@@ -8,7 +8,7 @@ import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.Tag;
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2AsyncClientBuilder;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancing;
@@ -46,8 +46,10 @@ public class AwsAutoScalingDeployUtils {
 
         awsAsClient = AmazonAutoScalingClientBuilder.standard().withRegion(region).build();
         awsElbClient = AmazonElasticLoadBalancingClientBuilder.standard().withRegion(region).build();
-        awsEc2Client = AmazonEC2AsyncClientBuilder.standard().withRegion(region).build();
+        awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(region).build();
+
         activeConfiguration.withAutoScalingGroup(matchAutoScalingGroupName(activeConfiguration.getAutoScalingGroupId()));
+
     }
 
     public AutoScalingGroup getAutoScalingGroup() {
@@ -171,7 +173,7 @@ public class AwsAutoScalingDeployUtils {
         return new Ec2Instance.Builder().withInstanceId(instance.getInstanceId()).withPrivateIp(instance.getPrivateIpAddress()).withPublicIp(instance.getPublicIpAddress()).build();
     }
 
-    public boolean setDesiredCapacity(AutoScalingGroup autoScalingGroup, Integer capacity) {
+    public void setDesiredCapacity(AutoScalingGroup autoScalingGroup, Integer capacity) {
         log.info("Setting desired capacity to : " + capacity);
 
         try {
@@ -179,10 +181,8 @@ public class AwsAutoScalingDeployUtils {
                     .withAutoScalingGroupName(autoScalingGroup.getAutoScalingGroupName())
                     .withDesiredCapacity(capacity)
                     .withHonorCooldown(false));
-            return true;
         } catch (AmazonClientException e) {
             log.error(e.getMessage(), e);
-            return false;
         }
     }
 
@@ -220,10 +220,6 @@ public class AwsAutoScalingDeployUtils {
             }
         }
         return true;
-    }
-
-    public void enableAsGroup(String autoScalingGroupName) {
-        awsAsClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest().withAutoScalingGroupName(autoScalingGroupName).withDesiredCapacity(1));
     }
 
     public boolean checkEc2Instance(String instanceId) {

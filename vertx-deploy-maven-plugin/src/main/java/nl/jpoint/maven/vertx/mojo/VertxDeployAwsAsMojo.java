@@ -11,6 +11,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Mojo(name = "deploy-single-as", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
 
@@ -18,33 +19,33 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private String autoScalingGroup;
     @Parameter(required = true, property = "deploy.as.strategy")
     private String strategy;
-    @Parameter(required = false, defaultValue = "1", property = "deploy.as.max")
+    @Parameter(defaultValue = "1", property = "deploy.as.max")
     private Integer maxGroupSize;
-    @Parameter(required = false, defaultValue = "0", property = "deploy.as.min")
+    @Parameter(defaultValue = "0", property = "deploy.as.min")
     private Integer minGroupSize;
-    @Parameter(required = false, defaultValue = "false", property = "deploy.as.elb")
+    @Parameter(defaultValue = "false", property = "deploy.as.elb")
     private boolean useElb;
-    @Parameter(required = false, defaultValue = "true", property = "deploy.as.private")
+    @Parameter(defaultValue = "true", property = "deploy.as.private")
     private boolean usePrivateIp;
-    @Parameter(required = false, defaultValue = "false", property = "deploy.as.test")
+    @Parameter(defaultValue = "false", property = "deploy.as.test")
     private boolean isTestScope;
-    @Parameter(required = false, defaultValue = "true", property = "deploy.as.config")
+    @Parameter(defaultValue = "true", property = "deploy.as.config")
     private boolean deployConfig;
-    @Parameter(required = false, defaultValue = "true", property = "deploy.as.restart")
+    @Parameter(defaultValue = "true", property = "deploy.as.restart")
     private boolean doRestart;
-    @Parameter(required = false, defaultValue = "true", property = "deploy.as.decrement")
+    @Parameter(defaultValue = "true", property = "deploy.as.decrement")
     private boolean decrementCapacity;
-    @Parameter(required = false, defaultValue = "true", property = "deploy.as.ignoreInStandby")
+    @Parameter(defaultValue = "true", property = "deploy.as.ignoreInStandby")
     private boolean ignoreInStandby;
-    @Parameter(required = false, defaultValue = "false", property = "deploy.as.allowSnapshots")
+    @Parameter(defaultValue = "false", property = "deploy.as.allowSnapshots")
     private boolean deploySnapshots;
-    @Parameter(required = false, defaultValue = "false", property = "deploy.as.stickiness")
+    @Parameter(defaultValue = "false", property = "deploy.as.stickiness")
     private boolean enableStickiness;
-    @Parameter(required = false, defaultValue = "", property = "deploy.as.properties")
-    protected String properties;
-    @Parameter(required = false, defaultValue = "", property = "deploy.auth.token")
+    @Parameter(property = "deploy.as.properties")
+    private String properties;
+    @Parameter(property = "deploy.auth.token")
     private String authToken;
-    @Parameter(required = false, defaultValue = "true", property = "deploy.as.spindown")
+    @Parameter(defaultValue = "true", property = "deploy.as.spindown")
     private boolean spindown;
 
 
@@ -63,7 +64,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
         getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
         AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
-        service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
+        service.deploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
 
     }
 

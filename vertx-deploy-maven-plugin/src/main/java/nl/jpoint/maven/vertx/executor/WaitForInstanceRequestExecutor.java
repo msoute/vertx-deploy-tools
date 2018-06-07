@@ -28,7 +28,7 @@ public class WaitForInstanceRequestExecutor {
         return updatedGroup.getInstances().isEmpty() ? null : updatedGroup.getInstances().get(0);
     }
 
-    public boolean executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils, InstanceStatus instanceStatus) {
+    public void executeRequest(final AutoScalingGroup autoScalingGroup, AwsAutoScalingDeployUtils awsDeployUtils, InstanceStatus instanceStatus) {
         final AtomicInteger waitFor = new AtomicInteger(1);
         final AtomicBoolean inService = new AtomicBoolean(false);
         final AtomicBoolean found = new AtomicBoolean(false);
@@ -73,7 +73,6 @@ public class WaitForInstanceRequestExecutor {
         } catch (Exception t) {
             log.error("Throwable: ", t);
         }
-        return inService.get();
     }
 
     @FunctionalInterface

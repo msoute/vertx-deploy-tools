@@ -4,9 +4,6 @@ import nl.jpoint.maven.vertx.request.DeployApplicationRequest;
 import nl.jpoint.maven.vertx.request.DeployArtifactRequest;
 import nl.jpoint.maven.vertx.request.DeployConfigRequest;
 import nl.jpoint.maven.vertx.request.Request;
-import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
-import nl.jpoint.maven.vertx.service.DefaultDeployService;
-import nl.jpoint.maven.vertx.service.OpsWorksDeployService;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -17,6 +14,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Mojo(name = "deploy-single", requiresDependencyResolution = ResolutionScope.RUNTIME)
 class VertxDeploySingleMojo extends AbstractDeployMojo {
 
@@ -26,7 +24,7 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
     private String groupId;
     @Parameter(property = "deploy.single.artifactId", required = true)
     private String artifactId;
-    @Parameter(property = "deploy.single.classifier", required = false)
+    @Parameter(property = "deploy.single.classifier")
     private String classifier;
     @Parameter(property = "deploy.single.version", required = true)
     private String version;
@@ -37,29 +35,15 @@ class VertxDeploySingleMojo extends AbstractDeployMojo {
         final DeployUtils utils = new DeployUtils(getLog(), project, remoteRepos, repoSystem, repoSession);
         setActiveDeployConfig();
 
-        if (activeConfiguration.useAutoScaling() && activeConfiguration.useOpsWorks()) {
-            throw new MojoFailureException("ActiveConfiguration " + activeConfiguration.getTarget() + " has both OpsWorks and Autoscaling enabled");
-        }
-
         activeConfiguration.getExclusions().addAll(utils.parseExclusions(exclusions));
 
         final List<Request> deployModuleRequests = DeployUtils.APPLICATION_TYPE.equals(type) ? createModuleRequest() : Collections.emptyList();
-        final List<Request> deployArtifactRequests = DeployUtils.ARTIFACT_TYPE_ZIP.equals(type) ? createArtifactRequest() : Collections.emptyList();
+        final List<Request> deployArtifactRequests = DeployUtils.ARTIFACT_TYPE_ZIP.equals(type) || DeployUtils.ARTIFACT_TYPE_GZIP.equals(type) ? createArtifactRequest() : Collections.emptyList();
         final List<Request> deployConfigRequests = DeployUtils.CONFIG_TYPE.equals(type) ? createConfigRequest() : Collections.emptyList();
 
         getLog().info("Constructed deploy request with '" + deployConfigRequests.size() + "' configs, '" + deployArtifactRequests.size() + "' artifacts and '" + deployModuleRequests.size() + "' modules");
-        getLog().info("Executing deploy request, waiting for Vert.x to respond.... (this might take some time)");
 
-        if (activeConfiguration.useAutoScaling()) {
-            AutoScalingDeployService service = new AutoScalingDeployService(activeConfiguration, region, port, requestTimeout, getLog(), project.getProperties());
-            service.deployWithAutoScaling(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        } else if (activeConfiguration.useOpsWorks()) {
-            OpsWorksDeployService service = new OpsWorksDeployService(activeConfiguration, region, port, requestTimeout, getLog());
-            service.deployWithOpsWorks(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        } else {
-            DefaultDeployService service = new DefaultDeployService(activeConfiguration, port, requestTimeout, getLog());
-            service.normalDeploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
-        }
+        deploy(deployModuleRequests, deployArtifactRequests, deployConfigRequests);
     }
 
     private List<Request> createModuleRequest() {

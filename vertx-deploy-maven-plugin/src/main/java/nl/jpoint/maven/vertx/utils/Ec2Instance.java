@@ -57,7 +57,6 @@ public class Ec2Instance {
         private String instanceId;
         private String publicIp;
         private String privateIp;
-        private AwsState asState;
 
         public Builder withInstanceId(String instanceId) {
             this.instanceId = instanceId;
