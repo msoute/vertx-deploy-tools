@@ -2,6 +2,7 @@ package nl.jpoint.maven.vertx.mojo;
 
 import nl.jpoint.maven.vertx.request.Request;
 import nl.jpoint.maven.vertx.service.AutoScalingDeployService;
+import nl.jpoint.maven.vertx.utils.DeployType;
 import nl.jpoint.maven.vertx.utils.DeployUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -47,6 +48,8 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
     private String authToken;
     @Parameter(defaultValue = "true", property = "deploy.as.spindown")
     private boolean spindown;
+    @Parameter(defaultValue = "default", property = "deploy.type")
+    private String deployType;
 
 
     @Override
@@ -87,6 +90,7 @@ public class VertxDeployAwsAsMojo extends AbstractDeployMojo {
                 .withPort(port)
                 .withSpinDown(spindown)
                 .withMetricsConfiguration(MetricsConfiguration.buildMetricsConfiguration(metricNamespace, metricApplication, metricEnvironment))
-                .withProjectVersion(projectVersionAsString());
+                .withProjectVersion(projectVersionAsString())
+                .withDeployType(DeployType.valueOf(deployType.toUpperCase()));
     }
 }

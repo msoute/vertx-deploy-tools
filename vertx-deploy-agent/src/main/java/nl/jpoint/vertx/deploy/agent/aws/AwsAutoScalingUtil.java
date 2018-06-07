@@ -18,10 +18,6 @@ import java.util.stream.Collectors;
 import static rx.Observable.just;
 
 public class AwsAutoScalingUtil {
-    public static final String LATEST_VERSION_TAG = "deploy:latest:version";
-    public static final String SCOPE_TAG = "deploy:scope:tst";
-    public static final String EXCLUSION_TAG = "deploy:exclusions";
-    public static final String PROPERTIES_TAGS = "deploy:classifier:properties";
     private static final Logger LOG = LoggerFactory.getLogger(AwsAutoScalingUtil.class);
     private final AmazonAutoScalingAsync asyncClient;
     private final String instanceId;
