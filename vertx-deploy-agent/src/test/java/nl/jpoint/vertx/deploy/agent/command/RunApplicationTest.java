@@ -69,7 +69,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getOnNextEvents_oldFormat_requestToNotContainMainService() {
+    public void getOnNextEventsWithOldFormatRequestToNotContainMainService() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/oldformat/");
         List<DeployApplicationRequest> result = execute();
         assertThat(result, hasSize(1));
@@ -78,7 +78,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getOnNextEvents_bothFormat_requestToNotContainMainService() {
+    public void getOnNextEventsWithBothFormatRequestToNotContainMainService() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/both/");
         List<DeployApplicationRequest> result = execute();
         assertThat(result, hasSize(1));
@@ -87,7 +87,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getOnNextEvents_withMainService_requestToContainMainService() {
+    public void getOnNextEventsWithMainServiceRequestToContainMainService() {
         when(config.getServiceConfigLocation()).thenReturn("runapplication/mainservice/");
         List<DeployApplicationRequest> result = execute();
         assertThat(result, hasSize(1));
@@ -96,14 +96,14 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getMavenCommand_noMainService_normalMavenCommand() {
+    public void getMavenCommandNoMainServiceNormalMavenCommand() {
         String result = new RunApplication(Vertx.vertx(), config).getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type"));
 
         assertThat(result, is("maven:group:artifact:version"));
     }
 
     @Test
-    public void getMavenCommand_withMainService_mavenCommandWithMainService() {
+    public void getMavenCommandWithMainServiceMavenCommandWithMainService() {
         String result = new RunApplication(Vertx.vertx(), config)
                 .getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type")
                         .withMainService("main_service"));
@@ -112,7 +112,7 @@ public class RunApplicationTest {
     }
 
     @Test
-    public void getMavenCommand_withEmptyMainService_normalMavenCommand() {
+    public void getMavenCommandWithEmptyMainServiceNormalMavenCommand() {
         String result = new RunApplication(Vertx.vertx(), config)
                 .getMavenCommand(new DeployApplicationRequest("group", "artifact", "version", "classifier", "type").withMainService(" "));
 
