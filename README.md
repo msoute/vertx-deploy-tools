@@ -323,6 +323,13 @@ The following AWS actions are needed for the deploy applications
 
 # Changelog
 
+## 3.5.1
+* [Upgrade] Upgrade vertx platform to 3.5.2
+
+## 3.5.0
+* [Upgrade] Upgrade vertx platform to 3.5.1
+* [Remove] remove opsworks support
+
 ## 3.3.3
 * [BUG] Add cluster host for ec2 instances
 * [BUG] Do not kill services
