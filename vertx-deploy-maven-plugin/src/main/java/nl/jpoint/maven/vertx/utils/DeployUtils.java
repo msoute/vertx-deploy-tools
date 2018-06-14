@@ -58,7 +58,7 @@ public class DeployUtils {
 
     public List<Request> createDeployArtifactList(DeployConfiguration activeConfiguration) throws MojoFailureException {
         if (activeConfiguration.getDeployType() == DeployType.APPLICATION) {
-            log.info("Skipping applications for deploy with type APPLICATION");
+            log.info("Skipping artifacts for deploy with type APPLICATION");
             return new ArrayList<>();
         }
         List<Request> result = createDeployListByType(activeConfiguration, ARTIFACT_TYPE_ZIP).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
