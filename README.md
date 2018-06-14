@@ -340,6 +340,18 @@ The following AWS actions are needed for the deploy applications
 * [Upgrade] Upgrade to vert.x 3.5.1
 
 
+## 3.3.3
+* [BUG] Add cluster host for ec2 instances
+* [BUG] Do not kill services
+* [BUG] Move logline
+
+## 3.3.2
+* [LOG] Log if artifact is missing artifact_context.xml
+
+## 3.5.0
+* [Upgrade] Upgrade to vert.x 3.5.1
+
+
 ## 3.3.1
 * [BUG] Deploy should fail if nginx test goes wrong
 
