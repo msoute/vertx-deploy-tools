@@ -46,7 +46,8 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
 * **vertx.clustering** : (boolean) Enables -cluster
-* **aws.as.autodiscover** (boolean) Enables auto discovery of artifacts that need to be deployed (default false)
+* **aws.as.autodiscover** : (boolean) Enables auto discovery of artifacts that need to be deployed (default false)
+* **typed.deploy** : (boolean) Enabled typed deploys (default false)
 
 # Deploy configuration 
 ## Deploy artifacts.
@@ -221,6 +222,8 @@ mvn target options (-D):
 
 * **deploy.as.properties** : See Autodiscover deploys
 
+* **deploy.type** : See typed deploys
+
 * **deploy.metrics.namespace** : The CloudWatch namespace to use *required to enable metrics*
 * **deploy.metrics.application** : The Application name *required to enable metrics*
 * **deploy.metrics.environment** : The Application environment *optional*
@@ -290,6 +293,10 @@ If autoscaling is setup the deploy application can try to auto-discover what nee
 
 ## deploy.as.properties
 
+# Typed deploys
+Split deploys into artifact and application only deploys.
+TODO: More info
+
 Comma separated list of build options that who's values are stored in order to execute an autodiscover deploy.
 i.e. If a build uses a propertie ${target.env} in its pom the resovled value needs to be persisted to an autoscaling group tag in order for an autodiscover deploy
 to deploy the exact same version.
@@ -322,6 +329,12 @@ The following AWS actions are needed for the deploy applications
 
 
 # Changelog
+## 3.5.2
+* [Feature] Add typed deploys
+* [BUG] Fix ignoring configs during deploy when **deploy.as.config** is false
+
+## 3.5.1
+* [Upgrade] Upgrade to vert.x 3.5.2
 
 ## 3.5.0
 * [Upgrade] Upgrade to vert.x 3.5.1

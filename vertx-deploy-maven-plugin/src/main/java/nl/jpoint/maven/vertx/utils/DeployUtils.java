@@ -67,7 +67,12 @@ public class DeployUtils {
     }
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, CONFIG_TYPE).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+        if (activeConfiguration.isDeployConfig()) {
+            return createDeployListByType(activeConfiguration, CONFIG_TYPE).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+        } else {
+            log.info("Skipping config artifacts");
+            return new ArrayList<>();
+        }
     }
 
     public List<String> parseProperties(String properties) {
