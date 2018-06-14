@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.jpoint</groupId>
     <artifactId>vertx-deploy-tools</artifactId>
-    <version>3.5.2</version>
+    <version>3.5.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vert.x application for deploying of other Vert.x applications with support for AWS based
@@ -33,7 +34,7 @@
         <developerConnection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</developerConnection>
         <connection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</connection>
         <url>https://github.com/msoute/vertx-deploy-mod</url>
-        <tag>vertx-deploy-tools-3.5.2</tag>
+        <tag>master</tag>
     </scm>
 
     <properties>
