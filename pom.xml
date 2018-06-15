@@ -39,7 +39,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.5.1</vertx.platform.version>
+        <vertx.platform.version>3.5.2</vertx.platform.version>
         <aws.sdk.version>1.11.317</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>2.12.0</mockito.version>
