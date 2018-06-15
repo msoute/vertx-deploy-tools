@@ -33,6 +33,7 @@ public class DeployConfig {
     private static final String CLUSTER = "vertx.clustering";
     private static final String DEFAULT_JAVA_OPTS = "vertx.default.java.opts";
     private static final String AWS_AS_AUTODISCOVER = "aws.as.autodiscover";
+    private static final String TYPED_DEPLOY = "typed.deploy";
 
     private static final String AUTH_TOKEN = "auth.token";
 
@@ -58,6 +59,7 @@ public class DeployConfig {
     private String defaultJavaOpts;
     private String runDir;
     private String statFile;
+    private boolean typedDeploy = false;
 
     private boolean awsAutoDiscover = false;
     private String serviceConfigLocation;
@@ -120,6 +122,7 @@ public class DeployConfig {
                 .withCluster(config)
                 .withRunDir(config)
                 .withLoggerFactoryName(config)
+                .withTypedDeploy(config)
                 .withRemoteRepoUpdatePolicy(config);
 
         if (!config.isEmpty()) {
@@ -133,6 +136,10 @@ public class DeployConfig {
         return this;
     }
 
+    private DeployConfig withTypedDeploy(JsonObject config) {
+        this.typedDeploy = config.getBoolean(TYPED_DEPLOY, false);
+        return this;
+    }
 
     private DeployConfig withConfigLocation(JsonObject config) {
         this.configLocation = config.getString(CONFIG_LOCATION, "");
@@ -292,5 +299,9 @@ public class DeployConfig {
 
     public String getServiceConfigLocation() {
         return serviceConfigLocation;
+    }
+
+    public boolean isTypedDeploy() {
+        return this.typedDeploy;
     }
 }

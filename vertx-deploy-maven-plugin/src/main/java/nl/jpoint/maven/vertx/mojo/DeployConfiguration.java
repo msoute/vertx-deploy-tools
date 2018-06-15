@@ -1,5 +1,6 @@
 package nl.jpoint.maven.vertx.mojo;
 
+import nl.jpoint.maven.vertx.utils.DeployType;
 import nl.jpoint.maven.vertx.utils.deploy.strategy.DeployStrategyType;
 import org.apache.maven.model.Exclusion;
 
@@ -75,10 +76,8 @@ public class DeployConfiguration {
     private boolean withMetrics = false;
     private MetricsConfiguration metricsConfiguration = null;
 
-    /**
-     * AWS OpsWorks Properties
-     **/
-    private String opsWorksLayerId = null;
+    private DeployType deployType = DeployType.DEFAULT;
+
     private String authToken;
 
     public String getAuthToken() {
@@ -181,6 +180,9 @@ public class DeployConfiguration {
         return metricsConfiguration;
     }
 
+    public DeployType getDeployType() {
+        return this.deployType;
+    }
 
     public List<Integer> getStickyPorts() {
         return stickyPorts.stream().map(Integer::valueOf).collect(Collectors.toList());
@@ -297,6 +299,11 @@ public class DeployConfiguration {
     public DeployConfiguration withMetricsConfiguration(MetricsConfiguration metricsConfiguration) {
         this.withMetrics = metricsConfiguration != null;
         this.metricsConfiguration = metricsConfiguration;
+        return this;
+    }
+
+    public DeployConfiguration withDeployType(DeployType type) {
+        this.deployType = type;
         return this;
     }
 }

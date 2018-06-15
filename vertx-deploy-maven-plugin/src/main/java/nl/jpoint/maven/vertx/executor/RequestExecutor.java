@@ -5,12 +5,15 @@ import com.amazonaws.util.StringUtils;
 import nl.jpoint.maven.vertx.request.DeployRequest;
 import nl.jpoint.maven.vertx.utils.AwsState;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 
 public abstract class RequestExecutor {
@@ -28,12 +31,14 @@ public abstract class RequestExecutor {
     }
 
     HttpPost createPost(DeployRequest deployRequest, String host) {
-        log.info("Deploying to host : " + host);
-        HttpPost post = new HttpPost(createDeployUri(host) + deployRequest.getEndpoint());
+        URI deployUri = createDeployUri(host, deployRequest.getEndpoint());
+        log.info("Deploying to host : " + deployUri.toString());
+        HttpPost post = new HttpPost(deployUri);
         if (!StringUtils.isNullOrEmpty(authToken)) {
             log.info("Adding authToken to request header.");
             post.addHeader("authToken", authToken);
         }
+
         ByteArrayInputStream bos = new ByteArrayInputStream(deployRequest.toJson(false).getBytes());
         BasicHttpEntity entity = new BasicHttpEntity();
         entity.setContent(bos);
@@ -43,15 +48,13 @@ public abstract class RequestExecutor {
     }
 
 
-    private String createDeployUri(String host) {
-        String mappedHost = null;
-        if (!host.startsWith("http://")) {
-            mappedHost = "http://" + host;
+    private URI createDeployUri(String host, String endpoint) {
+        try {
+            return new URIBuilder().setScheme("http").setHost(host).setPort(port).setPath(endpoint).build();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
         }
-        if (!host.endsWith(Integer.toString(port))) {
-            mappedHost = host + ":" + port;
-        }
-        return mappedHost != null ? mappedHost : host;
+
     }
 
     long getTimeout() {

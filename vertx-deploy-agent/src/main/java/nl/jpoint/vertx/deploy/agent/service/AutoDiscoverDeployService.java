@@ -5,6 +5,7 @@ import nl.jpoint.vertx.deploy.agent.DeployConfig;
 import nl.jpoint.vertx.deploy.agent.aws.AwsAutoScalingUtil;
 import nl.jpoint.vertx.deploy.agent.request.*;
 import nl.jpoint.vertx.deploy.agent.util.AetherUtil;
+import nl.jpoint.vertx.deploy.agent.util.DeployType;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -16,10 +17,7 @@ import org.eclipse.aether.resolution.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,23 +49,20 @@ public class AutoDiscoverDeployService {
         }
 
         Map<String, String> tags = awsAutoScalingUtil.getDeployTags();
+        final boolean testScope;
+        List<Artifact> dependencies = new ArrayList<>();
 
-        if (!tags.containsKey(AwsAutoScalingUtil.LATEST_VERSION_TAG) || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG) == null || tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG).isEmpty()) {
-            LOG.info("No tag {} in auto scaling group.", AwsAutoScalingUtil.LATEST_VERSION_TAG);
-            return;
+        if (deployConfig.isTypedDeploy()) {
+            testScope = Boolean.parseBoolean(tags.getOrDefault(DeployType.APPLICATION.getScopeTag(), "false")) ||
+                    Boolean.parseBoolean(tags.getOrDefault(DeployType.ARTIFACT.getScopeTag(), "false"));
+            dependencies.addAll(getDependenciesForDeployType(tags, DeployType.APPLICATION, testScope));
+            dependencies.addAll(getDependenciesForDeployType(tags, DeployType.ARTIFACT, testScope));
+        } else {
+            testScope = Boolean.parseBoolean(tags.getOrDefault(DeployType.DEFAULT.getScopeTag(), "false"));
+            dependencies.addAll(getDependenciesForDeployType(tags, DeployType.DEFAULT, testScope));
         }
 
-        Artifact deployArtifact = getDeployArtifact(tags.get(AwsAutoScalingUtil.LATEST_VERSION_TAG));
-        boolean testScope = Boolean.parseBoolean(tags.getOrDefault(AwsAutoScalingUtil.SCOPE_TAG, "false"));
-
-        if (deployArtifact != null) {
-            List<Artifact> dependencies = getDeployDependencies(deployArtifact,
-                    getExclusions(tags.getOrDefault(AwsAutoScalingUtil.EXCLUSION_TAG, "")),
-                    testScope,
-                    getProperties(tags.getOrDefault(AwsAutoScalingUtil.PROPERTIES_TAGS, "")));
-
-            dependencies.forEach(a -> LOG.trace("{}:{}:{}:{}", a.getGroupId(), a.getArtifactId(), a.getClassifier(), a.getVersion()));
-
+        if (!dependencies.isEmpty()) {
             DeployRequest request = this.createAutoDiscoverDeployRequest(dependencies, testScope);
             LOG.info("[{}] : Starting auto discover deploy ", request.getId());
             just(request)
@@ -82,6 +77,24 @@ public class AutoDiscoverDeployService {
                     .subscribe();
         }
 
+    }
+
+    private List<Artifact> getDependenciesForDeployType(Map<String, String> tags, DeployType type, boolean testScope) {
+        if (!tags.containsKey(type.getLatestRequestTag()) || tags.get(type.getLatestRequestTag()) == null || tags.get(type.getLatestRequestTag()).isEmpty()) {
+            LOG.info("No tag {} in auto scaling group.", type.getLatestRequestTag());
+            return new ArrayList<>();
+        }
+        Artifact deployArtifact = getDeployArtifact(tags.get(type.getLatestRequestTag()));
+        List<Artifact> dependencies = new ArrayList<>();
+        if (deployArtifact != null) {
+            dependencies.addAll(getDeployDependencies(deployArtifact,
+                    getExclusions(tags.getOrDefault(type.getExclusionTag(), "")),
+                    testScope,
+                    getProperties(tags.getOrDefault(type.getPropertiesTag(), "")), type));
+            dependencies.forEach(a -> LOG.trace("{}:{}:{}:{}", a.getGroupId(), a.getArtifactId(), a.getClassifier(), a.getVersion()));
+        }
+
+        return dependencies;
     }
 
     private DeployRequest createAutoDiscoverDeployRequest(List<Artifact> dependencies, boolean testScope) {
@@ -118,11 +131,10 @@ public class AutoDiscoverDeployService {
         return null;
     }
 
-    private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, boolean testScope, Map<String, String> properties) {
+    private List<Artifact> getDeployDependencies(Artifact artifact, List<Exclusion> exclusions, boolean testScope, Map<String, String> properties, DeployType type) {
         ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
         descriptorRequest.setRepositories(AetherUtil.newRepositories(deployConfig));
         descriptorRequest.setArtifact(artifact);
-
         Model model = AetherUtil.readPom(artifact);
         if (model == null) {
             throw new IllegalStateException("Unable to read POM for " + artifact.getFile());
@@ -131,6 +143,7 @@ public class AutoDiscoverDeployService {
             ArtifactDescriptorResult descriptorResult = system.readArtifactDescriptor(session, descriptorRequest);
 
             return descriptorResult.getDependencies().stream()
+                    .filter(d -> type == DeployType.DEFAULT || (type == DeployType.APPLICATION && !d.getArtifact().getExtension().equals("zip")) || (type == DeployType.ARTIFACT && !d.getArtifact().getExtension().equals("jar")))
                     .filter(d -> "compile".equalsIgnoreCase(d.getScope()) || ("test".equalsIgnoreCase(d.getScope()) && testScope))
                     .filter(d -> !exclusions.contains(new Exclusion(d.getArtifact().getGroupId(), d.getArtifact().getArtifactId(), null, null)))
                     .map(Dependency::getArtifact)

@@ -49,17 +49,30 @@ public class DeployUtils {
     }
 
     public List<Request> createDeployApplicationList(DeployConfiguration activeConfiguration) throws MojoFailureException {
+        if (activeConfiguration.getDeployType() == DeployType.ARTIFACT) {
+            log.info("Skipping applications for deploy with type ARTIFACT");
+            return new ArrayList<>();
+        }
         return createDeployListByType(activeConfiguration, APPLICATION_TYPE).stream().map(dependency -> new DeployApplicationRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType(), activeConfiguration.doRestart())).collect(Collectors.toList());
     }
 
     public List<Request> createDeployArtifactList(DeployConfiguration activeConfiguration) throws MojoFailureException {
+        if (activeConfiguration.getDeployType() == DeployType.APPLICATION) {
+            log.info("Skipping artifacts for deploy with type APPLICATION");
+            return new ArrayList<>();
+        }
         List<Request> result = createDeployListByType(activeConfiguration, ARTIFACT_TYPE_ZIP).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
         result.addAll(createDeployListByType(activeConfiguration, ARTIFACT_TYPE_GZIP).stream().map(dependency -> new DeployArtifactRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList()));
         return result;
     }
 
     public List<Request> createDeployConfigList(DeployConfiguration activeConfiguration) throws MojoFailureException {
-        return createDeployListByType(activeConfiguration, CONFIG_TYPE).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+        if (activeConfiguration.isDeployConfig()) {
+            return createDeployListByType(activeConfiguration, CONFIG_TYPE).stream().map(dependency -> new DeployConfigRequest(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getClassifier(), dependency.getType())).collect(Collectors.toList());
+        } else {
+            log.info("Skipping config artifacts");
+            return new ArrayList<>();
+        }
     }
 
     public List<String> parseProperties(String properties) {
