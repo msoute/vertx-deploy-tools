@@ -328,8 +328,8 @@ The following AWS actions are needed for the deploy applications
         "autoscaling:ExitStandby"
 
 
-# Changelog
-## 3.5.2
+#Changelog
+## 3.5.3
 * [Feature] Add typed deploys
 * [BUG] Fix ignoring configs during deploy when **deploy.as.config** is false
 
