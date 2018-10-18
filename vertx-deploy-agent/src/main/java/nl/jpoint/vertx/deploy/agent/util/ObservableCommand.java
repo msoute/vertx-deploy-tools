@@ -45,7 +45,8 @@ public class ObservableCommand<R extends ModuleRequest> {
                     } else {
                         if (process.exitValue() != expectedResultCode) {
                             printStream(process.getInputStream(), false);
-                            throw new IllegalStateException(printStream(process.getErrorStream(), true));
+                            printStream(process.getErrorStream(), true);
+                            throw new IllegalStateException();
                         } else {
                             printStream(process.getInputStream(), false);
                         }
@@ -68,9 +69,9 @@ public class ObservableCommand<R extends ModuleRequest> {
         }, Emitter.BackpressureMode.NONE);
     }
 
-    private String printStream(InputStream stream, boolean error) {
+    private void printStream(InputStream stream, boolean error) {
         if (stream == null) {
-            return null;
+            return;
         }
         String line;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
@@ -81,7 +82,6 @@ public class ObservableCommand<R extends ModuleRequest> {
                     LOG.info("[{} - {}]: Command output -> '{}'", LogConstants.CONSOLE_COMMAND, request.getId(), line);
                 }
             }
-            return line;
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new IllegalStateException(e);

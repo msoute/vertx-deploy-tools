@@ -24,6 +24,10 @@ public class MetadataXPathUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetadataXPathUtil.class);
 
+    private MetadataXPathUtil() {
+        // hide constructor
+    }
+
     public static String getRealSnapshotVersionFromMetadata(byte[] metadata, ModuleRequest request) {
         XPath xPath = XPathFactory.newInstance().newXPath();
 

@@ -31,7 +31,7 @@ public class RestDeployArtifactHandler implements Handler<RoutingContext> {
                 return;
             }
 
-            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, artifactRequest.getId().toString(), postData);
+            LOG.info("[{} - {}]: Received deploy artifact request {}", LogConstants.DEPLOY_ARTIFACT_REQUEST, artifactRequest.getId(), postData);
 
             service.deployAsync(artifactRequest)
                     .doOnCompleted(() -> HttpUtils.respondOk(context.request()))

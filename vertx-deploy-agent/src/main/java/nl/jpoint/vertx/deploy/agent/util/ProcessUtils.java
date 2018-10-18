@@ -88,8 +88,12 @@ public class ProcessUtils {
                     }
                 }
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             LOG.error("[{}]: -  Failed to list modules '{}'", LogConstants.STARTUP, e.getMessage(), e);
+
+        } catch (InterruptedException e) {
+            LOG.error("[{}]: -  Interrupted while listing modules '{}'", LogConstants.STARTUP, e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
         return result;
     }

@@ -12,8 +12,8 @@ public class DeployApplicationRequest extends Request {
     @JsonProperty
     private final boolean restart;
 
-    public DeployApplicationRequest(String group_id, String artifact_id, String version, String classifier, String type, boolean restart) {
-        super(group_id, artifact_id, version, classifier, type);
+    public DeployApplicationRequest(String groupId, String artifactId, String version, String classifier, String type, boolean restart) {
+        super(groupId, artifactId, version, classifier, type);
         this.restart = restart;
     }
 

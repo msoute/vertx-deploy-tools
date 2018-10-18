@@ -44,6 +44,10 @@ public class AwsCloudWatchUtils {
     }
 
     private void logMetric(String metricName) {
+        if (activeConfiguration.getMetricsConfiguration() == null) {
+            return;
+        }
+
         Dimension dimension1 = new Dimension().withName("Application").withValue(activeConfiguration.getMetricsConfiguration().getApplication());
         Dimension dimension2 = new Dimension().withName("Environments").withValue(activeConfiguration.getMetricsConfiguration().getEnvironment());
 

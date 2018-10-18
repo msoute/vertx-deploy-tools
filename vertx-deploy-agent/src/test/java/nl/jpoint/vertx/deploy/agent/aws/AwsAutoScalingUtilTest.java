@@ -1,6 +1,7 @@
 package nl.jpoint.vertx.deploy.agent.aws;
 
 import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.aws.loadbalancer.AwsElbUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class AwsAutoScalingUtilTest {
 
     @Mock
-    DeployConfig config;
+    private DeployConfig config;
     private final static String AWS_REGION = "eu-west-1";
     private final static String AS_GROUP_ID = "gid";
     private final static String INSTANCE_ID = "iid";

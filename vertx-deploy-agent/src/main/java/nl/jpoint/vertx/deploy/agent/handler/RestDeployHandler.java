@@ -50,7 +50,7 @@ public class RestDeployHandler implements Handler<RoutingContext> {
             deployRequest.setTimestamp(System.currentTimeMillis());
 
             LOG.info("[{} - {}]: Received deploy request with {} config(s), {} module(s) and {} artifact(s) ", LogConstants.DEPLOY_REQUEST,
-                    deployRequest.getId().toString(),
+                    deployRequest.getId(),
                     deployRequest.getConfigs() != null ? deployRequest.getConfigs().size() : 0,
                     deployRequest.getModules() != null ? deployRequest.getModules().size() : 0,
                     deployRequest.getArtifacts() != null ? deployRequest.getArtifacts().size() : 0);

@@ -2,9 +2,9 @@ package nl.jpoint.vertx.deploy.agent.aws.state;
 
 import nl.jpoint.vertx.deploy.agent.DeployConfig;
 import nl.jpoint.vertx.deploy.agent.aws.AwsAutoScalingUtil;
-import nl.jpoint.vertx.deploy.agent.aws.AwsElbUtil;
 import nl.jpoint.vertx.deploy.agent.aws.AwsException;
 import nl.jpoint.vertx.deploy.agent.aws.AwsState;
+import nl.jpoint.vertx.deploy.agent.aws.loadbalancer.AwsElbUtil;
 import nl.jpoint.vertx.deploy.agent.command.Command;
 import nl.jpoint.vertx.deploy.agent.request.DeployRequest;
 import nl.jpoint.vertx.deploy.agent.util.LogConstants;
@@ -30,7 +30,7 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
     public Observable<DeployRequest> executeAsync(DeployRequest request) {
         try {
             return awsAsUtil.listLoadBalancers(request.getAutoScalingGroup())
-                    .flatMap(awsElbUtil::deRegisterInstanceFromLoadbalancer)
+                    .flatMap(awsElbUtil::deRegisterInstance)
                     .flatMap(elb -> poller.poll(request, elb));
         } catch (AwsException e) {
             LOG.error("[{} - {}]: Error while executing request to AWS -> {}", LogConstants.AWS_ELB_REQUEST, request.getId(), e.getMessage(), e);

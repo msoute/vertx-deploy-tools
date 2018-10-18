@@ -1,4 +1,4 @@
-package nl.jpoint.vertx.deploy.agent.aws;
+package nl.jpoint.vertx.deploy.agent.aws.loadbalancer;
 
 
 import com.amazonaws.AmazonClientException;
@@ -7,6 +7,9 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingAsy
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.util.EC2MetadataUtils;
 import nl.jpoint.vertx.deploy.agent.DeployConfig;
+import nl.jpoint.vertx.deploy.agent.aws.AwsException;
+import nl.jpoint.vertx.deploy.agent.aws.AwsInstance;
+import nl.jpoint.vertx.deploy.agent.aws.AwsState;
 import nl.jpoint.vertx.deploy.agent.util.LogConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,25 +19,25 @@ import java.util.Optional;
 
 import static rx.Observable.just;
 
-public class AwsElbUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(AwsElbUtil.class);
+class AwsElbUtilV1 {
+    private static final Logger LOG = LoggerFactory.getLogger(AwsElbUtilV1.class);
     private final AmazonElasticLoadBalancingAsync elbAsyncClient;
     private final String instanceId;
 
-    public AwsElbUtil(DeployConfig config) {
+    AwsElbUtilV1(DeployConfig config) {
         this.elbAsyncClient = AmazonElasticLoadBalancingAsyncClientBuilder.standard().withRegion(config.getAwsRegion()).build();
         this.instanceId = EC2MetadataUtils.getInstanceId();
     }
 
-    public Observable<String> registerInstanceWithLoadBalancer(String loadBalancer) {
+    Observable<AwsInstance> registerInstanceWithLoadBalancer(String loadBalancer) {
         if (instanceId == null || loadBalancer == null) {
             LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
             throw new IllegalStateException();
         }
         try {
             return Observable.from(elbAsyncClient.registerInstancesWithLoadBalancerAsync(new RegisterInstancesWithLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
-                    .flatMap(x -> Observable.just(loadBalancer))
-                    .doOnError(t -> LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, t));
+                    .flatMap(x -> Observable.just(AwsInstance.forELB(loadBalancer))
+                            .doOnError(t -> LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, t)));
         } catch (AmazonClientException e) {
             LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
@@ -42,7 +45,7 @@ public class AwsElbUtil {
 
     }
 
-    public Observable<String> deRegisterInstanceFromLoadbalancer(String loadBalancer) {
+    Observable<AwsInstance> deRegisterInstanceFromLoadbalancer(String loadBalancer) {
 
         if (instanceId == null || loadBalancer == null) {
             LOG.error("Unable to register instance {}, on load balancer {}.", instanceId, loadBalancer);
@@ -51,15 +54,14 @@ public class AwsElbUtil {
 
         try {
             return Observable.from(elbAsyncClient.deregisterInstancesFromLoadBalancerAsync(new DeregisterInstancesFromLoadBalancerRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
-                    .flatMap(x -> Observable.just(loadBalancer));
+                    .flatMap(x -> Observable.just(AwsInstance.forELB(loadBalancer)));
         } catch (AmazonClientException e) {
             LOG.error(LogConstants.ERROR_EXECUTING_REQUEST, e);
             throw new AwsException(e);
         }
     }
 
-
-    public Observable<AwsState> pollForInstanceState(final String loadBalancer) {
+    Observable<AwsState> pollForInstanceState(final String loadBalancer) {
         try {
             return Observable.from(elbAsyncClient.describeInstanceHealthAsync(new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancer).withInstances(new Instance().withInstanceId(instanceId))))
                     .flatMap(result -> {
@@ -72,7 +74,5 @@ public class AwsElbUtil {
         }
     }
 
-    public String getInstanceId() {
-        return instanceId;
-    }
+
 }

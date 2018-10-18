@@ -28,7 +28,7 @@ public class RestDeployModuleHandler implements Handler<RoutingContext> {
                 return;
             }
 
-            LOG.info("[{} - {}]: Received deploy module {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId().toString(), deployRequest.toString());
+            LOG.info("[{} - {}]: Received deploy module {}", LogConstants.DEPLOY_REQUEST, deployRequest.getId(), deployRequest);
 
             service.deployAsync(deployRequest)
                     .doOnCompleted(() -> HttpUtils.respondOk(context.request()))

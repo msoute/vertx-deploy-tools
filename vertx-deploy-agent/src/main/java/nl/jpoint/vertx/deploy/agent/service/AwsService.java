@@ -59,7 +59,7 @@ public class AwsService {
 
     public Observable<DeployRequest> loadBalancerRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
             this.failBuild(deployRequest.getId().toString(), LogConstants.REQUEST_NOT_REGISTERED, null);
             throw new IllegalStateException();
         }
@@ -71,7 +71,7 @@ public class AwsService {
 
     public Observable<DeployRequest> loadBalancerDeRegisterInstance(DeployRequest deployRequest) {
         if (!runningRequests.containsKey(deployRequest.getId().toString())) {
-            LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId().toString());
+            LOG.error(LogConstants.REQUEST_NOT_REGISTERED, LogConstants.AWS_ELB_REQUEST, deployRequest.getId());
             this.failBuild(deployRequest.getId().toString(), LogConstants.REQUEST_NOT_REGISTERED, null);
             throw new IllegalStateException();
         }

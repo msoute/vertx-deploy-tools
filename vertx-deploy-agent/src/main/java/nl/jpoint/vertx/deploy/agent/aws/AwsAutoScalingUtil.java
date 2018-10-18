@@ -66,6 +66,12 @@ public class AwsAutoScalingUtil {
         }
     }
 
+    public Observable<String> listTargetGroups(final String groupId) {
+        return Observable.from(asyncClient.describeLoadBalancerTargetGroupsAsync(new DescribeLoadBalancerTargetGroupsRequest().withAutoScalingGroupName(groupId)))
+                .map(result -> result.getLoadBalancerTargetGroups().stream().map(LoadBalancerTargetGroupState::getLoadBalancerTargetGroupARN).collect(Collectors.toList()))
+                .flatMap(Observable::from);
+    }
+
     public boolean enterStandby(final String groupId, boolean decrementDesiredCapacity) {
         try {
             DescribeAutoScalingInstancesResult result = asyncClient.describeAutoScalingInstances(new DescribeAutoScalingInstancesRequest().withMaxRecords(1).withInstanceIds(instanceId));

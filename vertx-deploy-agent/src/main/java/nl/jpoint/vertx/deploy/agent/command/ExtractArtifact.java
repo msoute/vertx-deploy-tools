@@ -45,7 +45,9 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
             case ModuleRequest.GZIP_TYPE:
                 return extractGZip(request);
             default:
-                LOG.error("Unsupported artifact type : " + request.getType());
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(String.format("Unsupported artifact type : %s", request.getType()));
+                }
                 throw new IllegalStateException();
         }
     }
@@ -95,7 +97,7 @@ public class ExtractArtifact<T extends ModuleRequest> implements Command<T> {
                     newDigest = fileDigestUtil.getFileMd5Sum(unpackFile);
                 }
                 if (!request.restart() && request.checkConfig() && !Arrays.equals(oldDigest, newDigest)) {
-                    LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", request.getLogName(), request.getId(), request.getModuleId());
+                    LOG.warn("[{} - {}]: Config changed, forcing container restart if necessary.", request.getLogName(), request.getId());
                     request.setRestart(true);
                 }
 

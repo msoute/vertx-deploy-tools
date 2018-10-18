@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.util.Objects;
+
 import static rx.Observable.just;
 
 public class DeployConfigService implements DeployService<DeployConfigRequest, Boolean> {
@@ -51,18 +53,17 @@ public class DeployConfigService implements DeployService<DeployConfigRequest, B
     }
 
     private Observable<DeployConfigRequest> runTestCommand(DeployConfigRequest deployConfigRequest) {
-        if (deployConfigRequest.getTestCommand().isPresent()) {
-            RunConsoleCommand consoleCommand = new RunConsoleCommand(vertx, deployConfigRequest.getTestCommand().get());
-            return consoleCommand.executeAsync(deployConfigRequest);
-        }
-        return just(deployConfigRequest);
+        return runCommand(deployConfigRequest.getTestCommand().map(command -> new RunConsoleCommand(vertx, command)).orElse(null), deployConfigRequest);
     }
 
     private Observable<DeployConfigRequest> runRestartCommand(DeployConfigRequest deployConfigRequest) {
-        if (deployConfigRequest.getRestartCommand().isPresent()) {
-            RunConsoleCommand consoleCommand = new RunConsoleCommand(vertx, deployConfigRequest.getRestartCommand().get());
-            return consoleCommand.executeAsync(deployConfigRequest);
+        return runCommand(deployConfigRequest.getRestartCommand().map(command -> new RunConsoleCommand(vertx, command)).orElse(null), deployConfigRequest);
+    }
+
+    private Observable<DeployConfigRequest> runCommand(RunConsoleCommand consoleCommand, DeployConfigRequest deployConfigRequest) {
+        if (Objects.isNull(consoleCommand)) {
+            return just(deployConfigRequest);
         }
-        return just(deployConfigRequest);
+        return consoleCommand.executeAsync(deployConfigRequest);
     }
 }

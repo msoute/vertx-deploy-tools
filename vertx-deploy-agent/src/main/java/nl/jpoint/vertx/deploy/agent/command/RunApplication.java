@@ -15,10 +15,7 @@ import rx.Observable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static rx.Observable.just;
 
@@ -43,7 +40,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
         LOG.info("[{} - {}]: Running module '{}'", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId());
         return this.readServiceDefaults(request)
                 .flatMap(this::startApplication)
-                .doOnError(t -> LOG.error("[{} - {}]: Error running module '{}', {}", LogConstants.DEPLOY_REQUEST, request.getId().toString(), request.getModuleId(), t.getMessage()));
+                .doOnError(t -> LOG.error("[{} - {}]: Error running module '{}', {}", LogConstants.DEPLOY_REQUEST, request.getId(), request.getModuleId(), t.getMessage()));
 
     }
 
@@ -137,7 +134,7 @@ public class RunApplication implements Command<DeployApplicationRequest> {
             builder.setUserInfo(deployConfig.getHttpAuthUser() + ":" + deployConfig.getHttpAuthPassword());
             return builder.toString();
         }
-        return deployConfig.getNexusUrl().toString();
+        return Objects.isNull(deployConfig.getNexusUrl()) ? "" : deployConfig.getNexusUrl().toString();
     }
 }
 

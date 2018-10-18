@@ -53,12 +53,12 @@ public class AutoDiscoverDeployService {
         List<Artifact> dependencies = new ArrayList<>();
 
         if (deployConfig.isTypedDeploy()) {
-            testScope = Boolean.parseBoolean(tags.getOrDefault(DeployType.APPLICATION.getScopeTag(), "false")) ||
-                    Boolean.parseBoolean(tags.getOrDefault(DeployType.ARTIFACT.getScopeTag(), "false"));
+            testScope = Boolean.parseBoolean(tags.getOrDefault(DeployType.APPLICATION.getScopeTag(), Boolean.FALSE.toString())) ||
+                    Boolean.parseBoolean(tags.getOrDefault(DeployType.ARTIFACT.getScopeTag(), Boolean.FALSE.toString()));
             dependencies.addAll(getDependenciesForDeployType(tags, DeployType.APPLICATION, testScope));
             dependencies.addAll(getDependenciesForDeployType(tags, DeployType.ARTIFACT, testScope));
         } else {
-            testScope = Boolean.parseBoolean(tags.getOrDefault(DeployType.DEFAULT.getScopeTag(), "false"));
+            testScope = Boolean.parseBoolean(tags.getOrDefault(DeployType.DEFAULT.getScopeTag(), Boolean.FALSE.toString()));
             dependencies.addAll(getDependenciesForDeployType(tags, DeployType.DEFAULT, testScope));
         }
 
