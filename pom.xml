@@ -39,7 +39,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.5.2</vertx.platform.version>
+        <vertx.platform.version>3.5.4</vertx.platform.version>
         <aws.sdk.version>1.11.317</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>2.12.0</mockito.version>
@@ -131,7 +131,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.15</version>
+                <version>1.18</version>
             </dependency>
 
             <dependency>
