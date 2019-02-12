@@ -329,6 +329,9 @@ The following AWS actions are needed for the deploy applications
 
 
 #Changelog
+## 3.5.4
+* [BUG] Fixes [#64](vertx-deploy-tools/issues/64)
+
 ## 3.5.3
 * [Feature] Add typed deploys
 * [BUG] Fix ignoring configs during deploy when **deploy.as.config** is false
