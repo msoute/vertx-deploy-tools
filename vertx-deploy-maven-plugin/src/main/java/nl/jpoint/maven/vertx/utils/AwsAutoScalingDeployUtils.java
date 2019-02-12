@@ -267,7 +267,7 @@ public class AwsAutoScalingDeployUtils {
         if (!activeConfiguration.getExclusions().isEmpty()) {
             tags.add(new Tag().withPropagateAtLaunch(true)
                     .withResourceType(AUTO_SCALING_GROUP)
-                    .withKey(activeConfiguration.getDeployType().getExclusionTag()).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getGroupId()).collect(Collectors.joining(";")))
+                    .withKey(activeConfiguration.getDeployType().getExclusionTag()).withValue(activeConfiguration.getExclusions().stream().map(e -> e.getGroupId() + ":" + e.getArtifactId()).collect(Collectors.joining(";")))
                     .withResourceId(activeConfiguration.getAutoScalingGroupId()));
         }
         awsAsClient.createOrUpdateTags(new CreateOrUpdateTagsRequest().withTags(tags));
