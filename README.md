@@ -466,3 +466,4 @@ Source level changed to 1.8
 
 ## 1.1.12
 * Add configurable request timeout to maven execution ('-Ddeploy.requestTimeout'), defaults to 10 minutes
+
