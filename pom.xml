@@ -4,7 +4,7 @@
 
     <groupId>nl.jpoint</groupId>
     <artifactId>vertx-deploy-tools</artifactId>
-    <version>3.5.5-SNAPSHOT</version>
+    <version>3.5.5</version>
     <packaging>pom</packaging>
 
     <description>Vert.x application for deploying of other Vert.x applications with support for AWS based
@@ -33,7 +33,7 @@
         <developerConnection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</developerConnection>
         <connection>scm:git:git@github.com:msoute/vertx-deploy-tools.git</connection>
         <url>https://github.com/msoute/vertx-deploy-mod</url>
-        <tag>master</tag>
+        <tag>vertx-deploy-tools-3.5.5</tag>
     </scm>
 
     <properties>
