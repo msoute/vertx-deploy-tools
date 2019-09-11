@@ -44,6 +44,7 @@ The configured system user needs sudo access to the init.d vertx script and any 
 * **service.config.location** : Location of the defaults file per service (default: /etc/default)
 * **aws.region** : The Aws region
 * **aws.as.register.maxduration** : maximum (de)register duration in minutes (default:4)
+* **aws.poll.interval** : Poll time for aws status updates in ms (default:3000)
 * **vertx.default.java.opts** : Default java opts passed to the application with --java-opts (default "")
 * **vertx.clustering** : (boolean) Enables -cluster
 * **aws.as.autodiscover** : (boolean) Enables auto discovery of artifacts that need to be deployed (default false)
@@ -329,6 +330,9 @@ The following AWS actions are needed for the deploy applications
 
 
 #Changelog
+## 3.5.5
+* Add `aws.poll.interval` as agent config option.
+
 ## 3.5.4
 * [BUG] Fixes [#64](vertx-deploy-tools/issues/64)
 

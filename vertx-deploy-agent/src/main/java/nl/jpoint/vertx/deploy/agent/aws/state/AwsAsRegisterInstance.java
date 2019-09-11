@@ -21,8 +21,9 @@ public class AwsAsRegisterInstance implements Command<DeployRequest> {
 
     public AwsAsRegisterInstance(final Vertx vertx, final DeployConfig config, final Integer maxDuration) {
         this.awsAsUtil = new AwsAutoScalingUtil(config);
-        this.poller = new AwsPollingAsStateObservable(vertx, awsAsUtil, LocalDateTime.now().plusMinutes(maxDuration)
-                , AwsState.INSERVICE);
+        this.poller = new AwsPollingAsStateObservable(vertx, awsAsUtil, LocalDateTime.now().plusMinutes(maxDuration),
+                config.getPollIntervall(),
+                AwsState.INSERVICE);
     }
 
     @Override

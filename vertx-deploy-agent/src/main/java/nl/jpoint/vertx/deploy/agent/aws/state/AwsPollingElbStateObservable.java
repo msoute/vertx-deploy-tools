@@ -16,21 +16,22 @@ import java.util.function.Function;
 
 class AwsPollingElbStateObservable {
     private static final Logger LOG = LoggerFactory.getLogger(AwsPollingElbStateObservable.class);
-    private static final Long POLLING_INTERVAL_IN_MS = 3000L;
     private final io.vertx.rxjava.core.Vertx rxVertx;
     private final AwsElbUtil awsElbUtil;
     private final LocalDateTime timeout;
     private final List<AwsState> acceptedStates;
     private final String deployId;
+    private final long pollInterval;
     private final Function<String, Boolean> requestStillActive;
 
-    public AwsPollingElbStateObservable(io.vertx.core.Vertx vertx, String deployId, AwsElbUtil awsElbUtil, LocalDateTime timeout, Function<String, Boolean> requestStillActive, AwsState... acceptedStates) {
+    public AwsPollingElbStateObservable(io.vertx.core.Vertx vertx, String deployId, AwsElbUtil awsElbUtil, LocalDateTime timeout,long pollInterval, Function<String, Boolean> requestStillActive, AwsState... acceptedStates) {
         this.deployId = deployId;
         this.requestStillActive = requestStillActive;
         this.rxVertx = new Vertx(vertx);
         this.awsElbUtil = awsElbUtil;
         this.timeout = timeout;
         this.acceptedStates = Arrays.asList(acceptedStates);
+        this.pollInterval = pollInterval;
 
     }
 
@@ -41,7 +42,7 @@ class AwsPollingElbStateObservable {
     }
 
     private Observable<DeployRequest> doPoll(DeployRequest request, String elb) {
-        return rxVertx.timerStream(POLLING_INTERVAL_IN_MS).toObservable()
+        return rxVertx.timerStream(pollInterval).toObservable()
                 .flatMap(x -> awsElbUtil.pollForInstanceState(elb))
                 .flatMap(awsState -> {
                     if (!requestStillActive.apply(deployId)) {

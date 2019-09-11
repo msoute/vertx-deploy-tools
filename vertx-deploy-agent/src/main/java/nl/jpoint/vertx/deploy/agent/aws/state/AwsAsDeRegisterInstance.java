@@ -24,8 +24,9 @@ public class AwsAsDeRegisterInstance implements Command<DeployRequest> {
     public AwsAsDeRegisterInstance(final Vertx vertx, final DeployConfig config, final Integer maxDuration) {
 
         this.awsAsUtil = new AwsAutoScalingUtil(config);
-        this.poller = new AwsPollingAsStateObservable(vertx, awsAsUtil, LocalDateTime.now().plusMinutes(maxDuration)
-                , AwsState.STANDBY, AwsState.OUTOFSERVICE, AwsState.NOTREGISTERED);
+        this.poller = new AwsPollingAsStateObservable(vertx, awsAsUtil, LocalDateTime.now().plusMinutes(maxDuration),
+                config.getPollIntervall(),
+                AwsState.STANDBY, AwsState.OUTOFSERVICE, AwsState.NOTREGISTERED);
     }
 
     @Override

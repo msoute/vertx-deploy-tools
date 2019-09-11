@@ -23,7 +23,7 @@ public class AwsElbDeRegisterInstance implements Command<DeployRequest> {
     public AwsElbDeRegisterInstance(io.vertx.core.Vertx vertx, DeployConfig config) {
         this.awsElbUtil = new AwsElbUtil(config);
         this.awsAsUtil = new AwsAutoScalingUtil(config);
-        this.poller = new AwsPollingElbStateObservable(vertx, "fakeId", awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), s -> true, AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
+        this.poller = new AwsPollingElbStateObservable(vertx, "fakeId", awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), config.getPollIntervall(), s -> true, AwsState.NOTREGISTERED, AwsState.OUTOFSERVICE);
     }
 
     @Override

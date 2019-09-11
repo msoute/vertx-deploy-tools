@@ -24,7 +24,7 @@ public class AwsElbRegisterInstance implements Command<DeployRequest> {
     public AwsElbRegisterInstance(io.vertx.core.Vertx vertx, String deployId, DeployConfig config, Function<String, Boolean> requestStillActive) {
         this.awsElbUtil = new AwsElbUtil(config);
         this.awsAsUtil = new AwsAutoScalingUtil(config);
-        this.poller = new AwsPollingElbStateObservable(vertx, deployId, awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), requestStillActive, AwsState.INSERVICE);
+        this.poller = new AwsPollingElbStateObservable(vertx, deployId, awsElbUtil, LocalDateTime.now().plusMinutes(config.getAwsMaxRegistrationDuration()), config.getPollIntervall(), requestStillActive, AwsState.INSERVICE);
     }
 
     @Override

@@ -15,16 +15,17 @@ import java.util.List;
 
 class AwsPollingAsStateObservable {
     private static final Logger LOG = LoggerFactory.getLogger(AwsPollingAsStateObservable.class);
-    private static final Long POLLING_INTERVAL_IN_MS = 3000L;
     private final io.vertx.rxjava.core.Vertx rxVertx;
     private final AwsAutoScalingUtil awsAsUtil;
     private final LocalDateTime timeout;
+    private final long pollInterval;
     private final List<AwsState> acceptedStates;
 
-    public AwsPollingAsStateObservable(io.vertx.core.Vertx vertx, AwsAutoScalingUtil awsAsUtil, LocalDateTime timeout, AwsState... acceptedStates) {
+    public AwsPollingAsStateObservable(io.vertx.core.Vertx vertx, AwsAutoScalingUtil awsAsUtil, LocalDateTime timeout, long pollInterval, AwsState... acceptedStates) {
         this.rxVertx = new Vertx(vertx);
         this.awsAsUtil = awsAsUtil;
         this.timeout = timeout;
+        this.pollInterval = pollInterval;
         this.acceptedStates = Arrays.asList(acceptedStates);
 
     }
@@ -35,7 +36,7 @@ class AwsPollingAsStateObservable {
     }
 
     private Observable<DeployRequest> doPoll(DeployRequest request) {
-        return rxVertx.timerStream(POLLING_INTERVAL_IN_MS).toObservable()
+        return rxVertx.timerStream(pollInterval).toObservable()
                 .flatMap(x -> awsAsUtil.pollForInstanceState())
                 .flatMap(awsState -> {
                             if (LocalDateTime.now().isAfter(timeout)) {

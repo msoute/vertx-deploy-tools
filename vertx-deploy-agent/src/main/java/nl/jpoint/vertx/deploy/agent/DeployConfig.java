@@ -34,6 +34,8 @@ public class DeployConfig {
     private static final String DEFAULT_JAVA_OPTS = "vertx.default.java.opts";
     private static final String AWS_AS_AUTODISCOVER = "aws.as.autodiscover";
     private static final String TYPED_DEPLOY = "typed.deploy";
+    private static final String POLL_INTERVAL = "aws.poll.interval";
+
 
     private static final String AUTH_TOKEN = "auth.token";
 
@@ -63,6 +65,7 @@ public class DeployConfig {
 
     private boolean awsAutoDiscover = false;
     private String serviceConfigLocation;
+    private long pollInterval;
 
     private DeployConfig(String vertxHome, String artifactRepo, String nexusUrl) {
         this.vertxHome = Paths.get(vertxHome);
@@ -123,6 +126,7 @@ public class DeployConfig {
                 .withRunDir(config)
                 .withLoggerFactoryName(config)
                 .withTypedDeploy(config)
+                .withPollInterval(config)
                 .withRemoteRepoUpdatePolicy(config);
 
         if (!config.isEmpty()) {
@@ -144,6 +148,12 @@ public class DeployConfig {
     private DeployConfig withConfigLocation(JsonObject config) {
         this.configLocation = config.getString(CONFIG_LOCATION, "");
         config.remove(CONFIG_LOCATION);
+        return this;
+    }
+
+    private DeployConfig withPollInterval(JsonObject config) {
+        this.pollInterval = config.getLong(POLL_INTERVAL, 3000L);
+        config.remove(POLL_INTERVAL);
         return this;
     }
 
@@ -303,5 +313,9 @@ public class DeployConfig {
 
     public boolean isTypedDeploy() {
         return this.typedDeploy;
+    }
+
+    public long getPollIntervall() {
+        return pollInterval;
     }
 }
