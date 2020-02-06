@@ -39,10 +39,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <vertx.platform.version>3.5.4</vertx.platform.version>
+        <vertx.platform.version>3.8.5</vertx.platform.version>
         <aws.sdk.version>1.11.564</aws.sdk.version>
         <nexus.host>default</nexus.host>
-        <mockito.version>2.12.0</mockito.version>
+        <mockito.version>3.2.4</mockito.version>
         <aetherVersion>1.1.0</aetherVersion>
         <mavenVersion>3.6.0</mavenVersion>
         <dependency.check.report.dir>target/dependency-check</dependency.check.report.dir>
@@ -243,10 +243,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
                 </configuration>
             </plugin>
             <plugin>

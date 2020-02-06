@@ -2,7 +2,7 @@ package nl.jpoint.vertx.mod.test;
 
 import io.vertx.core.Vertx;
 
-import static io.vertx.core.impl.FileResolver.DISABLE_CP_RESOLVING_PROP_NAME;
+import static io.vertx.core.file.impl.FileResolver.DISABLE_CP_RESOLVING_PROP_NAME;
 import static java.lang.Boolean.TRUE;
 
 public class TestRunner {
