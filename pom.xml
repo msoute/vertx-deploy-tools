@@ -4,7 +4,7 @@
 
     <groupId>nl.jpoint</groupId>
     <artifactId>vertx-deploy-tools</artifactId>
-    <version>3.5.6-SNAPSHOT</version>
+    <version>3.8.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vert.x application for deploying of other Vert.x applications with support for AWS based
