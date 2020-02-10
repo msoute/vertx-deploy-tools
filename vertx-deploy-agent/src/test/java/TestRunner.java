@@ -2,7 +2,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
-import static io.vertx.core.impl.FileResolver.DISABLE_CP_RESOLVING_PROP_NAME;
+import static io.vertx.core.file.impl.FileResolver.DISABLE_CP_RESOLVING_PROP_NAME;
 import static java.lang.Boolean.TRUE;
 
 public class TestRunner {
