@@ -328,8 +328,12 @@ The following AWS actions are needed for the deploy applications
         "autoscaling:EnterStandby",
         "autoscaling:ExitStandby"
 
-
 #Changelog
+
+## 3.8.5
+* [Upgrade] Java 11
+* [Upgrade] Upgrade to vert.x 3.8.5
+
 ## 3.5.5
 * Add `aws.poll.interval` as agent config option.
 
