@@ -23,7 +23,7 @@ import static rx.Observable.just;
 
 public class RestDeployHandler implements Handler<RoutingContext> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RestDeployModuleHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RestDeployHandler.class);
     private final DefaultDeployService deployService;
     private final Optional<AwsService> awsService;
     private final String authToken;
@@ -201,9 +201,9 @@ public class RestDeployHandler implements Handler<RoutingContext> {
     }
 
     private void respond(DeployRequest deployRequest, HttpServerRequest request) {
-        request.response().setStatusCode(HttpResponseStatus.OK.code());
         awsService.ifPresent(aws -> aws.updateAndGetRequest(DeployState.SUCCESS, deployRequest.getId().toString()));
         if (!request.response().ended() && !deployRequest.withElb() && !deployRequest.withAutoScaling()) {
+            request.response().setStatusCode(HttpResponseStatus.OK.code());
             JsonObject result = new JsonObject();
             result.put(ApplicationDeployState.OK.name(), HttpUtils.toArray(deployService.getDeployedApplicationsSuccess()));
             result.put(ApplicationDeployState.ERROR.name(), HttpUtils.toArray(deployService.getDeployedApplicationsFailed()));
