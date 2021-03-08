@@ -330,6 +330,9 @@ The following AWS actions are needed for the deploy applications
 
 #Changelog
 
+## 3.9.5
+* [Upgrade] Upgrade to vert.x 3.9.5
+
 ## 3.8.5
 * [Upgrade] Java 11
 * [Upgrade] Upgrade to vert.x 3.8.5
