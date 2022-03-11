@@ -40,7 +40,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <vertx.platform.version>3.9.5</vertx.platform.version>
-        <aws.sdk.version>1.12.144</aws.sdk.version>
+        <aws.sdk.version>1.12.176</aws.sdk.version>
         <nexus.host>default</nexus.host>
         <mockito.version>3.2.4</mockito.version>
         <aetherVersion>1.1.0</aetherVersion>
@@ -177,7 +177,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.11.3</version>
+                <version>2.13.0</version>
             </dependency>
 
             <dependency>
